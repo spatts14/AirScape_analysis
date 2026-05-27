@@ -1,0 +1,74 @@
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "recode_st"
+version = "0.1.0"
+
+dependencies = [
+    "matplotlib",
+    "numpy",
+    "pandas[excel]",
+    "setuptools",
+    "torch",
+    "scanpy[leiden]",
+    "spatialdata",
+    "spatialdata-io",
+    "squidpy",
+    "seaborn",
+    "zarr",
+    "pydantic",
+]
+
+[project.optional-dependencies]
+dev = [
+    "mkdocs==1.6.1",
+    "mkdocs-include-markdown-plugin==7.1.5",
+    "mkdocs-jupyter==0.25.1",
+    "mkdocs-exclude==1.0.2",
+    "mkdocs-material==9.6.12",
+    "python-markdown-math==0.9",
+    "ruff",
+    "pre-commit",
+    "pytest",
+    "pytest-cov",
+    "pytest-mock",
+    "pip-tools",
+]
+muspan = ["muspan @ https://docs.muspan.co.uk/code/latest.zip"]
+
+[tool.pytest.ini_options]
+addopts = "-v -p no:warnings --cov=src --cov-report=html --ignore=src/recode_spatial_transcriptomics/__main__.py --ignore=docs/ --ignore=utils/"
+testpaths = ["tests"]
+
+[tool.ruff]
+target-version = "py310"   # Minimum version for pyupgrade
+extend-exclude = ["utils"]
+
+[tool.ruff.lint]
+select = [
+    "D",   # pydocstyle
+    "E",   # pycodestyle
+    "F",   # Pyflakes
+    "I",   # isort
+    "UP",  # pyupgrade
+    "RUF", # ruff
+    "W",   # pylint
+]
+pydocstyle.convention = "google"
+
+[tool.ruff.lint.per-file-ignores]
+"notebooks/*.ipynb" = ["E501"] # Ignore line length in notebooks
+
+[tool.codespell]
+ignore-words-list = [
+    "AirScape",
+    "airscape",
+    "Muspan",
+    "muspan",
+    "Scanpy",
+    "scanpy",
+    "Squidpy",
+    "squidpy",
+]
