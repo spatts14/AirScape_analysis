@@ -1,11 +1,17 @@
 """Generate misc plots."""
 
+import sys
 from pathlib import Path
 
 import anndata as ad
 import scanpy as sc
 import seaborn as sns
 
+sys.path.append(
+    str(Path(__file__).resolve().parents[3])
+)  # goes up 3 levels to AirScape/
+
+from utils.airspace_colors import level_2_listed
 from utils.seed_everything import seed_everything
 
 # Set random seed for reproducibility
@@ -25,7 +31,7 @@ sc.settings.figdir = fig_dir
 
 # Set colors
 cmap = sns.color_palette("ch:start=.2,rot=-.3", as_cmap=True)
-color_palette_level_1 = sns.color_palette("hls", 12)
+palette = level_2_listed
 
 # Load data
 print(f"Loading data from {dir / 'adata_final_object/adata_with_metadata.zarr'}...")
@@ -34,37 +40,34 @@ adata = ad.read_zarr(dir / "adata_final_object/adata_with_metadata.zarr")
 print("Data loaded successfully.")
 
 # Set variables
-color_list = adata.obs.columns.tolist()
-
-# Remove columns that will cause an error when plotting
-color_list = [
-    "time_point",
-    "condition",
-    "lung_location",
-    "biopsy_type",
-    "diagnosis",
-    "treatment_arm",
-    "age",
-    "sex",
-    "smoking_status",
-    "batch",
-    "level_1",
+meta_list = [
+    # "time_point",
+    # "condition",
+    # "lung_location",
+    # "biopsy_type",
+    # "diagnosis",
+    # "treatment_arm",
+    # "age",
+    # "sex",
+    # "smoking_status",
+    # "batch",
+    # "level_1",
     "level_2",
 ]
 
 print("Plotting UMAP...")
-for color in color_list:
-    if color not in adata.obs.columns:
-        print(f"Warning: {color} not found in adata.obs. Skipping this variable.")
+for col in meta_list:
+    if col not in adata.obs.columns:
+        print(f"Warning: {col} not found in adata.obs. Skipping this variable.")
         continue
     sc.pl.umap(
         adata,
-        color=color,
-        cmap=cmap,
+        color=col,
+        cmap=palette,
         wspace=0.4,
         show=False,
         frameon=False,
-        save=f"_{color}.png",
+        save=f"_{col}.png",
     )
 
 print("UMAP plotted and saved successfully.")

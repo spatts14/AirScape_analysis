@@ -211,20 +211,4 @@ for level in annotation_levels:
 else:
     logger.info("Skipping PCA observation fields plot (obs_vis_list not configured)")
 
-for level in annotation_levels:
-    if level in adata.obs:
-        adata.obs[level] = adata.obs[level].astype("category")
-
-    # make a new folder for spatial plots for this level
-    level_spatial_dir = spatial_plots_dir / level
-    level_spatial_dir.mkdir(exist_ok=True, parents=True)
-
-    # Make color palette for this level
-    palette = get_palette(len(adata.obs[level].cat.categories))
-
-    # Plot spatial distribution of clusters for this level
-    plot_spatial_distribution(
-        adata=adata, module_dir=level_spatial_dir, annotation_key=level, palette=palette
-    )
-
 logger.info("Dimension reduction module complete.")

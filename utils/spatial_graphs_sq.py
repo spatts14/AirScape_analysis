@@ -1,11 +1,12 @@
 # Visualize spatial graphs coloured by celltype_level, one plot per ROI
 
-from matplotlib.path import Path
-
+from pathlib import Path
+import matplotlib.pyplot as plt
+import anndata as ad
 
 def plot_spatial_graph(adata_subset: ad.AnnData, roi_name: str, celltype_level: str, out_dir: Path, color_map: dict):
     """
-    Draw the Delaunay spatial graph for one ROI, with cells coloured by celltype_level.
+    Draw the spatial graph for one ROI, with cells coloured by celltype_level.
 
     Args:
     adata_subset : AnnData
@@ -20,7 +21,11 @@ def plot_spatial_graph(adata_subset: ad.AnnData, roi_name: str, celltype_level: 
     color_map : dict
         Mapping {celltype_level_label -> colour}.
     """
-    coords = adata_subset.obsm["spatial"]          # (n_cells, 2)
+    # Make output directory if it doesn't exist
+    spatial_plot_dir = out_dir / "_spatial_graphs"
+    spatial_plot_dir.mkdir(exist_ok=True)
+
+    coords = adata_subset.obsm["spatial"]
     labels = adata_subset.obs[celltype_level].astype(str).values
 
     # Retrieve the adjacency matrix built by sq.gr.spatial_neighbors
@@ -28,20 +33,25 @@ def plot_spatial_graph(adata_subset: ad.AnnData, roi_name: str, celltype_level: 
 
     fig, ax = plt.subplots(figsize=(14, 12))
 
-    # ── Draw edges first (behind cells) ──────────────────────────────────────
+    # Remove grid and spines for a cleaner look
+    ax.grid(False)
+    for spine in ax.spines.values():
+        spine.set_visible(False)
+
+    # Draw edges first (behind cells)
     cx = conn.tocoo()
     for i, j in zip(cx.row, cx.col):
         if i < j:                                  # avoid drawing each edge twice
             ax.plot(
                 [coords[i, 0], coords[j, 0]],
                 [coords[i, 1], coords[j, 1]],
-                color="lightgrey",
-                linewidth=0.3,
+                color="#46464d",
+                linewidth=0.25,
                 alpha=0.5,
                 zorder=1,
             )
 
-    # ── Draw cells, grouped by label so the legend is clean ──────────────────
+    #  Draw cells, grouped by label so the legend is clean
     for label, colour in color_map.items():
         mask = labels == label
         if mask.sum() == 0:
@@ -50,13 +60,13 @@ def plot_spatial_graph(adata_subset: ad.AnnData, roi_name: str, celltype_level: 
             coords[mask, 0],
             coords[mask, 1],
             c=[colour],
-            s=4,
+            s=2,
             linewidths=0,
             label=label,
             zorder=2,
         )
 
-    # ── Legend ────────────────────────────────────────────────────────────────
+    # Legend
     legend = ax.legend(
         title=celltype_level,
         bbox_to_anchor=(1.02, 1),
@@ -74,7 +84,12 @@ def plot_spatial_graph(adata_subset: ad.AnnData, roi_name: str, celltype_level: 
     ax.invert_yaxis()          # match typical tissue-image orientation
     plt.tight_layout()
 
-    out_path = out_dir / f"{roi_name}_spatial_graph_{celltype_level}.pdf"
+    filename = f"{roi_name}_spatial_graph_clean.png"
+    out_path = spatial_plot_dir / filename
     fig.savefig(out_path, dpi=150, bbox_inches="tight")
+
+    filename = f"{roi_name}_spatial_graph_clean.pdf"
+    out_path = spatial_plot_dir / filename
+    fig.savefig(out_path, dpi=150, bbox_inches="tight")
+
     plt.close(fig)
-    logger.info(f"Spatial graph saved to {out_path}")

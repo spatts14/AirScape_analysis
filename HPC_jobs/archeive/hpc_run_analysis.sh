@@ -1,5 +1,5 @@
 #!/bin/bash
-#PBS -l walltime=08:00:00
+#PBS -l walltime=1:0:0
 #PBS -lselect=1:ncpus=8:mem=256gb
 
 # Load production tools
@@ -12,8 +12,7 @@ module load Biopython/1.84-foss-2024a
 cd /rds/general/user/sep22/home/Projects/AirScape
 
 # Activate virtual environment
-source airscape_venv/bin/activate
+source xenium_5k_venv/bin/activate
 
 # Run
-echo "Starting at annotation... $(date)"
-python -m recode_st config_files/airscape.toml
+python -m recode_st config_files/config_HPC_drug2cell.toml

@@ -1,5 +1,5 @@
 #!/bin/bash
-#PBS -l walltime=12:0:0
+#PBS -l walltime=8:0:0
 #PBS -lselect=1:ncpus=1:mem=128gb
 #PBS -N subset_celltype
 #PBS -j oe
@@ -23,6 +23,7 @@ echo "Starting at $(date)"
 #python src/manual_src/misc_plots/transcript_parquet.py
 #python src/manual_src/misc_plots/composition.py
 #python src/manual_src/misc_plots/violin_plt.py
-python src/projects/general/umap.py
+# python src/projects/general/umap.py
+# python src/projects/general/spatial_plot.py
 
 echo "Completed at $(date)"

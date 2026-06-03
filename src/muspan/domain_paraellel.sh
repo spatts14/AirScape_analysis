@@ -1,6 +1,8 @@
 #!/bin/bash
-#PBS -l walltime=08:00:00
-#PBS -lselect=1:ncpus=8:mem=256gb
+#PBS -l walltime=12:0:0
+#PBS -l select=1:ncpus=64:mem=512gb
+#PBS -N create_domain_parallel
+#PBS -j oe
 
 # Load production tools
 module load tools/prod
@@ -14,6 +16,9 @@ cd /rds/general/user/sep22/home/Projects/AirScape
 # Activate virtual environment
 source airscape_venv/bin/activate
 
-# Run
-echo "Starting at annotation... $(date)"
-python -m recode_st config_files/airscape.toml
+# Run with error logging
+echo "Starting at $(date)"
+
+python src/muspan/domain_paraellel.py
+
+echo "Completed at $(date)"
