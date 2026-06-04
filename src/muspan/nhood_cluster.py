@@ -177,7 +177,7 @@ for domain in domain_list:
     # Recolor the domain with the new neighbourhood labels
     label_name = f"Neighbourhood ID {network_type}"
 
-    unique_labels = np.unique(domain.labels["Neighbourhood ID {network_type}"]["labels"])
+    unique_labels = np.unique(domain.labels[f"Neighbourhood ID {network_type}"]["labels"])
 
     color_map = dict(zip(unique_labels, nb_colors[:len(unique_labels)]))
 
