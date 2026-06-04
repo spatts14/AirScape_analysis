@@ -84,7 +84,7 @@ nb_colors = [
 ]
 
 # Define variables
-number_of_clusters = 8
+number_of_clusters = 10
 network_type = 'Delaunay'  # 'Delaunay' or 'proximity'
 max_edge_distance = 30
 subset = "IPF"
