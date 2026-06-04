@@ -155,7 +155,7 @@ for number_of_clusters in number_of_clusters_list:
         df_plot,
         xticklabels=consistent_global_labels,
         yticklabels=unique_cluster_labels,
-        figsize=(8, 8),
+        figsize=(8, 6),
         cmap='RdBu_r',
         dendrogram_ratio=(.05, .3),
         col_cluster=True,
@@ -163,13 +163,14 @@ for number_of_clusters in number_of_clusters_list:
         square=True,
         linewidths=0.5,
         linecolor='black',
-        cbar_kws=dict(use_gridspec=False, location="top", label=f'Neighbourhood enrichment (log-fold) - khop {khop}', ticks=[plot_vmin, 0, plot_vmax]),
+        cbar_kws=dict(use_gridspec=False, location="top",
+        label=f'Neighbourhood enrichment (log-fold)', ticks=[plot_vmin, 0, plot_vmax]),
         cbar_pos=(0.12, 0.85, 0.72, 0.06),
         vmin=plot_vmin,
         vmax=plot_vmax,
         tree_kws={'linewidths': 1, 'color': 'black'}
     )
-    #plt.suptitle(f"{network_type.capitalize()} Neighbourhood Enrichment Clustering, {number_of_clusters} clusters)", #fontsize=10)
+    plt.suptitle(f"{network_type.capitalize()} Neighbourhood Enrichment Clustering", fontsize=14, y=1.2)
     plt.savefig(plots_dir / f"{network_type}_{number_of_clusters}_clusters_neighbourhood_heatmap.pdf", bbox_inches='tight')
     plt.close()
 
