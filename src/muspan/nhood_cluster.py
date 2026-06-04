@@ -96,6 +96,12 @@ for path in input_dir.glob("*.muspan"):
 logger.info(f"Loaded {len(domain_list)} domains from {input_dir}")
 
 for number_of_clusters in number_of_clusters_list:
+    # Make cluster number of clusters
+    plots_dir = plots_dir / f"{number_of_clusters}_clusters"
+    plots_dir.mkdir(parents=True, exist_ok=True)
+    logger.info(f"Processing neighbourhood clustering with {number_of_clusters} clusters. Plots will be saved to {plots_dir}")
+
+    
     # Perform neighbourhood clustering on the dataset using KNN and minibatchkmeans
     logger.info(f"Performing neighbourhood clustering with {network_type} network and {number_of_clusters} clusters...")
     neighbourhood_enrichment_matrix, consistent_global_labels, unique_cluster_labels = ms.networks.cluster_neighbourhoods(
@@ -145,12 +151,12 @@ for number_of_clusters in number_of_clusters_list:
         linecolor='black',
         cbar_kws=dict(use_gridspec=False, location="top",
         label=f'Neighbourhood enrichment (log-fold)', ticks=[plot_vmin, 0, plot_vmax]),
-        cbar_pos=(0.12, 0.85, 0.72, 0.06),
+        cbar_pos=(0.12, 1.05, 0.72, 0.06),
         vmin=plot_vmin,
         vmax=plot_vmax,
         tree_kws={'linewidths': 1, 'color': 'black'}
     )
-    plt.suptitle(f"{network_type.capitalize()} Neighbourhood Enrichment Clustering", fontsize=14, y=1.2)
+    plt.suptitle(f"{network_type.capitalize()} Neighbourhood Enrichment Clustering", fontsize=14, y=1.3)
     plt.savefig(plots_dir / f"{network_type}_{number_of_clusters}_clusters_neighbourhood_heatmap.pdf", bbox_inches='tight')
     plt.close()
 
@@ -174,7 +180,7 @@ for number_of_clusters in number_of_clusters_list:
         
         # Visualize the domain with neighbourhood labels
         logger.info(f"Visualizing domain {domain_name} with neighbourhood labels...")
-        ms.visualise.visualise(domain, color_by=f'Neighbourhood ID {network_type}', marker_size=0.5)
+        ms.visualise.visualise(domain, color_by=f'Neighbourhood ID {network_type}', marker_size=0.25)
         plt.suptitle(f"Domain Visualization with Neighbourhood Labels for {domain_name}")
         plt.savefig(plots_dir / f"{domain_name}_{number_of_clusters}_neighbourhood_labels.pdf", bbox_inches='tight')
         plt.close()
