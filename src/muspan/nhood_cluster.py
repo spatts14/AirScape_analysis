@@ -84,6 +84,10 @@ network_type = 'proximity'
 max_edge_distance = 30
 subset = "IPF"
 
+# If subset is specified, create a subdirectory for plots
+if subset is not None:
+    plots_dir = plots_dir / subset
+
 # Load the domain from file
 # Add domain to list
 domain_list = []
@@ -94,9 +98,10 @@ for path in input_dir.glob("*.muspan"):
     if not path.is_file():
         logger.warning(f"Skipping {path} as it is not a file.")
         continue
-    if subset not in path.stem:
+    if subset is not None and subset not in path.stem:
         logger.info(f"Skipping {path} as it does not contain '{subset}' in the name.")
         continue
+    logger.info(f"Loading {path}...")
     domain = ms.io.load_domain(str(path))
     domain_list.append(domain)
 logger.info(f"Loaded {len(domain_list)} domains from {input_dir}")
