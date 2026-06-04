@@ -85,6 +85,7 @@ nb_colors = [
 
 # Define variables
 number_of_clusters = 10
+khop = 1
 network_type = 'Delaunay'  # 'Delaunay' or 'proximity'
 max_edge_distance = 30
 subset = "IPF"
@@ -120,7 +121,7 @@ neighbourhood_enrichment_matrix, consistent_global_labels, unique_cluster_labels
     domain_list,  # The domain dataset
     label_name='Cell Type',  # The label to use for clustering
     network_kwargs=dict(network_type=network_type, max_edge_distance=max_edge_distance, min_edge_distance=0),  # The network parameters
-    k_hops=1,  # The number of hops to consider for the neighbourhood
+    k_hops=khop,  # The number of hops to consider for the neighbourhood
     neighbourhood_label_name=f'Neighbourhood ID {network_type}',  # Name for the neighbourhood label
     cluster_method='minibatchkmeans',  # Clustering method
     cluster_parameters={'n_clusters': number_of_clusters,'random_state':0},  # Parameters for the clustering method
