@@ -132,7 +132,7 @@ def get_palette(n):
 seed_everything(19960915)
 
 # Set up logger
-wd = "/rds/general/user/sep22/home/Projects/AirScape/HPC_jobs/general/"
+wd = "/rds/general/user/sep22/home/Projects/AirScape_analysis/HPC_jobs/general/"
 logs_dir = Path(wd) / "logs"
 logs_dir.mkdir(parents=True, exist_ok=True)
 logger = setup_logger(log_dir=logs_dir, log_name="pseudobulk")

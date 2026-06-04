@@ -11,7 +11,7 @@ module load tools/prod
 module load Biopython/1.84-foss-2024a
 
 # Project and run directories
-PROJECT_DIR="/rds/general/user/sep22/home/Projects/AirScape"
+PROJECT_DIR="/rds/general/user/sep22/home/Projects/AirScape_analysis"
 RUN_DIR="/rds/general/user/sep22/projects/phenotypingsputumasthmaticsaurorawellcomea1/live/Sara_Patti/009_ST_Xenium/output/2026-03-17_analysis_run"
 
 # Change to project directory

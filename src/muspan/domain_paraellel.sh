@@ -11,7 +11,7 @@ module load tools/prod
 module load Biopython/1.84-foss-2024a
 
 # Change to directory
-cd /rds/general/user/sep22/home/Projects/AirScape
+cd /rds/general/user/sep22/home/Projects/AirScape_analysis
 
 # Activate virtual environment
 source airscape_venv/bin/activate

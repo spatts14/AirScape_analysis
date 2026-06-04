@@ -13,7 +13,7 @@ module load Biopython/1.84-foss-2024a
 module load CUDA/12.1.1
 
 # Change to directory
-cd /rds/general/user/sep22/home/Projects/AirScape
+cd /rds/general/user/sep22/home/Projects/AirScape_analysis
 
 # Activate virtual environment
 source xenium_5k_venv/bin/activate
