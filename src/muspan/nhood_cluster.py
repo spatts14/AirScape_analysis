@@ -179,13 +179,13 @@ for number_of_clusters in number_of_clusters_list:
         # Recolor the domain with the new neighbourhood labels
         label_name = f"Neighbourhood ID {network_type}"
 
-        unique_labels = np.unique(domain.labels[f"Neighbourhood ID {network_type}"]["labels"])
+        # unique_labels = np.unique(domain.labels[f"Neighbourhood ID {network_type}"]["labels"])
 
-        color_map = dict(zip(unique_labels, nb_colors[:len(unique_labels)]))
+        # color_map = dict(zip(unique_labels, nb_colors[:len(unique_labels)]))
 
-        domain.update_colors(
-            nb_colors, colors_to_update="labels", label_name=f"Neighbourhood ID {network_type}"
-        )
+        # domain.update_colors(
+        #     nb_colors, colors_to_update="labels", label_name=f"Neighbourhood ID {network_type}"
+        # )
         
         # Set domain name
         domain_name = str(domain.name)
