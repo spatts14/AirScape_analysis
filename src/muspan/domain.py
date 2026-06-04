@@ -409,12 +409,24 @@ def main():
         label_shuffle_iterations=1000,
     )
 
+    ADJ_perm_dir_filtered = ADJ_perm_dir / "filtered"
+    ADJ_perm_dir_filtered.mkdir(parents=True, exist_ok=True)
+    
+    ADJ_perm_dir_nonfiltered = ADJ_perm_dir / "nonfiltered"
+    ADJ_perm_dir_nonfiltered.mkdir(parents=True, exist_ok=True)
+    
+    SES_df = pd.DataFrame(SES, index=label_categories, columns=label_categories)
+    SES_df.to_csv(
+        ADJ_perm_dir_filtered / f"filtered_adjacency_permutation_test_SES_{roi}.csv"
+    )
     SES_p_val_filtered_df = pd.DataFrame(
         SES_p_val_filtered, index=label_categories, columns=label_categories
     )
     SES_p_val_filtered_df.to_csv(
-        ADJ_perm_dir / f"adjacency_permutation_test_p_values_{roi}.csv"
+        ADJ_perm_dir_nonfiltered / f"nonfiltered_adjacency_permutation_test_p_values_{roi}.csv"
     )
+    
+
 
     logger.info(f"Visualizing adjacency permutation test results for {roi}")
     ms.visualise.visualise_correlation_matrix(

@@ -5,7 +5,6 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import seaborn as sns
-from matplotlib.patches import Patch
 import muspan as ms
 
 # Base project path
@@ -75,6 +74,7 @@ domain_list = []
 for path in input_dir.glob("*.muspan"):
     domain = ms.io.load_domain(str(path))
     domain_list.append(domain)
+    
 
 print(f"Loaded {len(domain_list)} domains from {input_dir}")
 
