@@ -14,7 +14,7 @@ module load Biopython/1.84-foss-2024a
 cd /rds/general/user/sep22/home/Projects/AirScape_analysis
 
 # Activate virtual environment
-source airscape_venv/bin/activate
+source muspan/bin/activate
 
 # Run with error logging
 echo "Starting at $(date)"
