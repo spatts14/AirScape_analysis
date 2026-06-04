@@ -138,6 +138,11 @@ finite_vals = df_ME_id.values[np.isfinite(df_ME_id.values) & (np.abs(df_ME_id.va
 vmin = np.floor(finite_vals.min())
 vmax = np.ceil(finite_vals.max())
 df_plot = df_ME_id.clip(lower=vmin, upper=vmax)
+logger.info(f"Neighbourhood enrichment matrix value range before filtering: min={finite_vals.min()}, max={finite_vals.max()}")
+
+# plotting vmax and vimin for the clustermap
+plot_vmin = -5
+plot_vmax = 5
 
 logger.info(f"Neighbourhood enrichment matrix value range after filtering: vmin={vmin}, vmax={vmax}")
 df_plot.to_csv(data_dir / f"{network_type}_{number_of_clusters}_clusters_neighbourhood_enrichment.csv")
@@ -148,7 +153,7 @@ sns.clustermap(
     df_plot,
     xticklabels=consistent_global_labels,
     yticklabels=unique_cluster_labels,
-    figsize=(8, 6),
+    figsize=(8, 8),
     cmap='RdBu_r',
     dendrogram_ratio=(.05, .3),
     col_cluster=True,
@@ -156,13 +161,13 @@ sns.clustermap(
     square=True,
     linewidths=0.5,
     linecolor='black',
-    cbar_kws=dict(use_gridspec=False, location="top", label='Neighbourhood enrichment (log-fold)', ticks=[-2, 0, 2]),
+    cbar_kws=dict(use_gridspec=False, location="top", label=f'Neighbourhood enrichment (log-fold) - khop {khop}', ticks=[plot_vmin, 0, plot_vmax]),
     cbar_pos=(0.12, 0.85, 0.72, 0.08),
-    vmin=-2,
-    vmax=2,
-    tree_kws={'linewidths': 0, 'color': 'white'}
+    vmin=plot_vmin,
+    vmax=plot_vmax,
+    tree_kws={'linewidths': 1, 'color': 'black'}
 )
-plt.suptitle(f"{network_type.capitalize()} Neighbourhood Enrichment Clustering, {number_of_clusters} clusters)")
+plt.suptitle(f"{network_type.capitalize()} Neighbourhood Enrichment Clustering, {number_of_clusters} clusters)", fontsize=10)
 plt.savefig(plots_dir / f"{network_type}_{number_of_clusters}_clusters_neighbourhood_heatmap.pdf", bbox_inches='tight')
 plt.close()
 
