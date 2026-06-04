@@ -84,7 +84,8 @@ nb_colors = [
 ]
 
 # Define variables
-number_of_clusters = 8
+#number_of_clusters = 4
+number_of_clusters_list = [4, 6, 8, 10]
 khop = 1
 network_type = 'Delaunay'  # 'Delaunay' or 'proximity'
 max_edge_distance = 30
@@ -114,83 +115,83 @@ for path in input_dir.glob("*.muspan"):
     domain_list.append(domain)
 logger.info(f"Loaded {len(domain_list)} domains from {input_dir}")
 
-
-# Perform neighbourhood clustering on the dataset using KNN and minibatchkmeans
-logger.info(f"Performing neighbourhood clustering with {network_type} network and {number_of_clusters} clusters...")
-neighbourhood_enrichment_matrix, consistent_global_labels, unique_cluster_labels = ms.networks.cluster_neighbourhoods(
-    domain_list,  # The domain dataset
-    label_name='Cell Type',  # The label to use for clustering
-    network_kwargs=dict(network_type=network_type, max_edge_distance=max_edge_distance, min_edge_distance=0),  # The network parameters
-    k_hops=khop,  # The number of hops to consider for the neighbourhood
-    neighbourhood_label_name=f'Neighbourhood ID {network_type}',  # Name for the neighbourhood label
-    cluster_method='minibatchkmeans',  # Clustering method
-    cluster_parameters={'n_clusters': number_of_clusters,'random_state':0},  # Parameters for the clustering method
-    neighbourhood_enrichment_as='log-fold' # Neighbourhood enrichment as log-fold
-)
-
-# Create a DataFrame from the neighbourhood enrichment matrix
-df_ME_id = pd.DataFrame(data=neighbourhood_enrichment_matrix, index=unique_cluster_labels, columns=consistent_global_labels)
-df_ME_id.index.name = f'Neighbourhood ID {network_type}'
-df_ME_id.columns.name = 'Cell Type ID'
-
-# Filter out sentinel values before computing range
-logger.info("Filtering out sentinel values from the neighbourhood enrichment matrix for visualization...")
-finite_vals = df_ME_id.values[np.isfinite(df_ME_id.values) & (np.abs(df_ME_id.values) < 1e300)]
-vmin = np.floor(finite_vals.min())
-vmax = np.ceil(finite_vals.max())
-df_plot = df_ME_id.clip(lower=vmin, upper=vmax)
-logger.info(f"Neighbourhood enrichment matrix value range before filtering: min={finite_vals.min()}, max={finite_vals.max()}")
-
-# plotting vmax and vimin for the clustermap
-plot_vmin = -5
-plot_vmax = 5
-
-logger.info(f"Neighbourhood enrichment matrix value range after filtering: vmin={vmin}, vmax={vmax}")
-df_plot.to_csv(data_dir / f"{network_type}_{number_of_clusters}_clusters_neighbourhood_enrichment.csv")
-
-# Visualize the neighbourhood enrichment matrix using a clustermap
-logger.info("Visualizing the neighbourhood enrichment matrix using a clustermap...")
-sns.clustermap(
-    df_plot,
-    xticklabels=consistent_global_labels,
-    yticklabels=unique_cluster_labels,
-    figsize=(8, 8),
-    cmap='RdBu_r',
-    dendrogram_ratio=(.05, .3),
-    col_cluster=True,
-    row_cluster=True,
-    square=True,
-    linewidths=0.5,
-    linecolor='black',
-    cbar_kws=dict(use_gridspec=False, location="top", label=f'Neighbourhood enrichment (log-fold) - khop {khop}', ticks=[plot_vmin, 0, plot_vmax]),
-    cbar_pos=(0.12, 0.85, 0.72, 0.06),
-    vmin=plot_vmin,
-    vmax=plot_vmax,
-    tree_kws={'linewidths': 1, 'color': 'black'}
-)
-#plt.suptitle(f"{network_type.capitalize()} Neighbourhood Enrichment Clustering, {number_of_clusters} clusters)", #fontsize=10)
-plt.savefig(plots_dir / f"{network_type}_{number_of_clusters}_clusters_neighbourhood_heatmap.pdf", bbox_inches='tight')
-plt.close()
-
-
-for domain in domain_list:
-    # Recolor the domain with the new neighbourhood labels
-    label_name = f"Neighbourhood ID {network_type}"
-
-    unique_labels = np.unique(domain.labels[f"Neighbourhood ID {network_type}"]["labels"])
-
-    color_map = dict(zip(unique_labels, nb_colors[:len(unique_labels)]))
-
-    domain.update_colors(
-        nb_colors, colors_to_update="labels", label_name=f"Neighbourhood ID {network_type}"
+for number_of_clusters in number_of_clusters_list:
+    # Perform neighbourhood clustering on the dataset using KNN and minibatchkmeans
+    logger.info(f"Performing neighbourhood clustering with {network_type} network and {number_of_clusters} clusters...")
+    neighbourhood_enrichment_matrix, consistent_global_labels, unique_cluster_labels = ms.networks.cluster_neighbourhoods(
+        domain_list,  # The domain dataset
+        label_name='Cell Type',  # The label to use for clustering
+        network_kwargs=dict(network_type=network_type, max_edge_distance=max_edge_distance, min_edge_distance=0),  # The network parameters
+        k_hops=khop,  # The number of hops to consider for the neighbourhood
+        neighbourhood_label_name=f'Neighbourhood ID {network_type}',  # Name for the neighbourhood label
+        cluster_method='minibatchkmeans',  # Clustering method
+        cluster_parameters={'n_clusters': number_of_clusters,'random_state':0},  # Parameters for the clustering method
+        neighbourhood_enrichment_as='log-fold' # Neighbourhood enrichment as log-fold
     )
-    
-    # Set domain name
-    domain_name = str(domain.name)
-    
-    # Visualize the domain with neighbourhood labels
-    logger.info(f"Visualizing domain {domain_name} with neighbourhood labels...")
-    ms.visualise.visualise(domain, color_by=f'Neighbourhood ID {network_type}', marker_size=0.5)
-    plt.suptitle(f"Domain Visualization with Neighbourhood Labels for {domain_name}")
-    plt.savefig(plots_dir / f"{domain_name}_{number_of_clusters}_neighbourhood_labels.pdf", bbox_inches='tight')
+
+    # Create a DataFrame from the neighbourhood enrichment matrix
+    df_ME_id = pd.DataFrame(data=neighbourhood_enrichment_matrix, index=unique_cluster_labels, columns=consistent_global_labels)
+    df_ME_id.index.name = f'Neighbourhood ID {network_type}'
+    df_ME_id.columns.name = 'Cell Type ID'
+
+    # Filter out sentinel values before computing range
+    logger.info("Filtering out sentinel values from the neighbourhood enrichment matrix for visualization...")
+    finite_vals = df_ME_id.values[np.isfinite(df_ME_id.values) & (np.abs(df_ME_id.values) < 1e300)]
+    vmin = np.floor(finite_vals.min())
+    vmax = np.ceil(finite_vals.max())
+    df_plot = df_ME_id.clip(lower=vmin, upper=vmax)
+    logger.info(f"Neighbourhood enrichment matrix value range before filtering: min={finite_vals.min()}, max={finite_vals.max()}")
+
+    # plotting vmax and vimin for the clustermap
+    plot_vmin = -5
+    plot_vmax = 5
+
+    logger.info(f"Neighbourhood enrichment matrix value range after filtering: vmin={vmin}, vmax={vmax}")
+    df_plot.to_csv(data_dir / f"{network_type}_{number_of_clusters}_clusters_neighbourhood_enrichment.csv")
+
+    # Visualize the neighbourhood enrichment matrix using a clustermap
+    logger.info("Visualizing the neighbourhood enrichment matrix using a clustermap...")
+    sns.clustermap(
+        df_plot,
+        xticklabels=consistent_global_labels,
+        yticklabels=unique_cluster_labels,
+        figsize=(8, 8),
+        cmap='RdBu_r',
+        dendrogram_ratio=(.05, .3),
+        col_cluster=True,
+        row_cluster=True,
+        square=True,
+        linewidths=0.5,
+        linecolor='black',
+        cbar_kws=dict(use_gridspec=False, location="top", label=f'Neighbourhood enrichment (log-fold) - khop {khop}', ticks=[plot_vmin, 0, plot_vmax]),
+        cbar_pos=(0.12, 0.85, 0.72, 0.06),
+        vmin=plot_vmin,
+        vmax=plot_vmax,
+        tree_kws={'linewidths': 1, 'color': 'black'}
+    )
+    #plt.suptitle(f"{network_type.capitalize()} Neighbourhood Enrichment Clustering, {number_of_clusters} clusters)", #fontsize=10)
+    plt.savefig(plots_dir / f"{network_type}_{number_of_clusters}_clusters_neighbourhood_heatmap.pdf", bbox_inches='tight')
     plt.close()
+
+
+    for domain in domain_list:
+        # Recolor the domain with the new neighbourhood labels
+        label_name = f"Neighbourhood ID {network_type}"
+
+        unique_labels = np.unique(domain.labels[f"Neighbourhood ID {network_type}"]["labels"])
+
+        color_map = dict(zip(unique_labels, nb_colors[:len(unique_labels)]))
+
+        domain.update_colors(
+            nb_colors, colors_to_update="labels", label_name=f"Neighbourhood ID {network_type}"
+        )
+        
+        # Set domain name
+        domain_name = str(domain.name)
+        
+        # Visualize the domain with neighbourhood labels
+        logger.info(f"Visualizing domain {domain_name} with neighbourhood labels...")
+        ms.visualise.visualise(domain, color_by=f'Neighbourhood ID {network_type}', marker_size=0.5)
+        plt.suptitle(f"Domain Visualization with Neighbourhood Labels for {domain_name}")
+        plt.savefig(plots_dir / f"{domain_name}_{number_of_clusters}_neighbourhood_labels.pdf", bbox_inches='tight')
+        plt.close()
