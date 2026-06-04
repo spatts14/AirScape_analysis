@@ -119,7 +119,7 @@ logger.info(f"Performing neighbourhood clustering with {network_type} network an
 neighbourhood_enrichment_matrix, consistent_global_labels, unique_cluster_labels = ms.networks.cluster_neighbourhoods(
     domain_list,  # The domain dataset
     label_name='Cell Type',  # The label to use for clustering
-    network_kwargs=dict(network_type=network_type, max_edge_distance=max_edge_distance, min_edge_distance=0, number_of_nearest_neighbours=10),  # The network parameters
+    network_kwargs=dict(network_type=network_type, max_edge_distance=max_edge_distance, min_edge_distance=0),  # The network parameters
     k_hops=1,  # The number of hops to consider for the neighbourhood
     neighbourhood_label_name=f'Neighbourhood ID {network_type}',  # Name for the neighbourhood label
     cluster_method='minibatchkmeans',  # Clustering method
@@ -178,7 +178,7 @@ for domain in domain_list:
     
     # Visualize the domain with neighbourhood labels
     logger.info(f"Visualizing domain {domain_name} with neighbourhood labels...")
-    ms.visualise.visualise(domain, color_by='Neighbourhood ID', marker_size=0.5)
+    ms.visualise.visualise(domain, color_by=f'Neighbourhood ID {network_type}', marker_size=0.5)
     plt.suptitle(f"Domain Visualization with Neighbourhood Labels for {domain_name}")
     plt.savefig(plots_dir / f"{domain_name}_{number_of_clusters}_neighbourhood_labels.pdf", bbox_inches='tight')
     plt.close()
