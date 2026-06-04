@@ -93,6 +93,7 @@ subset = "IPF"
 if subset is not None:
     plots_dir = plots_dir / subset
     plots_dir.mkdir(parents=True, exist_ok=True)
+    logger.info(f"Subset specified: {subset}. Plots will be saved to {plots_dir}")
 
 # Load the domain from file
 # Add domain to list
