@@ -1,4 +1,5 @@
 import gc
+import sys
 from pathlib import Path
 
 import matplotlib.pyplot as plt
@@ -6,6 +7,11 @@ import numpy as np
 import pandas as pd
 import seaborn as sns
 import muspan as ms
+
+sys.path.append(str(Path(__file__).resolve().parents[2]))
+
+from utils.setup_logger import setup_logger
+
 
 # Base project path
 base_path = Path(
@@ -23,6 +29,11 @@ plots_dir = outpath / "plots"
 # Create directories
 for path in [outpath, data_dir, plots_dir]:
     path.mkdir(parents=True, exist_ok=True)
+    
+# Set up logger
+logs_dir = Path(base_path) / "logs"
+logs_dir.mkdir(parents=True, exist_ok=True)
+logger = setup_logger(log_dir=logs_dir, log_name="muspan")
 
 # Define a color palette for the neighbourhood labels
 nb_colors = [
@@ -73,14 +84,15 @@ max_edge_distance = 30
 domain_list = []
 
 # domains stored in directory 
+logger.info(f"Loading domains from {input_dir}...")
 for path in input_dir.glob("*.muspan"):
     domain = ms.io.load_domain(str(path))
     domain_list.append(domain)
-    
+logger.info(f"Loaded {len(domain_list)} domains from {input_dir}")
 
-print(f"Loaded {len(domain_list)} domains from {input_dir}")
 
 # Perform neighbourhood clustering on the dataset using KNN and minibatchkmeans
+logger.info(f"Performing neighbourhood clustering with {network_type} network and {number_of_clusters} clusters...")
 neighbourhood_enrichment_matrix, consistent_global_labels, unique_cluster_labels = ms.networks.cluster_neighbourhoods(
     domain_list,  # The domain dataset
     label_name='Cell Type',  # The label to use for clustering
@@ -98,12 +110,14 @@ df_ME_id.index.name = f'Neighbourhood ID {network_type}'
 df_ME_id.columns.name = 'Cell Type ID'
 
 # Filter out sentinel values before computing range
+logger.info("Filtering out sentinel values from the neighbourhood enrichment matrix for visualization...")
 finite_vals = df_ME_id.values[np.isfinite(df_ME_id.values) & (np.abs(df_ME_id.values) < 1e300)]
 vmin = np.floor(finite_vals.min())
 vmax = np.ceil(finite_vals.max())
 df_plot = df_ME_id.clip(lower=vmin, upper=vmax)
 
 # Visualize the neighbourhood enrichment matrix using a clustermap
+logger.info("Visualizing the neighbourhood enrichment matrix using a clustermap...")
 sns.clustermap(
     df_plot,
     xticklabels=consistent_global_labels,
@@ -134,6 +148,7 @@ for domain in domain_list:
     )
     
     # Visualize the domain with neighbourhood labels
+    logger.info(f"Visualizing domain {domain.name} with neighbourhood labels...")
     ms.visualise.visualise(domain, color_by='Neighbourhood ID', marker_size=0.5)
     plt.suptitle(f"Domain Visualization with Neighbourhood Labels for {domain.name}")
     plt.savefig(plots_dir / f"{domain.name}_{number_of_clusters}_neighbourhood_labels.pdf", bbox_inches='tight')
