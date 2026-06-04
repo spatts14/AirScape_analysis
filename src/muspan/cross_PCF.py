@@ -56,7 +56,10 @@ def main():
     logs_dir.mkdir(parents=True, exist_ok=True)
     logger = setup_logger(log_dir=logs_dir, log_name="muspan")
 
-    celltypes = domain.get_label_values('Cell Type')
+    # Get unique cell types from the domain's labels
+    celltypes = np.unique(domain.labels["Cell Type"]["labels"])
+    
+    # Empty list to collect records for all cell type pairs
     records = []
 
     fig, axes = plt.subplots(len(celltypes), len(celltypes), figsize=(12, 12))
