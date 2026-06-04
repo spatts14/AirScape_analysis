@@ -40,9 +40,9 @@ for path in [outpath, data_dir, plots_dir]:
     path.mkdir(parents=True, exist_ok=True)
     
 # Set up logger
-logs_dir = Path(base_path) / "logs"
+logs_dir = Path(base_path) / "logs" / "muspan"
 logs_dir.mkdir(parents=True, exist_ok=True)
-logger = setup_logger(log_dir=logs_dir, log_name="muspan")
+logger = setup_logger(log_dir=logs_dir, log_name="nhood_cluster")
 
 # Define a color palette for the neighbourhood labels
 nb_colors = [
