@@ -69,11 +69,12 @@ number_of_clusters_list = [4, 6, 8, 10]
 khop = 1
 network_type = 'proximity'  # 'Delaunay' or 'proximity'
 max_edge_distance = 30
-subset = "IPF"
+subset = ["IPF", "PM08"]
+subset_safe_name = "_".join(subset)
 
 # If subset is specified, create a subdirectory for plots
 if subset is not None:
-    plots_dir = plots_dir / subset
+    plots_dir = plots_dir / subset_safe_name
     plots_dir.mkdir(parents=True, exist_ok=True)
     logger.info(f"Subset specified: {subset}. Plots will be saved to {plots_dir}")
 
@@ -87,8 +88,8 @@ for path in input_dir.glob("*.muspan"):
     if not path.is_file():
         logger.warning(f"Skipping {path.stem} as it is not a file.")
         continue
-    if subset is not None and subset not in path.stem:
-        logger.info(f"Skipping {path.stem} as it does not contain '{subset}' in the name.")
+    if subset is not None and not any(sub in path.stem for sub in subset):
+        logger.info(f"Skipping {path.stem} as it does not contain any of '{subset}' in the name.")
         continue
     logger.info(f"Loading {path.stem}...")
     domain = ms.io.load_domain(str(path))
