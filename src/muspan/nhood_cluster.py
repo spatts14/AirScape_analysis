@@ -14,13 +14,13 @@ from utils.setup_logger import setup_logger
 
 
 # Base project path
-# base_path = Path(
-#     "/rds/general/user/sep22/projects/phenotypingsputumasthmaticsaurorawellcomea1/live/Sara_Patti/009_ST_Xenium/"
-# )
-
 base_path = Path(
-    "/Volumes/phenotypingsputumasthmaticsaurorawellcomea1/live/Sara_Patti/009_ST_Xenium/"
+    "/rds/general/user/sep22/projects/phenotypingsputumasthmaticsaurorawellcomea1/live/Sara_Patti/009_ST_Xenium/"
 )
+
+# base_path = Path(
+#     "/Volumes/phenotypingsputumasthmaticsaurorawellcomea1/live/Sara_Patti/009_ST_Xenium/"
+# )
 
 # Input
 input_dir = base_path / "output" / "muspan" / "domains"
