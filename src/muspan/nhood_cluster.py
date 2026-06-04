@@ -92,6 +92,7 @@ subset = "IPF"
 # If subset is specified, create a subdirectory for plots
 if subset is not None:
     plots_dir = plots_dir / subset
+    plots_dir.mkdir(parents=True, exist_ok=True)
 
 # Load the domain from file
 # Add domain to list
@@ -101,12 +102,12 @@ domain_list = []
 logger.info(f"Loading domains from {input_dir}...")
 for path in input_dir.glob("*.muspan"):
     if not path.is_file():
-        logger.warning(f"Skipping {path} as it is not a file.")
+        logger.warning(f"Skipping {path.stem} as it is not a file.")
         continue
     if subset is not None and subset not in path.stem:
-        logger.info(f"Skipping {path} as it does not contain '{subset}' in the name.")
+        logger.info(f"Skipping {path.stem} as it does not contain '{subset}' in the name.")
         continue
-    logger.info(f"Loading {path}...")
+    logger.info(f"Loading {path.stem}...")
     domain = ms.io.load_domain(str(path))
     domain_list.append(domain)
 logger.info(f"Loaded {len(domain_list)} domains from {input_dir}")
