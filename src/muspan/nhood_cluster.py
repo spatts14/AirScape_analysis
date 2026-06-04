@@ -141,6 +141,9 @@ vmin = np.floor(finite_vals.min())
 vmax = np.ceil(finite_vals.max())
 df_plot = df_ME_id.clip(lower=vmin, upper=vmax)
 
+logger.info(f"Neighbourhood enrichment matrix value range after filtering: vmin={vmin}, vmax={vmax}")
+df_plot.to_csv(data_dir / f"{network_type}_{number_of_clusters}_clusters_neighbourhood_enrichment.csv")
+
 # Visualize the neighbourhood enrichment matrix using a clustermap
 logger.info("Visualizing the neighbourhood enrichment matrix using a clustermap...")
 sns.clustermap(
@@ -172,9 +175,12 @@ for domain in domain_list:
         nb_colors, colors_to_update="labels", label_name=f"Neighbourhood ID {network_type}"
     )
     
+    # Set domain name
+    domain_name = str(domain.name)
+    
     # Visualize the domain with neighbourhood labels
-    logger.info(f"Visualizing domain {domain.name} with neighbourhood labels...")
+    logger.info(f"Visualizing domain {domain_name} with neighbourhood labels...")
     ms.visualise.visualise(domain, color_by='Neighbourhood ID', marker_size=0.5)
-    plt.suptitle(f"Domain Visualization with Neighbourhood Labels for {domain.name}")
-    plt.savefig(plots_dir / f"{domain.name}_{number_of_clusters}_neighbourhood_labels.pdf", bbox_inches='tight')
+    plt.suptitle(f"Domain Visualization with Neighbourhood Labels for {domain_name}")
+    plt.savefig(plots_dir / f"{domain_name}_{number_of_clusters}_neighbourhood_labels.pdf", bbox_inches='tight')
     plt.close()
