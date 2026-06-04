@@ -14,8 +14,12 @@ from utils.setup_logger import setup_logger
 
 
 # Base project path
+# base_path = Path(
+#     "/rds/general/user/sep22/projects/phenotypingsputumasthmaticsaurorawellcomea1/live/Sara_Patti/009_ST_Xenium/"
+# )
+
 base_path = Path(
-    "/rds/general/user/sep22/projects/phenotypingsputumasthmaticsaurorawellcomea1/live/Sara_Patti/009_ST_Xenium/"
+    "/Volumes/phenotypingsputumasthmaticsaurorawellcomea1/live/Sara_Patti/009_ST_Xenium/"
 )
 
 # Input
@@ -78,6 +82,7 @@ nb_colors = [
 number_of_clusters = 8
 network_type = 'proximity'
 max_edge_distance = 30
+subset = "IPF"
 
 # Load the domain from file
 # Add domain to list
@@ -86,9 +91,24 @@ domain_list = []
 # domains stored in directory 
 logger.info(f"Loading domains from {input_dir}...")
 for path in input_dir.glob("*.muspan"):
+    if not path.is_file():
+        logger.warning(f"Skipping {path} as it is not a file.")
+        continue
+    if subset not in path.stem:
+        logger.info(f"Skipping {path} as it does not contain '{subset}' in the name.")
+        continue
     domain = ms.io.load_domain(str(path))
     domain_list.append(domain)
 logger.info(f"Loaded {len(domain_list)} domains from {input_dir}")
+
+
+# # Subset domain list to only domains with IPF in domain.name
+# domain_list = [domain for domain in domain_list if "IPF" in domain.name]
+# # List of domain names in domain_list
+# domain_names = [domain.name for domain in domain_list]
+
+# logger.info(f"Subsetted domain list to {len(domain_list)} domains containing 'IPF' in their name.")
+# logger.info(f"Domain names in subsetted list: {domain_names}")
 
 
 # Perform neighbourhood clustering on the dataset using KNN and minibatchkmeans
