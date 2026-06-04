@@ -130,7 +130,7 @@ plt.close()
 for domain in domain_list:
     # Recolor the domain with the new neighbourhood labels
     domain.update_colors(
-        nb_colors, colors_to_update="labels", label_name="Neighbourhood ID"
+        nb_colors, colors_to_update="labels", label_name=f"Neighbourhood ID {network_type}"
     )
     
     # Visualize the domain with neighbourhood labels
