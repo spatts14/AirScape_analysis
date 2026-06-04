@@ -67,7 +67,7 @@ nb_colors = [
 #number_of_clusters = 4
 number_of_clusters_list = [4, 6, 8, 10]
 khop = 1
-network_type = 'Delaunay'  # 'Delaunay' or 'proximity'
+network_type = 'proximity'  # 'Delaunay' or 'proximity'
 max_edge_distance = 30
 subset = "IPF"
 
@@ -182,5 +182,5 @@ for number_of_clusters in number_of_clusters_list:
         logger.info(f"Visualizing domain {domain_name} with neighbourhood labels...")
         ms.visualise.visualise(domain, color_by=f'Neighbourhood ID {network_type}', marker_size=0.25)
         plt.suptitle(f"Domain Visualization with Neighbourhood Labels for {domain_name}")
-        plt.savefig(plots_dir / f"{domain_name}_{number_of_clusters}_neighbourhood_labels.pdf", bbox_inches='tight')
+        plt.savefig(plots_dir / f"{network_type}_{domain_name}_{number_of_clusters}_neighbourhood_labels.pdf", bbox_inches='tight')
         plt.close()
