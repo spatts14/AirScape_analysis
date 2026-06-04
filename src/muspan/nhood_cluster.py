@@ -85,7 +85,7 @@ nb_colors = [
 
 # Define variables
 number_of_clusters = 8
-network_type = 'proximity'
+network_type = 'Delaunay'  # 'Delaunay' or 'proximity'
 max_edge_distance = 30
 subset = "IPF"
 
@@ -112,15 +112,6 @@ for path in input_dir.glob("*.muspan"):
     domain = ms.io.load_domain(str(path))
     domain_list.append(domain)
 logger.info(f"Loaded {len(domain_list)} domains from {input_dir}")
-
-
-# # Subset domain list to only domains with IPF in domain.name
-# domain_list = [domain for domain in domain_list if "IPF" in domain.name]
-# # List of domain names in domain_list
-# domain_names = [domain.name for domain in domain_list]
-
-# logger.info(f"Subsetted domain list to {len(domain_list)} domains containing 'IPF' in their name.")
-# logger.info(f"Domain names in subsetted list: {domain_names}")
 
 
 # Perform neighbourhood clustering on the dataset using KNN and minibatchkmeans
