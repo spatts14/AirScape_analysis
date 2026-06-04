@@ -65,6 +65,8 @@ nb_colors = [
 
 # Define variables
 number_of_clusters = 8
+network_type = 'proximity'
+max_edge_distance = 30
 
 # Load the domain from file
 # Add domain to list
@@ -82,9 +84,9 @@ print(f"Loaded {len(domain_list)} domains from {input_dir}")
 neighbourhood_enrichment_matrix, consistent_global_labels, unique_cluster_labels = ms.networks.cluster_neighbourhoods(
     domain_list,  # The domain dataset
     label_name='Cell Type',  # The label to use for clustering
-    network_kwargs=dict(network_type='delaunay', max_edge_distance=np.inf, min_edge_distance=0, number_of_nearest_neighbours=10),  # The network parameters
+    network_kwargs=dict(network_type=network_type, max_edge_distance=max_edge_distance, min_edge_distance=0, number_of_nearest_neighbours=10),  # The network parameters
     k_hops=1,  # The number of hops to consider for the neighbourhood
-    neighbourhood_label_name='Neighbourhood ID',  # Name for the neighbourhood label
+    neighbourhood_label_name=f'Neighbourhood ID {network_type}',  # Name for the neighbourhood label
     cluster_method='minibatchkmeans',  # Clustering method
     cluster_parameters={'n_clusters': number_of_clusters,'random_state':0},  # Parameters for the clustering method
     neighbourhood_enrichment_as='log-fold' # Neighbourhood enrichment as log-fold
@@ -92,7 +94,7 @@ neighbourhood_enrichment_matrix, consistent_global_labels, unique_cluster_labels
 
 # Create a DataFrame from the neighbourhood enrichment matrix
 df_ME_id = pd.DataFrame(data=neighbourhood_enrichment_matrix, index=unique_cluster_labels, columns=consistent_global_labels)
-df_ME_id.index.name = 'Neighbourhood ID'
+df_ME_id.index.name = f'Neighbourhood ID {network_type}'
 df_ME_id.columns.name = 'Cell Type ID'
 
 # Filter out sentinel values before computing range
@@ -120,8 +122,8 @@ sns.clustermap(
     vmax=2,
     tree_kws={'linewidths': 0, 'color': 'white'}
 )
-plt.suptitle(f"Neighbourhood Enrichment Clustering for {domain.name}")
-plt.savefig(plots_dir / f"num_clusters_{number_of_clusters}domain_list_neighbourhood_heatmap.pdf", bbox_inches='tight')
+plt.suptitle(f"{network_type.capitalize()} Neighbourhood Enrichment Clustering, {number_of_clusters} clusters)")
+plt.savefig(plots_dir / f"{network_type}_{number_of_clusters}_clusters_neighbourhood_heatmap.pdf", bbox_inches='tight')
 plt.close()
 
 
