@@ -41,11 +41,9 @@ def parse_args(args):
 
 def main():
     """Main function to calculate neighbourhood clusters."""
-    (
-        number_of_clusters,
-    ) = parse_args(
-        sys.argv[1:]
-    )  # parse command line arguments, excluding the script name
+    
+    # Parse command line arguments
+    number_of_clusters = parse_args(sys.argv[1:])
 
     # Base project path
     paths = [
