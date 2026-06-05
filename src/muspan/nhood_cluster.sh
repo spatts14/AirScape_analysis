@@ -19,6 +19,7 @@ source muspan/bin/activate
 # Run with error logging
 echo "Starting at $(date)"
 
-python src/muspan/nhood_cluster.py
+python src/muspan/nhood_cluster_parallel.py
+
 
 echo "Completed at $(date)"
