@@ -205,9 +205,12 @@ def main():
         # Set domain name
         domain_name = str(domain.name)
         
+        # Get cell centroids for plotting
+        qCells = ms.query.query(domain, ('Collection',), 'is', 'Cell centroids')
+        
         # Visualize the domain with neighbourhood labels
         logger.info(f"Visualizing domain {domain_name} with neighbourhood labels...")
-        ms.visualise.visualise(domain, color_by=f'Neighbourhood ID {network_type}', marker_size=0.25)
+        ms.visualise.visualise(domain, color_by=f'Neighbourhood ID {network_type}', marker_size=0.1, objects_to_plot=qCells)
         plt.suptitle(f"Domain Visualization with Neighbourhood Labels for {domain_name}", y=1.2)
         plt.savefig(plots_dir / f"{network_type}_{domain_name}_{number_of_clusters}_neighbourhood_labels.pdf", bbox_inches='tight')
         plt.close()
