@@ -65,9 +65,9 @@ nb_colors = [
 
 # Define variables
 #number_of_clusters = 4
-number_of_clusters_list = [4, 6, 8, 10]
+number_of_clusters_list = [6, 8, 10]
 khop = 1
-network_type = 'Delaunay'  # 'Delaunay' or 'proximity'
+network_type = 'proximity'  # 'Delaunay' or 'proximity'
 max_edge_distance = 30
 subset = ["IPF", "PM08"]
 subset_safe_name = "_".join(subset)
