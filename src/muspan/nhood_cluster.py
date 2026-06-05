@@ -171,7 +171,7 @@ def main():
         df_plot,
         xticklabels=consistent_global_labels,
         yticklabels=unique_cluster_labels,
-        figsize=(10, 6),
+        figsize=(10, 10),
         cmap='RdBu_r',
         dendrogram_ratio=(.05, .3),
         col_cluster=True,
