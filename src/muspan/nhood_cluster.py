@@ -127,9 +127,9 @@ def main():
     logger.info(f"Loaded {len(domain_list)} domains from {input_dir}")
 
     # Make cluster number of clusters
-    plots_dir = plots_dir / f"{number_of_clusters}_clusters"
-    plots_dir.mkdir(parents=True, exist_ok=True)
-    logger.info(f"Processing neighbourhood clustering with {number_of_clusters} clusters. Plots will be saved to {plots_dir}")
+    plots_dir_cluster = plots_dir / f"{number_of_clusters}_clusters"
+    plots_dir_cluster.mkdir(parents=True, exist_ok=True)
+    logger.info(f"Processing neighbourhood clustering with {number_of_clusters} clusters. Plots will be saved to {plots_dir_cluster}")
 
 
     # Perform neighbourhood clustering on the dataset using KNN and minibatchkmeans
@@ -187,7 +187,7 @@ def main():
         tree_kws={'linewidths': 1, 'color': 'black'}
     )
     plt.suptitle(f"{network_type.capitalize()} Neighbourhood Enrichment Clustering", fontsize=14, y=1.3)
-    plt.savefig(plots_dir / f"{network_type}_{number_of_clusters}_clusters_neighbourhood_heatmap.pdf", bbox_inches='tight')
+    plt.savefig(plots_dir_cluster / f"{network_type}_{number_of_clusters}_clusters_neighbourhood_heatmap.pdf", bbox_inches='tight')
     plt.close()
 
 
@@ -212,7 +212,7 @@ def main():
         logger.info(f"Visualizing domain {domain_name} with neighbourhood labels...")
         ms.visualise.visualise(domain, color_by=f'Neighbourhood ID {network_type}', marker_size=0.1, objects_to_plot=qCells)
         plt.suptitle(f"Domain Visualization with Neighbourhood Labels for {domain_name}", y=1.2)
-        plt.savefig(plots_dir / f"{network_type}_{domain_name}_{number_of_clusters}_neighbourhood_labels.pdf", bbox_inches='tight')
+        plt.savefig(plots_dir_cluster / f"{network_type}_{domain_name}_{number_of_clusters}_neighbourhood_labels.pdf", bbox_inches='tight')
         plt.close()
 
 if __name__ == "__main__":
