@@ -47,7 +47,7 @@ def main():
 
     outpath = base_path / "output" / "muspan" / "cross_PCF"
     data_dir = outpath / "data"
-    plots_dir = outpath / "plots"
+    plots_dir = outpath / domain_name / "plots"
 
     for path in [outpath, data_dir, plots_dir]:
         path.mkdir(parents=True, exist_ok=True)
@@ -84,7 +84,7 @@ def main():
             n_pts    = len(r_vals)
 
             records.append(pd.DataFrame({
-                'domain_name':        [domain_name] * n_pts,
+                'domain_name':[domain_name] * n_pts,
                 'celltype_i': [celltypes[i]] * n_pts,
                 'celltype_j': [celltypes[j]] * n_pts,
                 'r':          r_vals.astype('float32'),
@@ -93,27 +93,29 @@ def main():
                 'ci_high':    confidence_intervals[1].astype('float32'),
             }))
             
-            # Save the plot for this cell type pair
+            # Draw into your subplot axes object directly
             ax = axes[i, j]
-            ax.plot(r, PCF, label=f"{celltypes[i]} x {celltypes[j]}")
-            ax.fill_between(r, confidence_intervals[0], confidence_intervals[1], alpha=0.2)
-            ax.set_title(f"{celltypes[i]} × {celltypes[j]}")
-            ax.set_xlabel("Distance (r)")
-            ax.set_ylabel("PCF")
-            ax.legend()
-            plt.tight_layout()
-            plot_path = plots_dir / f"{domain_name}_cross_PCF_{celltypes[i]}_{celltypes[j]}.png"
-            plt.savefig(plot_path)
-            logger.info(f"[{domain_name}] Saved plot: {plot_path}")
+            ax.plot(r_vals, pcf_vals, lw=1)
+            ax.fill_between(r_vals, "ci_low", "ci_high", alpha=0.2)
+            ax.axhline(1, color='#6E8FAA', linestyle=':')
+            ax.set_title(f"{celltypes[i]} × {celltypes[j]}", fontsize=6)
+            ax.set_xlabel("r", fontsize=6)
+            ax.set_ylabel(f'$g_{{{celltypes[i]}{celltypes[j]}}}(r)$', fontsize=6)
+            ax.tick_params(labelsize=5)
+            
+    # Save plot 
+    plt.tight_layout()
+    fig.savefig(plots_dir / f"{celltypes[i]}_{celltypes[j]}_cross_PCF.png", dpi=150, bbox_inches='tight')
+    plt.close(fig)
+    logger.info(f"[{domain_name}] Saved figure.")
 
+    # Save data to CSV
     df = pd.concat(records, ignore_index=True)
     for col in ['domain_name', 'celltype_i', 'celltype_j']:
         df[col] = df[col].astype('category')
-    df.to_csv(data_dir / f"{domain_name}_cross_PCF.csv", index=False)
-    logger.info(f"[{domain_name}] Saved: {domain_name}_cross_PCF.csv")
+    df.to_parquet(data_dir / f"{domain_name}_cross_PCF.parquet", index=False)
+    logger.info(f"[{domain_name}] Saved Parquet: {domain_name}_cross_PCF.parquet")
 
-    # Clean up explicitly — important when running many workers
-    plt.close(fig)
     del domain, df, records
     gc.collect()
 
