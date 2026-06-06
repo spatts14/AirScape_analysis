@@ -214,6 +214,8 @@ def main():
         plt.suptitle(f"Domain Visualization with Neighbourhood Labels for {domain_name}", y=1.2)
         plt.savefig(plots_dir_cluster / f"{network_type}_{domain_name}_{number_of_clusters}_neighbourhood_labels.pdf", bbox_inches='tight')
         plt.close()
+        
+        logger.info(f"Finished processing domain {domain_name} with {number_of_clusters} clusters.")
 
 if __name__ == "__main__":
     main()
