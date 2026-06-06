@@ -62,7 +62,7 @@ def main():
 
     local_getis_ord_zscore, local_getis_ord_pvals, object_indices = ms.spatial_statistics.getis_ord(
         domain,
-        population=('Collection','Cell centres'),label_name='CD4',
+        population=('Collection','Cell centroids'),label_name='CD4',
         alpha=0.05,
         network_kwargs={'network_type':'Delaunay','min_edge_distance':0,'max_edge_distance':30},
         add_local_value_as_label=True,
@@ -71,10 +71,10 @@ def main():
 
     #visualise the Getis-Ord* statistics on the point objects
     fig,ax=plt.subplots(figsize=(20,16),nrows=2,ncols=2)
-    ms.visualise.visualise(domain,color_by='CD4',objects_to_plot=('Collection','Cell centres'),marker_size=5,ax=ax[0,0])
-    ms.visualise.visualise(domain,color_by="Local Getis Ord (cells)",objects_to_plot=('Collection','Cell centres'),marker_size=5,ax=ax[0,1])
-    ms.visualise.visualise(domain,color_by="Local Getis Ord (cells) : p-values (adj)",objects_to_plot=('Collection','Cell centres'),marker_size=5,ax=ax[1,0])
-    ms.visualise.visualise(domain,color_by="Local Getis Ord (cells) : significant",objects_to_plot=('Collection','Cell centres'),marker_size=5,ax=ax[1,1])
+    ms.visualise.visualise(domain,color_by='CD4',objects_to_plot=('Collection','Cell centroids'),marker_size=5,ax=ax[0,0])
+    ms.visualise.visualise(domain,color_by="Local Getis Ord (cells)",objects_to_plot=('Collection','Cell centroids'),marker_size=5,ax=ax[0,1])
+    ms.visualise.visualise(domain,color_by="Local Getis Ord (cells) : p-values (adj)",objects_to_plot=('Collection','Cell centroids'),marker_size=5,ax=ax[1,0])
+    ms.visualise.visualise(domain,color_by="Local Getis Ord (cells) : significant",objects_to_plot=('Collection','Cell centroids'),marker_size=5,ax=ax[1,1])
 
     gc.collect()
 
