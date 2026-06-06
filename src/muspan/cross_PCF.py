@@ -67,13 +67,14 @@ def main():
     for i in range(len(celltypes)):
         for j in range(len(celltypes)):
             logger.info(f"[{domain_name}] cross-PCF: {celltypes[i]} × {celltypes[j]}")
-            r, PCF = ms.spatial_statistics.cross_pair_correlation_function(
+            r, PCF, confidence_intervals = ms.spatial_statistics.cross_pair_correlation_function(
                 domain,
                 ('Cell Type', celltypes[i]),
                 ('Cell Type', celltypes[j]),
                 max_R=100,
                 annulus_step=10,
                 annulus_width=25,
+                return_confidence_interval=True,
             )
 
             r_vals   = r.values   if hasattr(r,   'values') else r
@@ -81,18 +82,20 @@ def main():
             n_pts    = len(r_vals)
 
             records.append(pd.DataFrame({
-                'ROI':        [domain_name] * n_pts,
+                'domain_name':        [domain_name] * n_pts,
                 'celltype_i': [celltypes[i]] * n_pts,
                 'celltype_j': [celltypes[j]] * n_pts,
                 'r':          r_vals.astype('float32'),
                 'PCF':        pcf_vals.astype('float32'),
+                'ci_low':     confidence_intervals[0].astype('float32'),
+                'ci_high':    confidence_intervals[1].astype('float32'),
             }))
 
     df = pd.concat(records, ignore_index=True)
-    for col in ['ROI', 'celltype_i', 'celltype_j']:
+    for col in ['domain_name', 'celltype_i', 'celltype_j']:
         df[col] = df[col].astype('category')
-    df.to_parquet(data_dir / f"{domain_name}_cross_PCF.parquet", index=False)
-    logger.info(f"[{domain_name}] Saved: {domain_name}_cross_PCF.parquet")
+    df.to_csv(data_dir / f"{domain_name}_cross_PCF.csv", index=False)
+    logger.info(f"[{domain_name}] Saved: {domain_name}_cross_PCF.csv")
 
     # Clean up explicitly — important when running many workers
     plt.close(fig)
