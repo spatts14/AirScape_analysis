@@ -75,8 +75,10 @@ def main():
                 annulus_step=10,
                 annulus_width=25,
                 return_confidence_interval=True,
+                visualise_output=True
             )
-
+            
+            # Extract values for DataFrame, handling both pandas Series and numpy arrays
             r_vals   = r.values   if hasattr(r,   'values') else r
             pcf_vals = PCF.values if hasattr(PCF, 'values') else PCF
             n_pts    = len(r_vals)
@@ -90,6 +92,19 @@ def main():
                 'ci_low':     confidence_intervals[0].astype('float32'),
                 'ci_high':    confidence_intervals[1].astype('float32'),
             }))
+            
+            # Save the plot for this cell type pair
+            ax = axes[i, j]
+            ax.plot(r, PCF, label=f"{celltypes[i]} x {celltypes[j]}")
+            ax.fill_between(r, confidence_intervals[0], confidence_intervals[1], alpha=0.2)
+            ax.set_title(f"{celltypes[i]} × {celltypes[j]}")
+            ax.set_xlabel("Distance (r)")
+            ax.set_ylabel("PCF")
+            ax.legend()
+            plt.tight_layout()
+            plot_path = plots_dir / f"{domain_name}_cross_PCF_{celltypes[i]}_{celltypes[j]}.png"
+            plt.savefig(plot_path)
+            logger.info(f"[{domain_name}] Saved plot: {plot_path}")
 
     df = pd.concat(records, ignore_index=True)
     for col in ['domain_name', 'celltype_i', 'celltype_j']:
