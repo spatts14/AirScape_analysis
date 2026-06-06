@@ -137,7 +137,7 @@ def main():
             
     # Save plots for all cell type pairs
     fig.tight_layout()
-    fig.savefig(f"all_pairs_{domain_name}.pdf", dpi=300)
+    fig.savefig(plots_dir / f"all_pairs_{domain_name}.pdf")
     plt.close(fig)
 
     # Save the combined dataframe for all cell type pairs
