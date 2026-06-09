@@ -77,7 +77,7 @@ def main():
                 ('Cell Type', celltypes[j]),
                 max_R=100,
                 annulus_step=10,
-                annulus_width=20,
+                annulus_width=10,
                 return_confidence_interval=True,
                 visualise_output=False
             )
