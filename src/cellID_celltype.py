@@ -6,7 +6,7 @@ from pathlib import Path
 
 import anndata as ad
 
-sys.path.append(str(Path(__file__).resolve().parents[2]))
+sys.path.append(str(Path(__file__).resolve().parents[1]))
 from utils.setup_logger import setup_logger
 
 wd = "/rds/general/user/sep22/home/Projects/AirScape_analysis/HPC_jobs/general/"
