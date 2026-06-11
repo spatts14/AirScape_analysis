@@ -29,9 +29,9 @@ adata = ad.read_zarr(input / "adata_with_metadata.zarr")
 
 # Extract cell ID and cluster labels
 logger.info("Extracting cell ID and cluster labels...")
-level_1_cell_id_to_type_df = adata.obs[["cell_id", "level 1"]].reset_index(drop=True)
-level_2_cell_id_to_type_df = adata.obs[["cell_id", "level 2"]].reset_index(drop=True)
-level_3_cell_id_to_type_df = adata.obs[["cell_id", "level 3"]].reset_index(drop=True)
+level_1_cell_id_to_type_df = adata.obs[["cell_id", "level_1"]].reset_index(drop=True)
+level_2_cell_id_to_type_df = adata.obs[["cell_id", "level_2"]].reset_index(drop=True)
+level_3_cell_id_to_type_df = adata.obs[["cell_id", "level_3"]].reset_index(drop=True)
 
 # Export to CSV
 logger.info("Exporting to CSV...")
