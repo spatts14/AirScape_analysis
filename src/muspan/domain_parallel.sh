@@ -19,6 +19,6 @@ source muspan/bin/activate
 # Run with error logging
 echo "Starting at $(date)"
 
-python src/muspan/domain_paraellel.py
+python src/muspan/domain_parallel.py
 
 echo "Completed at $(date)"
