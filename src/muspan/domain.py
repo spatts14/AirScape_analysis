@@ -54,7 +54,12 @@ def parse_args(args):
 
 
 def map_cell_types_to_domain(
-    cell_id_to_type_df, domain, cell_id, cluster_labels, logger
+    cell_id_to_type_df,
+    domain,
+    cell_id,
+    label_name="Cell Type",
+    cluster_labels=None,
+    logger=None,
 ):
     """Maps cell type (cluster) labels from an df to a domain object on cell ID.
 
@@ -68,6 +73,8 @@ def map_cell_types_to_domain(
             IDs.
         cluster_labels (str): The column name in `cell_id_to_type_df` that contains the
             cluster or cell type labels.
+        label_name (str): The name of the label to be added to the domain for cell types.
+            Default is "Cell Type".
         logger: A logging object for logging information and debugging.
 
     Returns:
@@ -115,7 +122,7 @@ def map_cell_types_to_domain(
     ]
 
     # Add cell_type label to the domain
-    domain.add_labels(label_name="Cell Type", labels=cell_types_ordered)
+    domain.add_labels(label_name=label_name, labels=cell_types_ordered)
 
     logger.info(f"Label keys in domain: {domain.labels.keys()}")
     logger.info(f"Length of cell_types_ordered: {len(cell_types_ordered)}")
@@ -242,9 +249,27 @@ def main():
 
     # Add cell type IDs to domain in label called "Cell Type"
     logger.info("Mapping cell types to domain based on cell_id to Cell Type")
+
+    # Map level 2
     domain = map_cell_types_to_domain(
-        cell_id_to_type_df, domain, cell_id, cluster_labels, logger
+        cell_id_to_type_df,
+        domain,
+        cell_id=cell_id,
+        cluster_labels="level 2",
+        label_name="Cell Type",
+        logger=logger,
     )
+
+    # Map level 1
+    domain = map_cell_types_to_domain(
+        cell_id_to_type_df,
+        domain,
+        cell_id=cell_id,
+        cluster_labels="level 1",
+        label_name="Cell Type level 1",
+        logger=logger,
+    )
+
     # Confirm cell type mapping was successful
     if "Cell Type" in domain.labels:
         logger.info("Cell Type label successfully added to domain")
