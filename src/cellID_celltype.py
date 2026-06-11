@@ -5,11 +5,6 @@ import warnings
 from pathlib import Path
 
 import anndata as ad
-import matplotlib.pyplot as plt
-import pandas as pd
-import scanpy as sc
-import seaborn as sns
-
 
 sys.path.append(str(Path(__file__).resolve().parents[2]))
 from utils.setup_logger import setup_logger
