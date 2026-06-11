@@ -1,5 +1,5 @@
 #!/bin/bash
-#PBS -l walltime=12:0:0
+#PBS -l walltime=01:0:0
 #PBS -l select=1:ncpus=64:mem=512gb
 #PBS -N create_domain_parallel
 #PBS -j oe
