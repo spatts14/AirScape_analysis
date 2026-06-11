@@ -214,11 +214,16 @@ def main():
     # Set variables
     transcripts_to_load = ["EPCAM", "VWF", "ACTA2", "16S"]
     cell_id = "cell_id"
-    cluster_labels = "level_2"
 
     # Load cell id and cell type dictionary
-    cell_id_to_type_df = pd.read_csv(
-        base_dir / "output/muspan/cell_id_to_cluster_labels.csv"
+    cell_id_to_type_df_level1 = pd.read_csv(
+        base_dir / "output/muspan/cell_id_to_cluster_labels_level1.csv"
+    )
+    cell_id_to_type_df_level2 = pd.read_csv(
+        base_dir / "output/muspan/cell_id_to_cluster_labels_level2.csv"
+    )
+    cell_id_to_type_df_level3 = pd.read_csv(
+        base_dir / "output/muspan/cell_id_to_cluster_labels_level3.csv"
     )
 
     # Make list of all paths to Xenium files
@@ -250,9 +255,21 @@ def main():
     # Add cell type IDs to domain in label called "Cell Type"
     logger.info("Mapping cell types to domain based on cell_id to Cell Type")
 
-    # Map level 2
+    # Map level 1
+    logger.info("Mapping level 1 to Cell Type level 1 label in domain")
     domain = map_cell_types_to_domain(
-        cell_id_to_type_df,
+        cell_id_to_type_df_level1,
+        domain,
+        cell_id=cell_id,
+        cluster_labels="level 1",
+        label_name="Cell Type level 1",
+        logger=logger,
+    )
+
+    # Map level 2
+    logger.info("Mapping level 2 to Cell Type label in domain")
+    domain = map_cell_types_to_domain(
+        cell_id_to_type_df_level2,
         domain,
         cell_id=cell_id,
         cluster_labels="level 2",
@@ -260,13 +277,14 @@ def main():
         logger=logger,
     )
 
-    # Map level 1
+    # Map level 3
+    logger.info("Mapping level 3 to Cell Type level 3 label in domain")
     domain = map_cell_types_to_domain(
-        cell_id_to_type_df,
+        cell_id_to_type_df_level3,
         domain,
         cell_id=cell_id,
-        cluster_labels="level 1",
-        label_name="Cell Type level 1",
+        cluster_labels="level 3",
+        label_name="Cell Type level 3",
         logger=logger,
     )
 
