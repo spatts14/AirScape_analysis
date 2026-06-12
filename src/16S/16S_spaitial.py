@@ -1,13 +1,8 @@
-import gc
-import argparse
-import sys
 from pathlib import Path
 
 import matplotlib.pyplot as plt
-import numpy as np
-import pandas as pd
-import muspan as ms
 
+import muspan as ms
 
 input_path = Path(
     "/Volumes/phenotypingsputumasthmaticsaurorawellcomea1/live/Sara_Patti/009_ST_Xenium/output/muspan"
