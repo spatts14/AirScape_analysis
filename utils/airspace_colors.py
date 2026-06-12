@@ -63,6 +63,14 @@ smoking_status_palette = {
     "UNKNOWN":        "#8A8A85",  # neutral grey
 }
 
+level_1_palette = {
+    "Airway epithelial cells":  "#A8C5A0",
+    "Alveolar epithelial cells": "#7A6EA8",
+    "Immune cells": "#B8A06E",
+    "Stromal cells": "#89C4B0",
+    "Endothelial cells": "#A05A4A",
+}
+
 level_2_palette= {
     # Epithelial
     "Ciliated cells":             "#5B8FA8",
