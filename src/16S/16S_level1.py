@@ -64,8 +64,10 @@ fig_height = n_celltypes * y_spacing + y_margin
 
 fig, ax = plt.subplots(figsize=(fig_width, fig_height))
 
-vmin = stats["mean_expr"].min()
-vmax = stats["mean_expr"].max()
+# vmin = stats["mean_expr"].min()
+# vmax = stats["mean_expr"].max()
+vmin = -0.2
+vmax = 0.2
 norm = mcolors.Normalize(vmin=vmin, vmax=vmax)
 
 max_size = 600
