@@ -64,11 +64,12 @@ smoking_status_palette = {
 }
 
 level_1_palette = {
-    "Airway epithelial cells":  "#A8C5A0",
+    "Airway epithelial cells":  "#7E9478",
     "Alveolar epithelial cells": "#7A6EA8",
-    "Immune cells": "#B8A06E",
-    "Stromal cells": "#89C4B0",
+    "Immune cells": "#B8964E",
+    "Stromal cells": "#89B9C4",
     "Endothelial cells": "#A05A4A",
+    "Unknown": "#828383",
 }
 
 level_2_palette= {

@@ -211,6 +211,14 @@ def main():
         "Unknown": "#A0A0A0",
     }
 
+    level_1_palette = {
+        "Airway epithelial cells": "#A8C5A0",
+        "Alveolar epithelial cells": "#7A6EA8",
+        "Immune cells": "#B8A06E",
+        "Stromal cells": "#89C4B0",
+        "Endothelial cells": "#A05A4A",
+    }
+
     # Set variables
     transcripts_to_load = ["EPCAM", "VWF", "ACTA2", "16S"]
     cell_id = "cell_id"
@@ -266,6 +274,16 @@ def main():
         logger=logger,
     )
 
+    # Confirm cell type mapping was successful
+    if "Cell Type level 1" in domain.labels:
+        logger.info("Cell Type level 1 label successfully added to domain")
+    else:
+        logger.warning("Cell Type level 1 label not found in domain after mapping")
+
+    # Show the unique cell types that were mapped
+    unique_cell_types = set(domain.labels["Cell Type level 1"]["labels"])
+    logger.info(f"Unique cell types mapped to domain: {unique_cell_types}")
+
     # Map level 2
     logger.info("Mapping level 2 to Cell Type label in domain")
     domain = map_cell_types_to_domain(
@@ -274,17 +292,6 @@ def main():
         cell_id=cell_id,
         cluster_labels="level_2",
         label_name="Cell Type",
-        logger=logger,
-    )
-
-    # Map level 3
-    logger.info("Mapping level 3 to Cell Type level 3 label in domain")
-    domain = map_cell_types_to_domain(
-        cell_id_to_type_df_level3,
-        domain,
-        cell_id=cell_id,
-        cluster_labels="level_3",
-        label_name="Cell Type level 3",
         logger=logger,
     )
 
@@ -297,6 +304,17 @@ def main():
     # Show the unique cell types that were mapped
     unique_cell_types = set(domain.labels["Cell Type"]["labels"])
     logger.info(f"Unique cell types mapped to domain: {unique_cell_types}")
+
+    # Map level 3
+    logger.info("Mapping level 3 to Cell Type level 3 label in domain")
+    domain = map_cell_types_to_domain(
+        cell_id_to_type_df_level3,
+        domain,
+        cell_id=cell_id,
+        cluster_labels="level_3",
+        label_name="Cell Type level 3",
+        logger=logger,
+    )
 
     # Convert cell boundaries to cell centers (centroids)
     logger.info("Convert cell boundaries to cell centers (centroids)")
@@ -316,6 +334,10 @@ def main():
     # Update colors
     domain.update_colors(
         level_2_palette, colors_to_update="labels", label_name="Cell Type"
+    )
+
+    domain.update_colors(
+        level_1_palette, colors_to_update="labels", label_name="Cell Type level 1"
     )
 
     # Visualize Cell Types
