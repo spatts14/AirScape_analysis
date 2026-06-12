@@ -261,7 +261,7 @@ def main():
         cell_id_to_type_df_level1,
         domain,
         cell_id=cell_id,
-        cluster_labels="level 1",
+        cluster_labels="level_1",
         label_name="Cell Type level 1",
         logger=logger,
     )
@@ -272,7 +272,7 @@ def main():
         cell_id_to_type_df_level2,
         domain,
         cell_id=cell_id,
-        cluster_labels="level 2",
+        cluster_labels="level_2",
         label_name="Cell Type",
         logger=logger,
     )
@@ -283,7 +283,7 @@ def main():
         cell_id_to_type_df_level3,
         domain,
         cell_id=cell_id,
-        cluster_labels="level 3",
+        cluster_labels="level_3",
         label_name="Cell Type level 3",
         logger=logger,
     )
