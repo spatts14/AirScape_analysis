@@ -1,3 +1,5 @@
+"""Plot 16S transcripts in the spatial context of the tissue."""
+
 from pathlib import Path
 
 import matplotlib.pyplot as plt
