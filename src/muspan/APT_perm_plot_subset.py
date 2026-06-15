@@ -13,6 +13,16 @@ from scipy.stats import mannwhitneyu
 sys.path.append(str(Path(__file__).resolve().parents[2]))
 from utils.airspace_colors import diagnosis_palette
 
+ROI_ALIASES = {
+    "IPF_RBH_15_OG": "IPF_RBH_15",
+    "IPF_RBH_15_CORRECT": "IPF_RBH_15",
+}
+
+
+def corrected_roi_for_meta(roi_name: str) -> str:
+    """Map known ROI aliases to the corrected metadata key."""
+    return ROI_ALIASES.get(roi_name, roi_name)
+
 
 # Define functions
 def load_adjacency_p_values(input_dir: Path):
@@ -67,7 +77,7 @@ def make_APT_celltype_dict(ROI_APT_dict, cell_type_list):
 
 
 def make_clustermap(
-    cell_type, celltype_dict, meta, meta_cols, cmap="vlag", fig_path=None
+    cell_type, celltype_dict, meta, meta_cols, cmap="vlag", palette=None, fig_path=None
 ):
     """Make clustermap of APT scores for a given cell type.
 
@@ -77,6 +87,7 @@ def make_clustermap(
         meta (pd.DataFrame): Metadata dataframe with ROI information
         meta_cols (list): List of metadata columns to include in annotations
         cmap (str): Colormap for heatmap
+        palette (dictionary): Dictionary of colors for annotation
         fig_path (Path): Path to save figure
 
     Returns:
@@ -94,7 +105,13 @@ def make_clustermap(
         if col not in meta.columns:
             raise ValueError(f"Missing metadata column: {col}")
 
-    meta_subset = meta.loc[heatmap_df.columns, meta_cols]
+    meta_lookup = meta.copy()
+    meta_lookup["_roi_meta_key"] = meta_lookup.index.map(corrected_roi_for_meta)
+    meta_lookup = meta_lookup.set_index("_roi_meta_key")
+
+    roi_lookup = [corrected_roi_for_meta(col) for col in heatmap_df.columns]
+    meta_subset = meta_lookup.loc[roi_lookup, meta_cols].copy()
+    meta_subset.index = heatmap_df.columns
 
     # Build color annotations + store palettes
     col_colors = pd.DataFrame(index=heatmap_df.columns)
@@ -107,8 +124,10 @@ def make_clustermap(
         # Number of unique values
         length = len(unique_vals)
 
-        palette = dict(zip(unique_vals, sns.color_palette("husl", length)))
+        if palette is None:
+            palette = dict(zip(unique_vals, sns.color_palette("husl", length)))
 
+        # Store palette and map colors
         palettes[col] = palette
         col_colors[col] = meta_subset[col].map(palette)
 
@@ -118,7 +137,7 @@ def make_clustermap(
         cmap=cmap,
         center=0,
         linewidths=0.5,
-        figsize=(12, 8),
+        figsize=(15, 8),
         col_colors=col_colors,
         row_cluster=True,
         col_cluster=False,
@@ -231,7 +250,13 @@ for celltype_1 in all_cell_types_list:
     heatmap_df = celltype_df.apply(pd.to_numeric, errors="coerce").fillna(0)
 
     # Metadata aligned to heatmap columns
-    meta_subset = meta.loc[heatmap_df.columns, meta_column]
+    meta_subset = meta.copy()
+    meta_subset["_roi_meta_key"] = meta_subset.index.map(corrected_roi_for_meta)
+    meta_subset = meta_subset.set_index("_roi_meta_key")
+    meta_subset = meta_subset.loc[
+        [corrected_roi_for_meta(col) for col in heatmap_df.columns], meta_column
+    ]
+    meta_subset.index = heatmap_df.columns
 
     # Order samples by diagnosis
     ordered_columns = (
@@ -345,8 +370,11 @@ for celltype_1 in all_cell_types_list:
             value_name="SES (p-val nonfiltered)",
         )
 
+        plot_df["ROI_meta_key"] = plot_df["ROI"].map(corrected_roi_for_meta)
+
         # # Add condition column by extracting from ROI name
-        plot_df = plot_df.merge(meta, left_on="ROI", right_index=True)
+        plot_df = plot_df.merge(meta, left_on="ROI_meta_key", right_index=True)
+        plot_df = plot_df.drop(columns=["ROI_meta_key"])
 
         # Drop NaN values before plotting
         plot_df = plot_df.dropna(subset=["SES (p-val nonfiltered)"])
@@ -415,7 +443,7 @@ for celltype_1 in all_cell_types_list:
             )
             ax.text(
                 0.5,
-                0.971,
+                0.96,
                 "*",
                 ha="center",
                 va="bottom",

@@ -2,11 +2,12 @@
 
 import multiprocessing
 import os
-from pathlib import Path
+
 
 def ExecuteProcess(command):
     """Execute a command in the terminal."""
     os.system(command)
+
 
 number_of_clusters_list = [14, 16, 18, 20]
 
