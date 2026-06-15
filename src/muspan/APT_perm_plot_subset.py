@@ -120,7 +120,7 @@ def make_clustermap(
         yticklabels=True,
     )
 
-    g.figure.suptitle(f"{cell_type} - APT SES (p-val filtered)", y=1.02)
+    g.figure.suptitle(f"{cell_type} - APT SES (p-val nonfiltered)", y=1.02)
 
     # Build legend (outside plot)
     legend_handles = []
@@ -139,7 +139,7 @@ def make_clustermap(
 
     # Save figure
     plt.savefig(
-        fig_path / f"{safe_cell_type}_APT_SES_p_val_filtered.pdf",
+        fig_path / f"{safe_cell_type}_APT_SES_p_val_nonfiltered.pdf",
         bbox_inches="tight",
     )
     plt.close()
@@ -265,11 +265,11 @@ for celltype_1 in all_cell_types_list:
         col_cluster=False,
     )
 
-    g.figure.suptitle(f"{celltype_1} - APT SES (p-val filtered)", y=0.85)
+    g.figure.suptitle(f"{celltype_1} - APT SES (p-val nonfiltered)", y=0.85)
 
     # Set cbar label and move it to the right of the plot
     g.ax_cbar.set_position([-0.07, 0.2, 0.02, 0.6])  # [left, bottom, width, height]
-    g.ax_cbar.set_ylabel("SES (p-val filtered)", rotation=90, labelpad=-60)
+    g.ax_cbar.set_ylabel("SES (p-val nonfiltered)", rotation=90, labelpad=-60)
 
     # Legend
     legend_handles = [
@@ -287,7 +287,7 @@ for celltype_1 in all_cell_types_list:
     )
 
     plt.savefig(
-        fig_dir / f"{safe_cell_type_1}_APT_SES_p_val_filtered_heatmap.pdf",
+        fig_dir / f"{safe_cell_type_1}_APT_SES_p_val_nonfiltered_heatmap.pdf",
         bbox_inches="tight",
     )
     plt.close()
@@ -344,14 +344,14 @@ for celltype_1 in all_cell_types_list:
         plot_df = plot_df.melt(
             id_vars="ROI",
             var_name="Neighbor Cell Type",
-            value_name="SES (p-val filtered)",
+            value_name="SES (p-val nonfiltered)",
         )
 
         # # Add condition column by extracting from ROI name
         plot_df = plot_df.merge(meta, left_on="ROI", right_index=True)
 
         # Drop NaN values before plotting
-        plot_df = plot_df.dropna(subset=["SES (p-val filtered)"])
+        plot_df = plot_df.dropna(subset=["SES (p-val nonfiltered)"])
 
         # Set order of conditions for plotting if diagnosis column is present
         if meta_column in plot_df.columns:
@@ -367,7 +367,7 @@ for celltype_1 in all_cell_types_list:
         sns.stripplot(
             data=plot_df,
             x="Neighbor Cell Type",
-            y="SES (p-val filtered)",
+            y="SES (p-val nonfiltered)",
             hue=meta_column,
             dodge=True,
             alpha=1,
@@ -378,7 +378,7 @@ for celltype_1 in all_cell_types_list:
         sns.boxenplot(
             data=plot_df,
             x="Neighbor Cell Type",
-            y="SES (p-val filtered)",
+            y="SES (p-val nonfiltered)",
             hue=meta_column,
             dodge=True,
             alpha=0.5,
@@ -402,7 +402,7 @@ for celltype_1 in all_cell_types_list:
         ax.set_title(f"{celltype_1}\nstat={stat}, p={p_value:.3f}", fontsize=14)
         ax.set_xticklabels([""])
         ax.set_xlabel(cell_type_2, fontsize=14)
-        ax.set_ylabel("SES (p-val filtered)", fontsize=14)
+        ax.set_ylabel("SES (p-val nonfiltered)", fontsize=14)
 
         # Add significance annotation if p-value is below alpha level
         if p_value < alpha_level:
