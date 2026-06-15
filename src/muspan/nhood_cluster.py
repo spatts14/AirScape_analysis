@@ -102,7 +102,7 @@ def main():
     khop = 1
     network_type = "proximity"  # 'Delaunay' or 'proximity'
     max_edge_distance = 30
-    subset = ["IPF", "PM08"]
+    subset = ["COPD"]
     subset_safe_name = "_".join(subset)
 
     # If subset is specified, create a subdirectory for plots
@@ -198,8 +198,10 @@ def main():
         f"Neighbourhood enrichment matrix value range after filtering:"
         f" min={vmin}, max={vmax}"
     )
+
+    data_output_dir = data_dir / subset_safe_name
     df_plot.to_csv(
-        data_dir
+        data_output_dir
         / f"{network_type}_{number_of_clusters}_clusters_neighbourhood_enrichment.csv"
     )
 
