@@ -50,7 +50,7 @@ def main():
     khop = 1
     network_type = "proximity"  # 'Delaunay' or 'proximity'
     max_edge_distance = 30
-    subset = ["COPD"]
+    subset = ["IPF", "PM08"]
     subset_safe_name = "v".join(subset)
 
     # Base project path
