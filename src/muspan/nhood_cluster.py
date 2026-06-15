@@ -46,6 +46,13 @@ def main():
     # Parse command line arguments
     number_of_clusters = parse_args(sys.argv[1:])
 
+    # Define variables
+    khop = 1
+    network_type = "Delaunay"  # 'Delaunay' or 'proximity'
+    max_edge_distance = 30
+    subset = ["COPD"]
+    subset_safe_name = "v".join(subset)
+
     # Base project path
     paths = [
         Path(
@@ -68,8 +75,8 @@ def main():
 
     # Output directories
     outpath = base_path / "output" / "muspan" / "nb_clustering"
-    data_dir = outpath / "data"
-    plots_dir = outpath / "plots"
+    data_dir = outpath / "data" / network_type
+    plots_dir = outpath / "plots" / network_type
 
     # Create directories
     for path in [outpath, data_dir, plots_dir]:
@@ -99,13 +106,6 @@ def main():
         "#C4956A",
         "#A0A0A0",
     ]
-
-    # Define variables
-    khop = 1
-    network_type = "Delaunay"  # 'Delaunay' or 'proximity'
-    max_edge_distance = 30
-    subset = ["COPD"]
-    subset_safe_name = "_".join(subset)
 
     # If subset is specified, create a subdirectory for plots
     if subset is not None:
