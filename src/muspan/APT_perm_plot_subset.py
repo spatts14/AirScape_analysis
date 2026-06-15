@@ -151,7 +151,13 @@ base_path = Path(
 )
 
 # Input
-input_dir = base_path / "output" / "muspan" / "adjacency_permutation_test_results"
+input_dir = (
+    base_path
+    / "output"
+    / "muspan"
+    / "adjacency_permutation_test_results"
+    / "nonfiltered"
+)
 
 # Output directories
 outpath = base_path / "output" / "muspan" / "APT_plots"
@@ -209,8 +215,8 @@ for cell_type in cell_type_list:
     celltype_dict[cell_type] = celltype_dict[cell_type].drop(
         columns=[col for col in celltype_dict[cell_type].columns if "COPD" in col]
         + [col for col in celltype_dict[cell_type].columns if "MICA" in col]
-        + [col for col in celltype_dict[cell_type].columns if "PM08_159" in col] +
-        [col for col in celltype_dict[cell_type].columns if "IPF_15" in col]
+        + [col for col in celltype_dict[cell_type].columns if "PM08_159" in col]
+        + [col for col in celltype_dict[cell_type].columns if "IPF_15" in col]
     )
 
 # Get all cell types for plotting barplots
