@@ -48,7 +48,7 @@ def main():
 
     # Define variables
     khop = 1
-    network_type = "Delaunay"  # 'Delaunay' or 'proximity'
+    network_type = "proximity"  # 'Delaunay' or 'proximity'
     max_edge_distance = 30
     subset = ["COPD"]
     subset_safe_name = "v".join(subset)
