@@ -28,8 +28,10 @@ def load_adjacency_p_values(input_dir: Path):
     """
     results = {}
 
-    for file in sorted(input_dir.glob("adjacency_permutation_test_p_values_*.csv")):
-        roi = file.stem.removeprefix("adjacency_permutation_test_p_values_")
+    for file in sorted(
+        input_dir.glob("nonfiltered_adjacency_permutation_test_p_values_*.csv")
+    ):
+        roi = file.stem.removeprefix("nonfiltered_adjacency_permutation_test_p_values_")
         df = pd.read_csv(file, index_col=0)
 
         results[roi] = df
@@ -268,7 +270,7 @@ for col in metadata_cols:
 
         plt.tight_layout()
         plt.savefig(
-            celltype_dir / f"{safe_cell_type}_APT_SES_p_val_nonfiltered.pdf",
+            celltype_dir / f"{safe_cell_type}_APT_SES_p_val_filtered.pdf",
             bbox_inches="tight",
         )
 
