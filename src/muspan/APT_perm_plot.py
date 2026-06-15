@@ -1,12 +1,16 @@
 """Generate plots for APT permutation results."""
 
 import gc
+import sys
 from pathlib import Path
 
 import matplotlib.pyplot as plt
 import pandas as pd
 import seaborn as sns
 from matplotlib.patches import Patch
+
+# sys.path.append(str(Path(__file__).resolve().parent.parent))
+# from utils.airspace_colors import diagnosis_palette
 
 
 # Define functions
@@ -124,7 +128,13 @@ base_path = Path(
 )
 
 # Input
-input_dir = base_path / "output" / "muspan" / "adjacency_permutation_test_results"
+input_dir = (
+    base_path
+    / "output"
+    / "muspan"
+    / "adjacency_permutation_test_results"
+    / "nonfiltered"
+)
 
 # Output directories
 outpath = base_path / "output" / "muspan" / "APT_plots"
@@ -137,13 +147,6 @@ for path in [outpath, heatmap_path, barplot_path_zscore]:
 
 # Plot heatmap of z-scores for each condition
 cmap_rnb = sns.color_palette("vlag", as_cmap=True)
-diagnosis_palette = {
-    "IPF": "#6A7FB5",  # slate blue
-    "LUNG_CANCER": "#B07D4A",  # warm tan
-    "COPD": "#7EB0B8",  # dusty teal
-    "HEALTHY": "#8EA882",  # sage
-    "NO_CRD": "#A67B8A",  # muted rose
-}
 
 # Load metadata
 meta = pd.read_csv(
