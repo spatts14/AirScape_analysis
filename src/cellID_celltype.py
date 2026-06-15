@@ -19,7 +19,7 @@ logger.info("Setting base directory...")
 base_dir = Path(
     "/rds/general/user/sep22/projects/phenotypingsputumasthmaticsaurorawellcomea1/live/Sara_Patti/009_ST_Xenium/output/"
 )
-input = base_dir / "2026-03-27_analysis_run/adata_final_object"
+input = base_dir / "AIRSCAPE/adata_final_object"
 output = base_dir / "muspan"
 
 
