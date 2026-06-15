@@ -1,5 +1,6 @@
 """Generate plots for APT permutation results."""
 
+import sys
 from pathlib import Path
 
 import matplotlib.pyplot as plt
@@ -8,6 +9,9 @@ import pandas as pd
 import seaborn as sns
 from matplotlib.patches import Patch
 from scipy.stats import mannwhitneyu
+
+sys.path.append(str(Path(__file__).resolve().parents[2]))
+from utils.airspace_colors import diagnosis_palette
 
 
 # Define functions
@@ -61,7 +65,7 @@ def make_APT_celltype_dict(ROI_APT_dict, cell_type_list):
 
 
 def make_clustermap(
-    cell_type, celltype_dict, meta, meta_cols, cmap="vlag", fig_path=None
+    cell_type, celltype_dict, meta, meta_cols, cmap="vlag", palette=None, fig_path=None
 ):
     """Make clustermap of APT scores for a given cell type.
 
@@ -71,6 +75,7 @@ def make_clustermap(
         meta (pd.DataFrame): Metadata dataframe with ROI information
         meta_cols (list): List of metadata columns to include in annotations
         cmap (str): Colormap for heatmap
+        palette (dictionary): Dictionary of colors for annotation
         fig_path (Path): Path to save figure
 
     Returns:
@@ -88,7 +93,13 @@ def make_clustermap(
         if col not in meta.columns:
             raise ValueError(f"Missing metadata column: {col}")
 
-    meta_subset = meta.loc[heatmap_df.columns, meta_cols]
+    meta_lookup = meta.copy()
+    meta_lookup["_roi_meta_key"] = meta_lookup.index.map(corrected_roi_for_meta)
+    meta_lookup = meta_lookup.set_index("_roi_meta_key")
+
+    roi_lookup = [corrected_roi_for_meta(col) for col in heatmap_df.columns]
+    meta_subset = meta_lookup.loc[roi_lookup, meta_cols].copy()
+    meta_subset.index = heatmap_df.columns
 
     # Build color annotations + store palettes
     col_colors = pd.DataFrame(index=heatmap_df.columns)
@@ -101,8 +112,10 @@ def make_clustermap(
         # Number of unique values
         length = len(unique_vals)
 
-        palette = dict(zip(unique_vals, sns.color_palette("husl", length)))
+        if palette is None:
+            palette = dict(zip(unique_vals, sns.color_palette("husl", length)))
 
+        # Store palette and map colors
         palettes[col] = palette
         col_colors[col] = meta_subset[col].map(palette)
 
@@ -170,14 +183,7 @@ for path in [outpath, heatmap_path, barplot_path_zscore]:
 
 # Plot heatmap of z-scores for each condition
 cmap_rnb = sns.color_palette("vlag", as_cmap=True)
-set_palette = {
-    "IPF": "#6A7FB5",  # slate blue
-    "LUNG_CANCER": "#B07D4A",  # warm tan
-    "COPD": "#7EB0B8",  # dusty teal
-    "HEALTHY": "#8EA882",  # sage
-    "NO_CRD": "#A67B8A",  # muted rose
-}
-
+set_palette = diagnosis_palette
 
 # Set parameters for plotting
 meta_column = "diagnosis"

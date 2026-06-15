@@ -9,8 +9,19 @@ import pandas as pd
 import seaborn as sns
 from matplotlib.patches import Patch
 
-# sys.path.append(str(Path(__file__).resolve().parent.parent))
-# from utils.airspace_colors import diagnosis_palette
+sys.path.append(str(Path(__file__).resolve().parents[2]))
+from utils.airspace_colors import diagnosis_palette
+
+
+ROI_ALIASES = {
+    "IPF_RBH_15_OG": "IPF_RBH_15",
+    "IPF_RBH_15_CORRECT": "IPF_RBH_15",
+}
+
+
+def corrected_roi_for_meta(roi_name: str) -> str:
+    """Map known ROI aliases to the corrected metadata key."""
+    return ROI_ALIASES.get(roi_name, roi_name)
 
 
 # Define functions
@@ -40,7 +51,7 @@ def load_adjacency_p_values(input_dir: Path):
 
 
 def make_clustermap(
-    cell_type, celltype_dict, meta, meta_cols, cmap="vlag", fig_path=None
+    cell_type, celltype_dict, meta, meta_cols, cmap="vlag", palette=None, fig_path=None
 ):
     """Make clustermap of APT scores for a given cell type.
 
@@ -50,6 +61,7 @@ def make_clustermap(
         meta (pd.DataFrame): Metadata dataframe with ROI information
         meta_cols (list): List of metadata columns to include in annotations
         cmap (str): Colormap for heatmap
+        palette (dictionary): Dictionary of colors for annotation
         fig_path (Path): Path to save figure
 
     Returns:
@@ -67,7 +79,13 @@ def make_clustermap(
         if col not in meta.columns:
             raise ValueError(f"Missing metadata column: {col}")
 
-    meta_subset = meta.loc[heatmap_df.columns, meta_cols]
+    meta_lookup = meta.copy()
+    meta_lookup["_roi_meta_key"] = meta_lookup.index.map(corrected_roi_for_meta)
+    meta_lookup = meta_lookup.set_index("_roi_meta_key")
+
+    roi_lookup = [corrected_roi_for_meta(col) for col in heatmap_df.columns]
+    meta_subset = meta_lookup.loc[roi_lookup, meta_cols].copy()
+    meta_subset.index = heatmap_df.columns
 
     # Build color annotations + store palettes
     col_colors = pd.DataFrame(index=heatmap_df.columns)
@@ -80,8 +98,10 @@ def make_clustermap(
         # Number of unique values
         length = len(unique_vals)
 
-        palette = dict(zip(unique_vals, sns.color_palette("husl", length)))
+        if palette is None:
+            palette = dict(zip(unique_vals, sns.color_palette("husl", length)))
 
+        # Store palette and map colors
         palettes[col] = palette
         col_colors[col] = meta_subset[col].map(palette)
 
@@ -91,7 +111,7 @@ def make_clustermap(
         cmap=cmap,
         center=0,
         linewidths=0.5,
-        figsize=(12, 8),
+        figsize=(15, 8),
         col_colors=col_colors,
         row_cluster=True,
         col_cluster=False,
@@ -99,7 +119,7 @@ def make_clustermap(
         yticklabels=True,
     )
 
-    g.figure.suptitle(f"{cell_type} - APT SES (p-val filtered)", y=1.02)
+    g.figure.suptitle(f"{cell_type} - APT SES (p-val nonfiltered)", y=1.02)
 
     # Build legend (outside plot)
     legend_handles = []
@@ -118,7 +138,7 @@ def make_clustermap(
 
     # Save figure
     plt.savefig(
-        fig_path / f"{safe_cell_type}_APT_SES_p_val_filtered.pdf",
+        fig_path / f"{safe_cell_type}_APT_SES_p_val_nonfiltered.pdf",
         bbox_inches="tight",
     )
     plt.close()
@@ -189,7 +209,8 @@ for cell_type in cell_type_list:
         cell_type=cell_type,
         celltype_dict=celltype_dict,
         meta=meta,
-        meta_cols=["diagnosis"],
+        palette=diagnosis_palette,
+        meta_cols=["diagnosis"],  # color palettes for diagnosis set
         fig_path=heatmap_path,
     )
 
@@ -223,14 +244,26 @@ for col in metadata_cols:
             value_name="SES_p_val_nonfiltered",
         )
 
+        plot_df["ROI_meta_key"] = plot_df["ROI"].map(corrected_roi_for_meta)
+
         # # Add condition column by extracting from ROI name
-        plot_df = plot_df.merge(meta, left_on="ROI", right_index=True)
+        plot_df = plot_df.merge(meta, left_on="ROI_meta_key", right_index=True)
+        plot_df = plot_df.drop(columns=["ROI_meta_key"])
 
         # Drop NaN values before plotting
         plot_df = plot_df.dropna(subset=["SES_p_val_nonfiltered"])
 
+        # Set color palette for the hue based on the metadata column
+        if col == "diagnosis":
+            palette = diagnosis_palette
+        else:
+            unique_vals = plot_df[col].unique()
+            palette = dict(
+                zip(unique_vals, sns.color_palette("husl", len(unique_vals)))
+            )
+
         sns.set_style("white")
-        fig, ax = plt.subplots(figsize=(35, 6))
+        fig, ax = plt.subplots(figsize=(40, 6))
 
         sns.stripplot(
             data=plot_df,
@@ -238,7 +271,8 @@ for col in metadata_cols:
             y="SES_p_val_nonfiltered",
             hue=col,
             dodge=True,
-            alpha=0.5,
+            palette=palette,
+            alpha=1,
             ax=ax,
         )
 
@@ -248,6 +282,8 @@ for col in metadata_cols:
             y="SES_p_val_nonfiltered",
             hue=col,
             dodge=True,
+            palette=palette,
+            saturation=0.5,
             ax=ax,
         )
 
@@ -270,9 +306,12 @@ for col in metadata_cols:
 
         plt.tight_layout()
         plt.savefig(
-            celltype_dir / f"{safe_cell_type}_APT_SES_p_val_filtered.pdf",
+            celltype_dir / f"{safe_cell_type}_APT_SES_p_val_nonfiltered.pdf",
             bbox_inches="tight",
         )
+
+        # Close the plot to free memory
+        plt.close(fig)
 
 
 # Release memory
