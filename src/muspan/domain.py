@@ -220,7 +220,7 @@ def main():
     }
 
     # Set variables
-    transcripts_to_load = ["EPCAM", "VWF", "ACTA2", "16S"]
+    transcripts_to_load = ["KRT5", "VWF", "ACTA2", "16S"]
     cell_id = "cell_id"
 
     # Load cell id and cell type dictionary
