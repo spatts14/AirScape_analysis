@@ -1,5 +1,6 @@
 import argparse
 import gc
+import os
 import sys
 from pathlib import Path
 
@@ -199,7 +200,10 @@ def main():
         f" min={vmin}, max={vmax}"
     )
 
+    # Make sure the data output directory exists
     data_output_dir = data_dir / subset_safe_name
+    data_output_dir.mkdir(parents=True, exist_ok=True)
+
     df_plot.to_csv(
         data_output_dir
         / f"{network_type}_{number_of_clusters}_clusters_neighbourhood_enrichment.csv"
