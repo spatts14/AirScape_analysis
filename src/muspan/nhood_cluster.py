@@ -81,6 +81,7 @@ def main():
     logger = setup_logger(log_dir=logs_dir, log_name="nhood_cluster")
 
     # Define a color palette for the neighbourhood labels
+    cmap = sns.color_palette("coolwarm", as_cmap=True)
     nb_colors = [
         "#5B8FA8",
         "#4E7D5B",
@@ -216,7 +217,7 @@ def main():
         xticklabels=consistent_global_labels,
         yticklabels=unique_cluster_labels,
         figsize=(10, 10),
-        cmap="RdBu_r",
+        cmap=cmap,
         dendrogram_ratio=(0.05, 0.3),
         col_cluster=True,
         row_cluster=True,
