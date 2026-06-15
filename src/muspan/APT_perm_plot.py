@@ -218,14 +218,14 @@ for col in metadata_cols:
         plot_df = plot_df.melt(
             id_vars="ROI",
             var_name="Neighbor Cell Type",
-            value_name="SES_p_val_filtered",
+            value_name="SES_p_val_nonfiltered",
         )
 
         # # Add condition column by extracting from ROI name
         plot_df = plot_df.merge(meta, left_on="ROI", right_index=True)
 
         # Drop NaN values before plotting
-        plot_df = plot_df.dropna(subset=["SES_p_val_filtered"])
+        plot_df = plot_df.dropna(subset=["SES_p_val_nonfiltered"])
 
         sns.set_style("white")
         fig, ax = plt.subplots(figsize=(35, 6))
@@ -233,7 +233,7 @@ for col in metadata_cols:
         sns.stripplot(
             data=plot_df,
             x="Neighbor Cell Type",
-            y="SES_p_val_filtered",
+            y="SES_p_val_nonfiltered",
             hue=col,
             dodge=True,
             alpha=0.5,
@@ -243,7 +243,7 @@ for col in metadata_cols:
         sns.boxenplot(
             data=plot_df,
             x="Neighbor Cell Type",
-            y="SES_p_val_filtered",
+            y="SES_p_val_nonfiltered",
             hue=col,
             dodge=True,
             ax=ax,
@@ -262,13 +262,13 @@ for col in metadata_cols:
             borderaxespad=0,
         )
 
-        ax.set_title(f"{cell_type} - ADT SES (p-val filtered)")
-        ax.set_ylabel("SES (p-val filtered)")
+        ax.set_title(f"{cell_type} - ADT SES (p-val nonfiltered)")
+        ax.set_ylabel("SES (p-val nonfiltered)")
         ax.tick_params(axis="x", rotation=90)
 
         plt.tight_layout()
         plt.savefig(
-            celltype_dir / f"{safe_cell_type}_APT_SES_p_val_filtered.pdf",
+            celltype_dir / f"{safe_cell_type}_APT_SES_p_val_nonfiltered.pdf",
             bbox_inches="tight",
         )
 
