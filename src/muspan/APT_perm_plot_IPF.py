@@ -356,8 +356,6 @@ for celltype_1 in all_cell_types_list:
         group_1_data = group_1_data[~np.isnan(group_1_data)]
         group_2_data = group_2_data[~np.isnan(group_2_data)]
 
-        stat, p_value = mannwhitneyu(group_1_data, group_2_data)
-
         # Calculate statistics
         stat, p_value = mannwhitneyu(group_1_data, group_2_data)
 

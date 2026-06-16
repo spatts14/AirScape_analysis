@@ -7,11 +7,13 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import seaborn as sns
+import statsmodels.api as sm
+from igraph import palettes
 from matplotlib.patches import Patch
-from scipy.stats import mannwhitneyu
+from statsmodels.formula.api import mixed_lm
 
 sys.path.append(str(Path(__file__).resolve().parents[2]))
-from utils.airspace_colors import time_point_palette
+from utils.airspace_colors import time_treatment_arm_palette
 
 ROI_ALIASES = {
     "IPF_RBH_15_OG": "IPF_RBH_15",
@@ -195,14 +197,20 @@ for path in [outpath, heatmap_path, barplot_path_zscore]:
 
 # Plot heatmap of z-scores for each condition
 cmap = sns.color_palette("vlag", as_cmap=True)
+time_treatment_arm_palette_list = list(time_treatment_arm_palette.values())
 
 # Set parameters for plotting
-meta_column = "time_point_label"
+meta_column = "time_treatment_arm"
 
 # Desired diagnosis order
-meta_column_order = ["BASELINE", "6 WEEKS", "6 MONTHS"]
-condition_1 = "BASELINE"
-condition_2 = "6 MONTHS"
+meta_column_order = [
+    "BASELINE SHAM",
+    "BASELINE TREATMENT",
+    "6 WEEKS SHAM",
+    "6 WEEKS TREATMENT",
+    "6 MONTHS SHAM",
+    "6 MONTHS TREATMENT",
+]
 
 # Significance level for Mann-Whitney U test
 alpha_level = 0.05
@@ -217,8 +225,13 @@ meta = pd.read_csv(
     base_path / "data/meta/STx_meta_analysis_only_cleaned.csv", index_col=0
 )
 
-set_palette = time_point_palette
+# Add column for timepoint and treatment arm
+meta["time_treatment_arm"] = meta["time_point_label"] + " " + meta["treatment_arm"]
 
+# Set color palette for plots
+set_palette = time_treatment_arm_palette_list
+
+# Check the color key
 missing_palette_keys = [key for key in meta_column_order if key not in set_palette]
 if missing_palette_keys:
     raise ValueError(f"Missing palette keys: {missing_palette_keys}")
@@ -342,27 +355,20 @@ for celltype_1 in all_cell_types_list:
         # Make into dataframe
         df_groups = pd.DataFrame(celltype_df)
 
-        # Get both groups of data for Mann-Whitney U test
-        group_1_data = (
-            df_groups.loc[:, df_groups.columns.str.contains(condition_1)]
-            .to_numpy()
-            .ravel()
-        )
-        group_2_data = (
-            df_groups.loc[:, df_groups.columns.str.contains(condition_2)]
-            .to_numpy()
-            .ravel()
-        )
+        # Make group for each condition
+        conditions = meta["time_treatment_arm"].unique()
+        group_data = {}
+        for condition in conditions:
+            data = (
+                df_groups.loc[:, df_groups.columns.str.contains(condition)]
+                .to_numpy()
+                .ravel()
+                .astype(float)
+            )
 
-        group_1_data = group_1_data.astype(float)
-        group_2_data = group_2_data.astype(float)
+            group_data[condition] = data[~np.isnan(data)]
 
-        group_1_data = group_1_data[~np.isnan(group_1_data)]
-        group_2_data = group_2_data[~np.isnan(group_2_data)]
-
-        stat, p_value = mannwhitneyu(group_1_data, group_2_data)
-
-        # Calculate statistics
+        # Calculate statistics for the two conditions of interest
         stat, p_value = mannwhitneyu(group_1_data, group_2_data)
 
         # Transpose and melt the dataframe for plotting
