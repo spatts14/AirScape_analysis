@@ -4,13 +4,9 @@ import sys
 from pathlib import Path
 
 import matplotlib.pyplot as plt
-import numpy as np
 import pandas as pd
 import seaborn as sns
-import statsmodels.api as sm
-from igraph import palettes
 from matplotlib.patches import Patch
-from statsmodels.formula.api import mixedlm
 
 sys.path.append(str(Path(__file__).resolve().parents[2]))
 from utils.airspace_colors import time_treatment_arm_palette, treatment_arm_palette
