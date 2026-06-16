@@ -10,10 +10,10 @@ import seaborn as sns
 import statsmodels.api as sm
 from igraph import palettes
 from matplotlib.patches import Patch
-from statsmodels.formula.api import mixed_lm
+from statsmodels.formula.api import mixedlm
 
 sys.path.append(str(Path(__file__).resolve().parents[2]))
-from utils.airspace_colors import time_treatment_arm_palette
+from utils.airspace_colors import time_treatment_arm_palette, treatment_arm_palette
 
 ROI_ALIASES = {
     "IPF_RBH_15_OG": "IPF_RBH_15",
@@ -198,6 +198,7 @@ for path in [outpath, heatmap_path, barplot_path_zscore]:
 # Plot heatmap of z-scores for each condition
 cmap = sns.color_palette("vlag", as_cmap=True)
 time_treatment_arm_palette_list = list(time_treatment_arm_palette.values())
+treatment_arm_palette_list = list(treatment_arm_palette.values())
 
 # Set parameters for plotting
 meta_column = "time_treatment_arm"
@@ -229,7 +230,7 @@ meta = pd.read_csv(
 meta["time_treatment_arm"] = meta["time_point_label"] + " " + meta["treatment_arm"]
 
 # Set color palette for plots
-set_palette = time_treatment_arm_palette_list
+set_palette = time_treatment_arm_palette
 
 # Check the color key
 missing_palette_keys = [key for key in meta_column_order if key not in set_palette]
@@ -251,6 +252,7 @@ for cell_type in cell_type_list:
         columns=[col for col in celltype_dict[cell_type].columns if "IPF" in col]
         + [col for col in celltype_dict[cell_type].columns if "PM08" in col]
         + [col for col in celltype_dict[cell_type].columns if "MICA" in col]
+        + [col for col in celltype_dict[cell_type].columns if "COPD_R010_V2" in col]
     )
 
 # Get all cell types for plotting barplots
@@ -355,21 +357,21 @@ for celltype_1 in all_cell_types_list:
         # Make into dataframe
         df_groups = pd.DataFrame(celltype_df)
 
-        # Make group for each condition
-        conditions = meta["time_treatment_arm"].unique()
-        group_data = {}
-        for condition in conditions:
-            data = (
-                df_groups.loc[:, df_groups.columns.str.contains(condition)]
-                .to_numpy()
-                .ravel()
-                .astype(float)
-            )
+        # # Make group for each condition
+        # conditions = meta["time_treatment_arm"].unique()
+        # group_data = {}
+        # for condition in conditions:
+        #     data = (
+        #         df_groups.loc[:, df_groups.columns.str.contains(condition)]
+        #         .to_numpy()
+        #         .ravel()
+        #         .astype(float)
+        #     )
 
-            group_data[condition] = data[~np.isnan(data)]
+        #     group_data[condition] = data[~np.isnan(data)]
 
-        # Calculate statistics for the two conditions of interest
-        stat, p_value = mannwhitneyu(group_1_data, group_2_data)
+        # # Calculate statistics for the two conditions of interest
+        # stat, p_value = mannwhitneyu(group_1_data, group_2_data)
 
         # Transpose and melt the dataframe for plotting
         plot_df = celltype_df.transpose().reset_index().rename(columns={"index": "ROI"})
@@ -398,7 +400,7 @@ for celltype_1 in all_cell_types_list:
             )
 
         sns.set_style("white")
-        fig, ax = plt.subplots(figsize=(5, 6))
+        fig, ax = plt.subplots(figsize=(8, 6))
 
         sns.stripplot(
             data=plot_df,
@@ -407,6 +409,7 @@ for celltype_1 in all_cell_types_list:
             hue=meta_column,
             dodge=True,
             alpha=1,
+            linewidth=0.5,
             palette=set_palette,
             ax=ax,
         )
@@ -435,35 +438,62 @@ for celltype_1 in all_cell_types_list:
             borderaxespad=0,
         )
 
-        ax.set_title(f"{celltype_1}\nstat={stat}, p={p_value:.3f}", fontsize=14)
+        # ax.set_title(f"{celltype_1}\nstat={stat}, p={p_value:.3f}", fontsize=14)
+        ax.set_title(f"{celltype_1}", fontsize=14)
         ax.set_xticklabels([""])
         ax.set_xlabel(cell_type_2, fontsize=14)
         ax.set_ylabel("SES (p-val nonfiltered)", fontsize=14)
 
         # Add significance annotation if p-value is below alpha level
-        if p_value < alpha_level:
-            # add significance annotation
-            ax.annotate(
-                "",
-                xy=(0.25, 0.97),
-                xycoords="axes fraction",
-                xytext=(0.75, 0.97),
-                textcoords="axes fraction",
-                arrowprops=dict(arrowstyle="-", color="k", lw=1),
-            )
-            ax.text(
-                0.5,
-                0.96,
-                "*",
-                ha="center",
-                va="bottom",
-                transform=ax.transAxes,
-                color="k",
-            )
+        # if p_value < alpha_level:
+        #     # add significance annotation
+        #     ax.annotate(
+        #         "",
+        #         xy=(0.25, 0.97),
+        #         xycoords="axes fraction",
+        #         xytext=(0.75, 0.97),
+        #         textcoords="axes fraction",
+        #         arrowprops=dict(arrowstyle="-", color="k", lw=1),
+        #     )
+        #     ax.text(
+        #         0.5,
+        #         0.96,
+        #         "*",
+        #         ha="center",
+        #         va="bottom",
+        #         transform=ax.transAxes,
+        #         color="k",
+        #     )
 
         plt.tight_layout()
         plt.savefig(
             celltype_dir
             / f"{safe_cell_type_1}_{safe_cell_type_2}_{meta_column}_SES_p_val_filt.pdf"
+        )
+        plt.close()
+
+        # Set plot
+        sns.set_style("white")
+        fig, ax = plt.subplots(figsize=(6, 5))
+
+        ax.set_title(f"{celltype_1} vs {cell_type_2}", fontsize=14)
+        # Individual donor lines, colored by arm
+        sns.lineplot(
+            data=plot_df,
+            x="time_point_label",
+            y="SES (p-val nonfiltered)",
+            hue="treatment_arm",
+            units="sample_ID",
+            estimator=None,  # one line per donor, no aggregation
+            alpha=1,
+            linewidth=1.5,
+            palette=treatment_arm_palette_list,
+            ax=ax,
+        )
+
+        plt.tight_layout()
+        plt.savefig(
+            celltype_dir
+            / f"TREATMENT_SHAM_{safe_cell_type_1}_{safe_cell_type_2}_{meta_column}_SES_p_val.pdf"
         )
         plt.close()
