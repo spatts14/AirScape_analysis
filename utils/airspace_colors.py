@@ -63,6 +63,15 @@ smoking_status_palette = {
     "UNKNOWN":        "#8A8A85",  # neutral grey
 }
 
+time_treatment_arm_palette = {
+    "BASELINE SHAM":       "#6A7FB5",
+    "BASELINE TREATMENT":  "#B07D4A",
+    "6 WEEKS SHAM":        "#2A51B1",
+    "6 WEEKS TREATMENT":   "#AA6724",
+    "6 MONTHS SHAM":       "#0C286C",
+    "6 MONTHS TREATMENT":  "#86480A",
+}
+
 level_1_palette = {
     "Airway epithelial cells":  "#7E9478",
     "Alveolar epithelial cells": "#7A6EA8",
