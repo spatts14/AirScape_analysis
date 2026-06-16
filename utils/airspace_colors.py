@@ -34,9 +34,9 @@ treatment_arm_palette = {
 }
 
 time_point_palette = {
-    "baseline": "#4A6699",  # deeper blue
-    "6_weeks":  "#B07D4A",  # warm tan
-    "6_months": "#7EB0B8",  # dusty teal
+    "BASELINE": "#4A6699",  # deeper blue
+    "6 WEEKS":  "#B07D4A",  # warm tan
+    "6 MONTHS": "#7EB0B8",  # dusty teal
 }
 
 sex_palette = {
