@@ -50,7 +50,7 @@ def main():
     khop = 1
     network_type = "Delaunay"  # 'Delaunay' or 'proximity'
     max_edge_distance = 30
-    subset = ["IPF", "PM08"]
+    subset = ["COPD"]
     subset_safe_name = "v".join(subset)
 
     # Base project path
@@ -133,6 +133,32 @@ def main():
         domain = ms.io.load_domain(str(path))
         domain_list.append(domain)
     logger.info(f"Loaded {len(domain_list)} domains from {input_dir}")
+
+    # Remove cell types that are not present in the condition
+    if subset == ["COPD"]:
+        cell_to_remove = [
+            "AT1 cells",
+            "AT2 cells",
+            "Proliferating AT2 cells",
+            "Airway/Alveolar macrophages",
+            "Alveolar fibroblasts (collagen high)",
+            "Alveolar fibroblasts",
+            "Lipid-associated macrophages",
+        ]
+        # Remove from domain by domain.labels["Cell Type"]
+        cell_type_labels = domain.labels["Cell Type"]["labels"]
+        mask = np.isin(cell_type_labels, cell_to_remove, invert=True)
+        filtered_cell_types = cell_type_labels[mask]
+        filtered_cell_ids = domain.labels["Cell ID"]["labels"][mask]
+
+        # Filter on domain.labels["Cell Type"] and domain.labels["Cell ID"]
+        domain.labels["Cell Type"]["labels"] = filtered_cell_types
+        domain.labels["Cell ID"]["labels"] = filtered_cell_ids
+
+        logger.info(
+            f"Removed cell types {cell_to_remove} from the domains. "
+            f"Remaining cell types: {np.unique(domain.labels['Cell Type']['labels'])}"
+        )
 
     # Make cluster number of clusters
     plots_dir_cluster = plots_dir / f"{number_of_clusters}_clusters"
