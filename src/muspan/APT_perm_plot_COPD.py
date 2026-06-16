@@ -11,6 +11,7 @@ from matplotlib.patches import Patch
 from scipy.stats import mannwhitneyu
 
 sys.path.append(str(Path(__file__).resolve().parents[2]))
+from utils.airspace_colors import time_point_palette
 
 ROI_ALIASES = {
     "IPF_RBH_15_OG": "IPF_RBH_15",
@@ -216,9 +217,7 @@ meta = pd.read_csv(
     base_path / "data/meta/STx_meta_analysis_only_cleaned.csv", index_col=0
 )
 
-set_palette = dict(
-    zip(meta_column_order, sns.color_palette("Set2", len(meta_column_order)))
-)
+set_palette = time_point_palette
 
 missing_palette_keys = [key for key in meta_column_order if key not in set_palette]
 if missing_palette_keys:
