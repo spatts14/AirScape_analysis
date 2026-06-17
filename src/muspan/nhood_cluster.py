@@ -156,7 +156,9 @@ def main():
 
             # Use the muspan API to remove objects properly
             # This ensures spatial data, labels, and metadata stay aligned
-            domain = ms.query.query(domain, ("Cell Type",), "is not in", cell_to_remove)
+            domain = ms.query.query(
+                domain, ("labels", "Cell Type"), "is not in", cell_to_remove
+            )
 
             # --- OR if muspan doesn't support "is not in", use Cell ID removal ---
             # query_remove = ms.query.query(
