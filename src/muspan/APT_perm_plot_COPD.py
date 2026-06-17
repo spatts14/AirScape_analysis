@@ -8,6 +8,7 @@ import numpy as np
 import pandas as pd
 import seaborn as sns
 from matplotlib.patches import Patch
+from scipy.stats import ttest_ind, ttest_rel
 
 sys.path.append(str(Path(__file__).resolve().parents[2]))
 from utils.airspace_colors import time_treatment_arm_palette, treatment_arm_palette
@@ -200,13 +201,253 @@ def calc_change_BL(df):
     ]
 
 
+def calc_stats(change_df, change_df_long):
+    """
+    Compute the four requested comparisons.
+
+    Paired tests use change_df (wide, one row per donor) so that BASELINE/
+    6 WEEKS/6 MONTHS values for the *same* donor line up in the same row.
+    NaNs (donor missing that timepoint) are dropped pairwise before testing.
+
+    Unpaired tests use change_df_long, pulling out the relevant
+    treatment_arm/time_point_label subsets as independent samples.
+    """
+    results = {}
+
+    # --- Paired: TREATMENT baseline vs TREATMENT 6 weeks ---
+    treat = change_df[change_df["treatment_arm"] == "TREATMENT"]
+    paired_bl_6w = treat[["BASELINE", "6 WEEKS"]].dropna()
+    t_stat, p_val = ttest_rel(paired_bl_6w["BASELINE"], paired_bl_6w["6 WEEKS"])
+    results["TREATMENT: BASELINE vs 6 WEEKS"] = {
+        "test": "paired",
+        "n": len(paired_bl_6w),
+        "t_stat": t_stat,
+        "p_value": p_val,
+    }
+
+    # --- Paired: TREATMENT baseline vs TREATMENT 6 months ---
+    paired_bl_6m = treat[["BASELINE", "6 MONTHS"]].dropna()
+    t_stat, p_val = ttest_rel(paired_bl_6m["BASELINE"], paired_bl_6m["6 MONTHS"])
+    results["TREATMENT: BASELINE vs 6 MONTHS"] = {
+        "test": "paired",
+        "n": len(paired_bl_6m),
+        "t_stat": t_stat,
+        "p_value": p_val,
+    }
+
+    # --- Unpaired: SHAM 6 weeks vs TREATMENT 6 months ---
+    sham_6w = change_df_long[
+        (change_df_long["treatment_arm"] == "SHAM")
+        & (change_df_long["time_point_label"] == "change_BL_6W")
+    ]["change_from_baseline"].dropna()
+
+    treat_6m = change_df_long[
+        (change_df_long["treatment_arm"] == "TREATMENT")
+        & (change_df_long["time_point_label"] == "change_BL_6M")
+    ]["change_from_baseline"].dropna()
+
+    t_stat, p_val = ttest_ind(sham_6w, treat_6m, equal_var=False)  # Welch's t-test
+    results["SHAM 6 WEEKS vs TREATMENT 6 MONTHS"] = {
+        "test": "unpaired",
+        "n1": len(sham_6w),
+        "n2": len(treat_6m),
+        "t_stat": t_stat,
+        "p_value": p_val,
+    }
+
+    # --- Unpaired: SHAM 6 months vs TREATMENT 6 months ---
+    sham_6m = change_df_long[
+        (change_df_long["treatment_arm"] == "SHAM")
+        & (change_df_long["time_point_label"] == "change_BL_6M")
+    ]["change_from_baseline"].dropna()
+
+    t_stat, p_val = ttest_ind(sham_6m, treat_6m, equal_var=False)  # Welch's t-test
+    results["SHAM 6 MONTHS vs TREATMENT 6 MONTHS"] = {
+        "test": "unpaired",
+        "n1": len(sham_6m),
+        "n2": len(treat_6m),
+        "t_stat": t_stat,
+        "p_value": p_val,
+    }
+
+    return results
+
+
+def p_to_asterisks(p):
+    if p < 0.0001:
+        return "****"
+    elif p < 0.001:
+        return "***"
+    elif p < 0.01:
+        return "**"
+    elif p < 0.05:
+        return "*"
+    else:
+        return "ns"
+
+
+def add_bracket(ax, x1, x2, y, h, text, lw=1.2, fontsize=11):
+    """Draw a single significance bracket between x1 and x2 at height y."""
+    ax.plot([x1, x1, x2, x2], [y, y + h, y + h, y], lw=lw, c="black")
+    ax.text((x1 + x2) / 2, y + h, text, ha="center", va="bottom", fontsize=fontsize)
+
+
+def make_plot(
+    plot_df,
+    celltype_dir,
+    celltype_1,
+    cell_type_2,
+    safe_cell_type_1,
+    safe_cell_type_2,
+    meta_column,
+    treatment_arm_palette_list,
+):
+    # Calculate change from baseline for each donor (wide format, needed for paired tests)
+    change_df = calc_change_BL(plot_df)
+
+    # Put into long format for plotting
+    change_df_long = change_df.melt(
+        id_vars=["sample_ID", "treatment_arm"],
+        value_vars=["change_BL", "change_BL_6W", "change_BL_6M"],
+        var_name="time_point_label",
+        value_name="change_from_baseline",
+    )
+
+    # --- Run all four statistical tests ---
+    stats_results = calc_stats(change_df, change_df_long)
+
+    for label, res in stats_results.items():
+        print(f"{label} ({res['test']}): t={res['t_stat']:.3f}, p={res['p_value']:.4g}")
+
+    # Box plot
+    sns.set_style("white")
+    fig, ax = plt.subplots(figsize=(7, 6))
+    sns.stripplot(
+        data=change_df_long,
+        x="time_point_label",
+        y="change_from_baseline",
+        hue="treatment_arm",
+        hue_order=["SHAM", "TREATMENT"],
+        dodge=True,
+        alpha=1,
+        linewidth=0.5,
+        palette=treatment_arm_palette_list,
+        ax=ax,
+    )
+
+    sns.boxenplot(
+        data=change_df_long,
+        x="time_point_label",
+        y="change_from_baseline",
+        hue="treatment_arm",
+        hue_order=["SHAM", "TREATMENT"],
+        dodge=True,
+        alpha=0.5,
+        palette=treatment_arm_palette_list,
+        ax=ax,
+    )
+
+    # Remove duplicate legends
+    handles, labels = ax.get_legend_handles_labels()
+    n = len(plot_df[meta_column].unique())
+    ax.legend(
+        handles[:n],
+        labels[:n],
+        title=meta_column,
+        bbox_to_anchor=(1.02, 1),
+        loc="upper left",
+        borderaxespad=0,
+    )
+
+    # ------------------------------------------------------------------
+    # Add significance brackets
+    # ------------------------------------------------------------------
+    # x-axis categories in plotted order, and dodge offset for hue
+    # (seaborn dodges 2 hues at +/-0.2 around each integer category center)
+    x_categories = ["change_BL", "change_BL_6W", "change_BL_6M"]
+    x_pos = {cat: i for i, cat in enumerate(x_categories)}
+    dodge_offset = 0.2  # SHAM = -0.2, TREATMENT = +0.2 relative to category center
+
+    sham_x = lambda cat: x_pos[cat] - dodge_offset
+    treat_x = lambda cat: x_pos[cat] + dodge_offset
+
+    # Get current y-limits to place brackets above the data
+    y_min, y_max = ax.get_ylim()
+    y_range = y_max - y_min
+    step = y_range * 0.07
+    base_y = y_max + y_range * 0.03
+
+    # 1) TREATMENT BASELINE vs TREATMENT 6 WEEKS (paired) -> within TREATMENT dodge column,
+    #    across change_BL and change_BL_6W categories
+    p1 = stats_results["TREATMENT: BASELINE vs 6 WEEKS"]["p_value"]
+    add_bracket(
+        ax,
+        treat_x("change_BL"),
+        treat_x("change_BL_6W"),
+        base_y,
+        step,
+        p_to_asterisks(p1),
+    )
+
+    # 2) TREATMENT BASELINE vs TREATMENT 6 MONTHS (paired)
+    p2 = stats_results["TREATMENT: BASELINE vs 6 MONTHS"]["p_value"]
+    add_bracket(
+        ax,
+        treat_x("change_BL"),
+        treat_x("change_BL_6M"),
+        base_y + step * 1.8,
+        step,
+        p_to_asterisks(p2),
+    )
+
+    # 3) SHAM 6 WEEKS vs TREATMENT 6 MONTHS (unpaired)
+    p3 = stats_results["SHAM 6 WEEKS vs TREATMENT 6 MONTHS"]["p_value"]
+    add_bracket(
+        ax,
+        sham_x("change_BL_6W"),
+        treat_x("change_BL_6M"),
+        base_y + step * 3.6,
+        step,
+        p_to_asterisks(p3),
+    )
+
+    # 4) SHAM 6 MONTHS vs TREATMENT 6 MONTHS (unpaired) -> same category, different hue
+    p4 = stats_results["SHAM 6 MONTHS vs TREATMENT 6 MONTHS"]["p_value"]
+    add_bracket(
+        ax,
+        sham_x("change_BL_6M"),
+        treat_x("change_BL_6M"),
+        base_y,
+        step,
+        p_to_asterisks(p4),
+    )
+
+    # Extend y-limits so brackets aren't clipped
+    ax.set_ylim(y_min, base_y + step * 6)
+
+    # Set labels and title
+    ax.set_xticklabels(["Baseline", "6 Weeks", "6 Months"])
+
+    plt.title(f"{celltype_1} vs {cell_type_2}", fontsize=14)
+    plt.xlabel("", fontsize=14)
+    plt.ylabel("Change from Baseline (SES)", fontsize=14)
+    plt.tight_layout()
+    plt.savefig(
+        celltype_dir
+        / f"STAT_CHANGE_FROM_BASELINE_{safe_cell_type_1}_{safe_cell_type_2}_{meta_column}_SES_p_val.pdf"
+    )
+    plt.close()
+
+    return stats_results
+
+
 # Base project path
-base_path = Path(
-    "/rds/general/user/sep22/projects/phenotypingsputumasthmaticsaurorawellcomea1/live/Sara_Patti/009_ST_Xenium/"
-)
 # base_path = Path(
-#     "/Volumes/phenotypingsputumasthmaticsaurorawellcomea1/live/Sara_Patti/009_ST_Xenium"
+#     "/rds/general/user/sep22/projects/phenotypingsputumasthmaticsaurorawellcomea1/live/Sara_Patti/009_ST_Xenium/"
 # )
+base_path = Path(
+    "/Volumes/phenotypingsputumasthmaticsaurorawellcomea1/live/Sara_Patti/009_ST_Xenium"
+)
 
 # Input
 input_dir = (
@@ -389,22 +630,6 @@ for celltype_1 in all_cell_types_list:
         # Make into dataframe
         df_groups = pd.DataFrame(celltype_df)
 
-        # # Make group for each condition
-        # conditions = meta["time_treatment_arm"].unique()
-        # group_data = {}
-        # for condition in conditions:
-        #     data = (
-        #         df_groups.loc[:, df_groups.columns.str.contains(condition)]
-        #         .to_numpy()
-        #         .ravel()
-        #         .astype(float)
-        #     )
-
-        #     group_data[condition] = data[~np.isnan(data)]
-
-        # # Calculate statistics for the two conditions of interest
-        # stat, p_value = mannwhitneyu(group_1_data, group_2_data)
-
         # Transpose and melt the dataframe for plotting
         plot_df = celltype_df.transpose().reset_index().rename(columns={"index": "ROI"})
 
@@ -531,6 +756,8 @@ for celltype_1 in all_cell_types_list:
 
         plt.close()
 
+        # CALCULATE FROM BASELINE CHANGE FOR EACH DONOR, PLOT AS STRIP/BOXEN AND LINE PLOTS
+
         # Plot change from baseline for each donor, colored by arm
 
         # Calculate change from baseline for each donor
@@ -542,6 +769,16 @@ for celltype_1 in all_cell_types_list:
             value_vars=["change_BL", "change_BL_6W", "change_BL_6M"],
             var_name="time_point_label",
             value_name="change_from_baseline",
+        )
+        stats_results = make_plot(
+            plot_df=plot_df,
+            celltype_dir=celltype_dir,
+            celltype_1=celltype_1,
+            cell_type_2=cell_type_2,
+            safe_cell_type_1=safe_cell_type_1,
+            safe_cell_type_2=safe_cell_type_2,
+            meta_column=meta_column,
+            treatment_arm_palette_list=treatment_arm_palette_list,
         )
 
         # Box plot
