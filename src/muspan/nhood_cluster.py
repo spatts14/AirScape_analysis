@@ -132,47 +132,6 @@ def main():
         logger.info(f"Loading {path.stem}...")
         domain = ms.io.load_domain(str(path))
 
-        # Filter inside the loop so every domain is filtered
-        if subset == ["COPD"]:
-            COPD_CELLS_TO_REMOVE = [
-                "AT1 cells",
-                "AT2 cells",
-                "Proliferating AT2 cells",
-                "Airway/Alveolar macrophages",
-                "Alveolar fibroblasts (collagen high)",
-                "Alveolar fibroblasts",
-                "Lipid-associated macrophages",
-                "Unknown",
-                "nan",
-            ]
-
-            # Log before state
-            before_types = np.unique(domain.labels["Cell Type"]["labels"])
-            before_count = len(domain.labels["Cell Type"]["labels"])
-            logger.info(f"[{path.stem}] Cell types BEFORE filtering: {before_types}")
-            logger.info(f"[{path.stem}] Object count BEFORE filtering: {before_count}")
-
-            # Correct query using official muspan documentation syntax
-            query_keep = ms.query.query(
-                domain,
-                ("label", "Cell Type"),  # ← ('label', 'label_name') format
-                "not in",  # ← list relation from docs
-                COPD_CELLS_TO_REMOVE,
-            )
-
-    # Subset the domain to only kept objects
-    domain = ms.domain.subset_domain(domain, query_keep)
-
-    # Log after state
-    after_types = np.unique(domain.labels["Cell Type"]["labels"])
-    after_count = len(domain.labels["Cell Type"]["labels"])
-    logger.info(f"[{path.stem}] Cell types AFTER filtering: {after_types}")
-    logger.info(f"[{path.stem}] Removed: {set(before_types) - set(after_types)}")
-    logger.info(
-        f"[{path.stem}] Object count AFTER filtering: {after_count} "
-        f"({before_count - after_count} objects removed)"
-    )
-
     # Add to domain list
     domain_list.append(domain)
     logger.info(f"Loaded {len(domain_list)} domains from {input_dir}")
