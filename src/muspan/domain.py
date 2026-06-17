@@ -355,6 +355,15 @@ def main():
         logger=logger,
     )
 
+    # Update colors
+    domain.update_colors(
+        level_2_palette, colors_to_update="labels", label_name="Cell Type"
+    )
+
+    domain.update_colors(
+        level_1_palette, colors_to_update="labels", label_name="Cell Type level 1"
+    )
+
     # Filter unwanted cell types from the domain based on the ROI condition
     logger.info(f"Filtering unwanted cell types from domain for {roi}...")
     domain = filter_cell_types(domain, roi, logger)
@@ -373,15 +382,6 @@ def main():
     logger.info("Querying domain to isolate cell centroids for visualization")
     boundCells = ms.query.query(domain, ("Collection",), "is", "Cell boundaries")
     centCells = ms.query.query(domain, ("Collection",), "is", "Cell centroids")
-
-    # Update colors
-    domain.update_colors(
-        level_2_palette, colors_to_update="labels", label_name="Cell Type"
-    )
-
-    domain.update_colors(
-        level_1_palette, colors_to_update="labels", label_name="Cell Type level 1"
-    )
 
     # Visualize Cell Types
     logger.info(
