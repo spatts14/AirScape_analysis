@@ -505,11 +505,11 @@ def make_plot(
 
     plt.title(f"{celltype_1} vs {cell_type_2}", fontsize=14)
     plt.xlabel("", fontsize=14)
-    plt.ylabel("Change from Baseline (SES)", fontsize=14)
+    plt.ylabel("SES (normalized to baseline)", fontsize=14)
     plt.tight_layout()
     plt.savefig(
         stats_plot_dir
-        / f"STAT_CHANGE_FROM_BASELINE_{safe_cell_type_1}_{safe_cell_type_2}_{meta_column}_SES_p_val.pdf"
+        / f"{safe_cell_type_1}_{safe_cell_type_2}_{meta_column}_STAT_CHANGE_FROM_BASELINE_SES_p_val.pdf"
     )
     plt.close()
 
@@ -912,19 +912,6 @@ for celltype_1 in all_cell_types_list:
             alpha=0.5,
             palette=treatment_arm_palette_list,
             ax=ax,
-        )
-
-        # Remove duplicate legends
-        handles, labels = ax.get_legend_handles_labels()
-        n = len(plot_df[meta_column].unique())
-
-        ax.legend(
-            handles[:n],
-            labels[:n],
-            title=meta_column,
-            bbox_to_anchor=(1.02, 1),
-            loc="upper left",
-            borderaxespad=0,
         )
 
         plt.title(f"{celltype_1} vs {cell_type_2}", fontsize=14)
