@@ -202,8 +202,7 @@ def calc_change_BL(df):
 
 
 def calc_stats(change_df, change_df_long):
-    """
-    Compute the four requested comparisons.
+    """Compute the four requested comparisons.
 
     Paired tests use change_df (wide, one row per donor) so that BASELINE/
     6 WEEKS/6 MONTHS values for the *same* donor line up in the same row.
@@ -222,7 +221,7 @@ def calc_stats(change_df, change_df_long):
         "test": "paired",
         "n": len(paired_bl_6w),
         "t_stat": t_stat,
-        "p_value": p_val,
+        "p_value": float(f"{p_val:.3f}"),
     }
 
     # --- Paired: TREATMENT baseline vs TREATMENT 6 months ---
@@ -232,7 +231,17 @@ def calc_stats(change_df, change_df_long):
         "test": "paired",
         "n": len(paired_bl_6m),
         "t_stat": t_stat,
-        "p_value": p_val,
+        "p_value": float(f"{p_val:.3f}"),
+    }
+
+    # --- Paired: TREATMENT 6 weeks vs TREATMENT 6 months ---
+    paired_6w_6m = treat[["6 WEEKS", "6 MONTHS"]].dropna()
+    t_stat, p_val = ttest_rel(paired_6w_6m["6 WEEKS"], paired_6w_6m["6 MONTHS"])
+    results["TREATMENT: 6 WEEKS vs 6 MONTHS"] = {
+        "test": "paired",
+        "n": len(paired_6w_6m),
+        "t_stat": t_stat,
+        "p_value": float(f"{p_val:.3f}"),
     }
 
     # --- Unpaired: SHAM 6 weeks vs TREATMENT 6 months ---
@@ -252,7 +261,7 @@ def calc_stats(change_df, change_df_long):
         "n1": len(sham_6w),
         "n2": len(treat_6m),
         "t_stat": t_stat,
-        "p_value": p_val,
+        "p_value": float(f"{p_val:.3f}"),
     }
 
     # --- Unpaired: SHAM 6 months vs TREATMENT 6 months ---
@@ -267,7 +276,7 @@ def calc_stats(change_df, change_df_long):
         "n1": len(sham_6m),
         "n2": len(treat_6m),
         "t_stat": t_stat,
-        "p_value": p_val,
+        "p_value": float(f"{p_val:.3f}"),
     }
 
     return results
