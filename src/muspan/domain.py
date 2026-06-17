@@ -13,6 +13,7 @@ import muspan as ms
 sys.path.append(str(Path(__file__).resolve().parents[2]))
 
 from utils.setup_logger import setup_logger
+from utils.airspace_colors import level_1_palette, level_2_palette
 
 warnings.filterwarnings("ignore", category=UserWarning)
 warnings.filterwarnings("ignore", category=FutureWarning)
@@ -164,60 +165,6 @@ def main():
     logs_dir = Path(wd) / "logs"
     logs_dir.mkdir(parents=True, exist_ok=True)
     logger = setup_logger(log_dir=logs_dir, log_name="muspan")
-
-    # Set colors for cell types
-    level_2_palette = {
-        # Epithelial
-        "Ciliated cells": "#5B8FA8",
-        "Goblet cells": "#7EB5A6",
-        "Basal cells": "#4A7B6F",
-        "Proliferating Basal cells": "#3D6B5E",
-        "Secretory epithelial cells": "#89C4B0",
-        "AT1 cells": "#A8C5A0",
-        "AT2 cells": "#6B9E78",
-        "Proliferating AT2 cells": "#4E7D5B",
-        # Fibroblasts
-        "Adventitial fibroblasts": "#C4956A",
-        "CTHRC1+ fibroblasts": "#B07D50",
-        "Alveolar fibroblasts": "#D4A97A",
-        "Lipo-fibroblasts": "#E2C49A",
-        # Endothelial
-        "Lymphatic endothelial cells": "#8B7CB3",
-        "Pulmonary vein endothelial cell": "#A08DB8",
-        "Blood endothelial cells - unclassified": "#6B5E9E",
-        "Capillary endothelial cells": "#B8A9CC",
-        "Pulmonary artery endothelial cell": "#7A6EA8",
-        "Pericytes": "#C5B8D6",
-        # Macrophages & monocytes
-        "Macrophages": "#C17B6E",
-        "Lipid-associated macrophages": "#B56355",
-        "Interstitial Macrophages": "#D4957F",
-        "Airway/Alveolar macrophages": "#A05A4A",
-        "Monocytes": "#E8B4A0",
-        # T cells & NK cells
-        "T cells": "#7E9E6E",
-        "CD4+ T cells": "#92B080",
-        "CD8+ T cells": "#5E7E50",
-        "NK cells": "#B5C99A",
-        # Other immune
-        "B cells": "#6E8FAA",
-        "Plasma cells": "#5A7A9A",
-        "Dendritic cells": "#B8A06E",
-        "Mast cells": "#9E8B5A",
-        "Neutrophils": "#D4C07A",
-        # Other
-        "SMC": "#9E9E8A",
-        "Aerocytes": "#7A9E9A",
-        "Unknown": "#A0A0A0",
-    }
-
-    level_1_palette = {
-        "Airway epithelial cells": "#A8C5A0",
-        "Alveolar epithelial cells": "#7A6EA8",
-        "Immune cells": "#B8A06E",
-        "Stromal cells": "#89C4B0",
-        "Endothelial cells": "#A05A4A",
-    }
 
     # Set variables
     transcripts_to_load = ["KRT5", "VWF", "ACTA2", "MRC1", "CD4", "CD8A", "16S"]
