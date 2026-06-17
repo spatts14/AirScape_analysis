@@ -244,22 +244,22 @@ def calc_stats(change_df, change_df_long):
         "p_value": float(f"{p_val:.3f}"),
     }
 
-    # --- Unpaired: SHAM 6 weeks vs TREATMENT 6 months ---
+    # --- Unpaired: SHAM 6 weeks vs TREATMENT 6 weeks ---
     sham_6w = change_df_long[
         (change_df_long["treatment_arm"] == "SHAM")
         & (change_df_long["time_point_label"] == "change_BL_6W")
     ]["change_from_baseline"].dropna()
 
-    treat_6m = change_df_long[
+    treat_6w = change_df_long[
         (change_df_long["treatment_arm"] == "TREATMENT")
-        & (change_df_long["time_point_label"] == "change_BL_6M")
+        & (change_df_long["time_point_label"] == "change_BL_6W")
     ]["change_from_baseline"].dropna()
 
-    t_stat, p_val = ttest_ind(sham_6w, treat_6m, equal_var=False)  # Welch's t-test
-    results["SHAM 6 WEEKS vs TREATMENT 6 MONTHS"] = {
+    t_stat, p_val = ttest_ind(sham_6w, treat_6w, equal_var=False)  # Welch's t-test
+    results["SHAM 6 WEEKS vs TREATMENT 6 WEEKS"] = {
         "test": "unpaired",
         "n1": len(sham_6w),
-        "n2": len(treat_6m),
+        "n2": len(treat_6w),
         "t_stat": t_stat,
         "p_value": float(f"{p_val:.3f}"),
     }
@@ -267,6 +267,11 @@ def calc_stats(change_df, change_df_long):
     # --- Unpaired: SHAM 6 months vs TREATMENT 6 months ---
     sham_6m = change_df_long[
         (change_df_long["treatment_arm"] == "SHAM")
+        & (change_df_long["time_point_label"] == "change_BL_6M")
+    ]["change_from_baseline"].dropna()
+
+    treat_6m = change_df_long[
+        (change_df_long["treatment_arm"] == "TREATMENT")
         & (change_df_long["time_point_label"] == "change_BL_6M")
     ]["change_from_baseline"].dropna()
 
@@ -298,7 +303,7 @@ def p_to_asterisks(p):
 def add_brackets(ax, comparisons, base_y, step, fontsize=11):
     """
     comparisons = [
-        (x1, x2, pval),
+        (x1, x2, pval, color),
         ...
     ]
 
@@ -310,14 +315,14 @@ def add_brackets(ax, comparisons, base_y, step, fontsize=11):
         key=lambda x: abs(x[1] - x[0]),
     )
 
-    for i, (x1, x2, pval) in enumerate(comparisons):
+    for i, (x1, x2, pval, color) in enumerate(comparisons):
         y = base_y + i * step * 1.5
         h = step * 0.8
 
         ax.plot(
             [x1, x1, x2, x2],
             [y, y + h, y + h, y],
-            color="black",
+            color=color,
             lw=1.2,
             clip_on=False,
             zorder=100,
@@ -343,6 +348,30 @@ def get_category_positions(ax):
     Returns mapping: category label -> x coordinate used by seaborn.
     """
     return {tick.get_text(): tick.get_position()[0] for tick in ax.get_xticklabels()}
+
+
+def get_dodged_category_positions(ax, hue_order):
+    """Return x positions for each category and hue level."""
+
+    centers = get_category_positions(ax)
+    hue_count = len(hue_order)
+    if hue_count < 1:
+        raise ValueError("hue_order must contain at least one level")
+
+    dodge_width = 0.8
+    if hue_count == 1:
+        offsets = [0.0]
+    else:
+        step = dodge_width / hue_count
+        start = -dodge_width / 2 + step / 2
+        offsets = [start + i * step for i in range(hue_count)]
+
+    return {
+        category: {
+            hue: centers[category] + offset for hue, offset in zip(hue_order, offsets)
+        }
+        for category in centers
+    }
 
 
 def make_plot(
@@ -416,28 +445,48 @@ def make_plot(
     # Add significance brackets
     # ------------------------------------------------------------------
     # --- TRUE seaborn category positions (no guessing) ---
-    x_pos = get_category_positions(ax)
+    x_pos = get_dodged_category_positions(ax, ["SHAM", "TREATMENT"])
 
     # Extract p-values
     p1 = stats_results["TREATMENT: BASELINE vs 6 WEEKS"]["p_value"]
     p2 = stats_results["TREATMENT: BASELINE vs 6 MONTHS"]["p_value"]
     p3 = stats_results["TREATMENT: 6 WEEKS vs 6 MONTHS"]["p_value"]
-    p4 = stats_results["SHAM 6 WEEKS vs TREATMENT 6 MONTHS"]["p_value"]
+    p4 = stats_results["SHAM 6 WEEKS vs TREATMENT 6 WEEKS"]["p_value"]
     p5 = stats_results["SHAM 6 MONTHS vs TREATMENT 6 MONTHS"]["p_value"]
 
     # --- Build comparisons using category centers ONLY ---
     comparisons = [
-        # within-treatment (valid horizontal comparisons)
-        (x_pos["change_BL"], x_pos["change_BL_6W"], p1),
-        (x_pos["change_BL"], x_pos["change_BL_6M"], p2),
-        (x_pos["change_BL_6W"], x_pos["change_BL_6M"], p3),
-        # cross-arm comparisons (still category-level, not dodge-level)
-        (x_pos["change_BL_6W"], x_pos["change_BL_6M"], p4),
-        (x_pos["change_BL_6M"], x_pos["change_BL_6M"], p5),
+        (
+            x_pos["change_BL"]["TREATMENT"],
+            x_pos["change_BL_6W"]["TREATMENT"],
+            p1,
+            "black",
+        ),
+        (
+            x_pos["change_BL"]["TREATMENT"],
+            x_pos["change_BL_6M"]["TREATMENT"],
+            p2,
+            "black",
+        ),
+        (
+            x_pos["change_BL_6W"]["TREATMENT"],
+            x_pos["change_BL_6M"]["TREATMENT"],
+            p3,
+            "black",
+        ),
+        (
+            x_pos["change_BL_6W"]["SHAM"],
+            x_pos["change_BL_6W"]["TREATMENT"],
+            p4,
+            "grey",
+        ),
+        (
+            x_pos["change_BL_6M"]["SHAM"],
+            x_pos["change_BL_6M"]["TREATMENT"],
+            p5,
+            "grey",
+        ),
     ]
-
-    # Remove invalid self-comparison if present
-    comparisons = [(a, b, p) for a, b, p in comparisons if a != b]
 
     ymin, ymax = ax.get_ylim()
     y_range = ymax - ymin
@@ -466,13 +515,13 @@ def make_plot(
     return stats_results
 
 
-# Base project path
-base_path = Path(
-    "/rds/general/user/sep22/projects/phenotypingsputumasthmaticsaurorawellcomea1/live/Sara_Patti/009_ST_Xenium/"
-)
+# # Base project path
 # base_path = Path(
-#     "/Volumes/phenotypingsputumasthmaticsaurorawellcomea1/live/Sara_Patti/009_ST_Xenium"
+#     "/rds/general/user/sep22/projects/phenotypingsputumasthmaticsaurorawellcomea1/live/Sara_Patti/009_ST_Xenium/"
 # )
+base_path = Path(
+    "/Volumes/phenotypingsputumasthmaticsaurorawellcomea1/live/Sara_Patti/009_ST_Xenium"
+)
 
 # Input
 input_dir = (
