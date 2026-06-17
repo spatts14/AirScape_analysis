@@ -322,8 +322,8 @@ def add_brackets(ax, comparisons, base_y, step, fontsize=11):
         ax.plot(
             [x1, x1, x2, x2],
             [y, y + h, y + h, y],
-            color=color,
             lw=1.2,
+            color=color,
             clip_on=False,
             zorder=100,
         )
@@ -335,6 +335,7 @@ def add_brackets(ax, comparisons, base_y, step, fontsize=11):
             ha="center",
             va="bottom",
             fontsize=fontsize,
+            color=color,
             clip_on=False,
             zorder=101,
         )
