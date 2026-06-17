@@ -414,6 +414,7 @@ def make_plot(
         dodge=True,
         alpha=1,
         linewidth=0.5,
+        legend=False,
         palette=treatment_arm_palette_list,
         ax=ax,
     )
@@ -787,6 +788,7 @@ for celltype_1 in all_cell_types_list:
             dodge=True,
             alpha=1,
             linewidth=0.5,
+            legend=False,
             palette=set_palette,
             ax=ax,
         )
@@ -800,19 +802,6 @@ for celltype_1 in all_cell_types_list:
             alpha=0.5,
             palette=set_palette,
             ax=ax,
-        )
-
-        # Remove duplicate legends
-        handles, labels = ax.get_legend_handles_labels()
-        n = len(plot_df[meta_column].unique())
-
-        ax.legend(
-            handles[:n],
-            labels[:n],
-            title=meta_column,
-            bbox_to_anchor=(1.02, 1),
-            loc="upper left",
-            borderaxespad=0,
         )
 
         # ax.set_title(f"{celltype_1}\nstat={stat}, p={p_value:.3f}", fontsize=14)
@@ -898,6 +887,7 @@ for celltype_1 in all_cell_types_list:
             dodge=True,
             alpha=1,
             linewidth=0.5,
+            legend=False,
             palette=treatment_arm_palette_list,
             ax=ax,
         )
