@@ -853,6 +853,7 @@ stats_results_df = pd.DataFrame.from_dict(
     orient="index",
 )
 stats_results_df.to_csv(stats_dir / "APT_stats_results.csv")
+stats_results_df.to_excel(stats_dir / "APT_stats_results.xlsx")
 
 print(f"All plots and stats results saved to {fig_dir} and {stats_dir}.")
 print("Script completed successfully.")
