@@ -142,6 +142,8 @@ def main():
                 "Alveolar fibroblasts (collagen high)",
                 "Alveolar fibroblasts",
                 "Lipid-associated macrophages",
+                "Unknown",
+                "nan",
             ]
 
             cell_type_labels = domain.labels["Cell Type"]["labels"]
