@@ -546,7 +546,7 @@ for celltype_1 in all_cell_types_list:
 
         # Box plot
         sns.set_style("white")
-        fig, ax = plt.subplots(figsize=(6, 5))
+        fig, ax = plt.subplots(figsize=(8, 5))
         sns.stripplot(
             data=change_df_long,
             x="time_point_label",
@@ -593,12 +593,15 @@ for celltype_1 in all_cell_types_list:
         plt.close()
 
         ## Line plot
+        sns.set_style("white")
+        fig, ax = plt.subplots(figsize=(8, 5))
         sns.lineplot(
             data=change_df_long,
             x="time_point_label",
             y="change_from_baseline",
             hue="treatment_arm",
             units="sample_ID",
+            palette=treatment_arm_palette_list,
             estimator=None,
             marker="o",
         )
