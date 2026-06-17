@@ -4,6 +4,7 @@ import sys
 from pathlib import Path
 
 import matplotlib.pyplot as plt
+import numpy as np
 import pandas as pd
 import seaborn as sns
 from matplotlib.patches import Patch
@@ -168,9 +169,43 @@ def make_clustermap(
     plt.close()
 
 
+def calc_change_BL(df):
+    """Pivot to one row per donor with BASELINE/6WK/6MO columns, then compute change scores."""
+    pivot = df.pivot_table(
+        index=["sample_ID", "treatment_arm"],
+        columns="time_point_label",
+        values="SES (p-val nonfiltered)",
+        aggfunc="first",
+    ).reset_index()
+
+    for col in ["BASELINE", "6 WEEKS", "6 MONTHS"]:
+        if col not in pivot.columns:
+            pivot[col] = np.nan
+
+    pivot["change_BL"] = pivot["BASELINE"] - pivot["BASELINE"]
+    pivot["change_BL_6W"] = pivot["6 WEEKS"] - pivot["BASELINE"]
+    pivot["change_BL_6M"] = pivot["6 MONTHS"] - pivot["BASELINE"]
+
+    return pivot[
+        [
+            "sample_ID",
+            "treatment_arm",
+            "BASELINE",
+            "6 WEEKS",
+            "6 MONTHS",
+            "change_BL",
+            "change_BL_6W",
+            "change_BL_6M",
+        ]
+    ]
+
+
 # Base project path
+# base_path = Path(
+#     "/rds/general/user/sep22/projects/phenotypingsputumasthmaticsaurorawellcomea1/live/Sara_Patti/009_ST_Xenium/"
+# )
 base_path = Path(
-    "/rds/general/user/sep22/projects/phenotypingsputumasthmaticsaurorawellcomea1/live/Sara_Patti/009_ST_Xenium/"
+    "/Volumes/phenotypingsputumasthmaticsaurorawellcomea1/live/Sara_Patti/009_ST_Xenium"
 )
 
 # Input
@@ -331,7 +366,7 @@ for celltype_1 in all_cell_types_list:
     plt.close()
 
     # BOX PLOTS OF APT Z-SCORES FOR EACH NEIGHBORING CELL TYPE, FACETTED BY DIAGNOSIS
-    for cell_type_2 in all_cell_types_list:
+    for cell_type_2 in all_cell_types_list[:2]:
         # Make cell_type_2_of_interest safe for file paths
         safe_cell_type_2 = cell_type_2.replace("/", "_").replace(" ", "_")
 
@@ -380,7 +415,7 @@ for celltype_1 in all_cell_types_list:
 
         plot_df["ROI_meta_key"] = plot_df["ROI"].map(corrected_roi_for_meta)
 
-        # # Add condition column by extracting from ROI name
+        # # Add metadata columns by extracting from ROI name
         plot_df = plot_df.merge(meta, left_on="ROI_meta_key", right_index=True)
         plot_df = plot_df.drop(columns=["ROI_meta_key"])
 
@@ -492,4 +527,88 @@ for celltype_1 in all_cell_types_list:
             celltype_dir
             / f"TREATMENT_SHAM_{safe_cell_type_1}_{safe_cell_type_2}_{meta_column}_SES_p_val.pdf"
         )
+
+        plt.close()
+
+        # Plot change from baseline for each donor, colored by arm
+
+        # Calculate change from baseline for each donor
+        change_df = calc_change_BL(plot_df)
+
+        # Put into long format for plotting
+        change_df_long = change_df.melt(
+            id_vars=["sample_ID", "treatment_arm"],
+            value_vars=["change_BL", "change_BL_6W", "change_BL_6M"],
+            var_name="time_point_label",
+            value_name="change_from_baseline",
+        )
+
+        # Box plot
+        sns.set_style("white")
+        fig, ax = plt.subplots(figsize=(6, 5))
+        sns.stripplot(
+            data=change_df_long,
+            x="time_point_label",
+            y="change_from_baseline",
+            hue="treatment_arm",
+            dodge=True,
+            alpha=1,
+            linewidth=0.5,
+            palette=treatment_arm_palette_list,
+            ax=ax,
+        )
+
+        sns.boxenplot(
+            data=change_df_long,
+            x="time_point_label",
+            y="change_from_baseline",
+            hue="treatment_arm",
+            dodge=True,
+            alpha=0.5,
+            palette=treatment_arm_palette_list,
+            ax=ax,
+        )
+
+        # Remove duplicate legends
+        handles, labels = ax.get_legend_handles_labels()
+        n = len(plot_df[meta_column].unique())
+
+        ax.legend(
+            handles[:n],
+            labels[:n],
+            title=meta_column,
+            bbox_to_anchor=(1.02, 1),
+            loc="upper left",
+            borderaxespad=0,
+        )
+
+        plt.title(f"{celltype_1} vs {cell_type_2}", fontsize=14)
+        plt.xlabel("Time Point", fontsize=14)
+        plt.ylabel("Change from Baseline (SES)", fontsize=14)
+        plt.savefig(
+            celltype_dir
+            / f"CHANGE_FROM_BASELINE_{safe_cell_type_1}_{safe_cell_type_2}_{meta_column}_SES_p_val.pdf"
+        )
+        plt.close()
+
+        ## Line plot
+        sns.lineplot(
+            data=change_df_long,
+            x="time_point_label",
+            y="change_from_baseline",
+            hue="treatment_arm",
+            units="sample_ID",
+            estimator=None,
+            marker="o",
+        )
+        plt.axhline(0, color="gray", linestyle="--")
+
+        plt.title(f"{celltype_1} vs {cell_type_2}", fontsize=14)
+        plt.xlabel("Time Point", fontsize=14)
+        plt.ylabel("Change from Baseline (SES)", fontsize=14)
+        plt.savefig(
+            celltype_dir
+            / f"LINEPLOT_CHANGE_FROM_BASELINE_{safe_cell_type_1}_{safe_cell_type_2}_{meta_column}_SES_p_val.pdf"
+        )
+
         plt.close()
