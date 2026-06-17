@@ -494,7 +494,7 @@ fig_dir = outpath / "COPD"
 fig_dir.mkdir(parents=True, exist_ok=True)
 
 # Make stats dir
-stats_dir = fig_dir / "stats"
+stats_dir = fig_dir / "_STATS"
 stats_dir.mkdir(parents=True, exist_ok=True)
 
 # Load metadata
