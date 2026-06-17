@@ -546,7 +546,7 @@ for celltype_1 in all_cell_types_list:
 
         # Box plot
         sns.set_style("white")
-        fig, ax = plt.subplots(figsize=(8, 5))
+        fig, ax = plt.subplots(figsize=(6, 5))
         sns.stripplot(
             data=change_df_long,
             x="time_point_label",
@@ -588,6 +588,7 @@ for celltype_1 in all_cell_types_list:
         plt.title(f"{celltype_1} vs {cell_type_2}", fontsize=14)
         plt.xlabel("Time Point", fontsize=14)
         plt.ylabel("Change from Baseline (SES)", fontsize=14)
+        plt.tight_layout()
         plt.savefig(
             celltype_dir
             / f"CHANGE_FROM_BASELINE_{safe_cell_type_1}_{safe_cell_type_2}_{meta_column}_SES_p_val.pdf"
@@ -596,7 +597,7 @@ for celltype_1 in all_cell_types_list:
 
         ## Line plot
         sns.set_style("white")
-        fig, ax = plt.subplots(figsize=(8, 5))
+        fig, ax = plt.subplots(figsize=(6, 5))
         sns.lineplot(
             data=change_df_long,
             x="time_point_label",
@@ -613,6 +614,7 @@ for celltype_1 in all_cell_types_list:
         plt.title(f"{celltype_1} vs {cell_type_2}", fontsize=14)
         plt.xlabel("Time Point", fontsize=14)
         plt.ylabel("Change from Baseline (SES)", fontsize=14)
+        plt.tight_layout()
         plt.savefig(
             celltype_dir
             / f"LINEPLOT_CHANGE_FROM_BASELINE_{safe_cell_type_1}_{safe_cell_type_2}_{meta_column}_SES_p_val.pdf"
