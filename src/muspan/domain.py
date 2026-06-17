@@ -345,9 +345,9 @@ def main():
         level_1_palette, colors_to_update="labels", label_name="Cell Type level 1"
     )
 
-    # # Filter unwanted cell types from the domain based on the ROI condition
-    # logger.info(f"Filtering unwanted cell types from domain for {roi}...")
-    # domain = filter_cell_types(domain, roi, logger)
+    # Filter unwanted cell types from the domain based on the ROI condition
+    logger.info(f"Filtering unwanted cell types from domain for {roi}...")
+    domain = filter_cell_types(domain, roi, logger)
 
     # # Save the filtered domain
     # logger.info(f"Saving filtered domain for {roi}...")
@@ -387,6 +387,7 @@ def main():
         color_by=("label", "Cell Type"),
         objects_to_plot=boundCells,
         shape_kwargs=dict(alpha=1, linewidth=0.01, edgecolor="#00000000"),
+        add_scalebar=True,
         scalebar_kwargs={
             "size": 1000,
             "label": "1000µm",
@@ -407,6 +408,16 @@ def main():
         domain,
         color_by=("label", "Cell Type"),
         objects_to_plot=centCells,
+        add_scalebar=True,
+        scalebar_kwargs={
+            "size": 1000,
+            "label": "1000µm",
+            "loc": "lower right",
+            "pad": 0.1,
+            "color": "black",
+            "frameon": False,
+            "size_vertical": 2,
+        },
         marker_size=0.5,
     )
     plt.savefig(roi_dir / f"{roi}_cell_types_centroids.png")
@@ -459,6 +470,7 @@ def main():
                 edgecolors="none",
             ),
         ),
+        add_scalebar=True,
         scalebar_kwargs={
             "size": 1000,
             "label": "1000µm",
@@ -481,6 +493,7 @@ def main():
         edge_width=0.2,
         edge_cmap="#060606",
         add_cbar=False,
+        add_scalebar=True,
         visualise_kwargs=dict(
             objects_to_plot=("collection", "Cell centroids"),
             marker_size=0.5,
@@ -511,6 +524,7 @@ def main():
         edge_width=0.2,
         edge_cmap="#060606",
         add_cbar=False,
+        add_scalebar=True,
         visualise_kwargs=dict(
             objects_to_plot=("collection", "Cell centroids"),
             marker_size=0.5,
