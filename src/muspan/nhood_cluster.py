@@ -134,7 +134,7 @@ def main():
 
         # Filter inside the loop so every domain is filtered
         if subset == ["COPD"]:
-            cell_to_remove = [
+            COPD_CELLS_TO_REMOVE = [
                 "AT1 cells",
                 "AT2 cells",
                 "Proliferating AT2 cells",
@@ -146,31 +146,32 @@ def main():
                 "nan",
             ]
 
-            cell_type_labels = domain.labels["Cell Type"]["labels"]
+            # Log before state
+            before_types = np.unique(domain.labels["Cell Type"]["labels"])
+            before_count = len(domain.labels["Cell Type"]["labels"])
+            logger.info(f"[{path.stem}] Cell types BEFORE filtering: {before_types}")
+            logger.info(f"[{path.stem}] Object count BEFORE filtering: {before_count}")
 
-            # Get the mask of cells to KEEP
-            mask = np.isin(cell_type_labels, cell_to_remove, invert=True)
-
-            # Get the Cell IDs to remove (invert the keep mask)
-            cell_ids_to_remove = domain.labels["Cell ID"]["labels"][~mask]
-
-            # Use the muspan API to remove objects properly
-            # This ensures spatial data, labels, and metadata stay aligned
-            domain = ms.query.query(
-                domain, ("labels", "Cell Type"), "is not in", cell_to_remove
+            # Correct query using official muspan documentation syntax
+            query_keep = ms.query.query(
+                domain,
+                ("label", "Cell Type"),  # ← ('label', 'label_name') format
+                "not in",  # ← list relation from docs
+                COPD_CELLS_TO_REMOVE,
             )
 
-            # --- OR if muspan doesn't support "is not in", use Cell ID removal ---
-            # query_remove = ms.query.query(
-            #     domain, ("Cell Type",), "is in", cell_to_remove
-            # )
-            # domain.remove_objects(query_remove)  # use whatever muspan's removal API is
+    # Subset the domain to only kept objects
+    domain = ms.domain.subset_domain(domain, query_keep)
 
-            remaining = np.unique(domain.labels["Cell Type"]["labels"])
-            logger.info(
-                f"[{path.stem}] Removed {len(cell_ids_to_remove)} cells. "
-                f"Remaining cell types: {remaining}"
-            )
+    # Log after state
+    after_types = np.unique(domain.labels["Cell Type"]["labels"])
+    after_count = len(domain.labels["Cell Type"]["labels"])
+    logger.info(f"[{path.stem}] Cell types AFTER filtering: {after_types}")
+    logger.info(f"[{path.stem}] Removed: {set(before_types) - set(after_types)}")
+    logger.info(
+        f"[{path.stem}] Object count AFTER filtering: {after_count} "
+        f"({before_count - after_count} objects removed)"
+    )
 
     # Add to domain list
     domain_list.append(domain)
