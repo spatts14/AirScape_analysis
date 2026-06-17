@@ -345,23 +345,23 @@ def main():
         level_1_palette, colors_to_update="labels", label_name="Cell Type level 1"
     )
 
-    # Filter unwanted cell types from the domain based on the ROI condition
-    logger.info(f"Filtering unwanted cell types from domain for {roi}...")
-    domain = filter_cell_types(domain, roi, logger)
+    # # Filter unwanted cell types from the domain based on the ROI condition
+    # logger.info(f"Filtering unwanted cell types from domain for {roi}...")
+    # domain = filter_cell_types(domain, roi, logger)
 
-    # Save the filtered domain
-    logger.info(f"Saving filtered domain for {roi}...")
-    ms.io.save_domain(
-        domain, name_of_file=f"{roi}_muspan_domain", path_to_save=str(domains_dir)
-    )
-    logger.info("Filtered domain saved")
+    # # Save the filtered domain
+    # logger.info(f"Saving filtered domain for {roi}...")
+    # ms.io.save_domain(
+    #     domain, name_of_file=f"{roi}_muspan_domain", path_to_save=str(domains_dir)
+    # )
+    # logger.info("Filtered domain saved")
 
-    # Reload the saved filtered domain
-    # Reload so all subsequent muspan operations use the saved filtered file
-    logger.info(f"Reloading saved filtered domain for {roi}...")
-    saved_domain_path = domains_dir / f"{roi}_muspan_domain.muspan"
-    domain = ms.io.load_domain(str(saved_domain_path))
-    logger.info(f"Reloaded domain: {domain}")
+    # # Reload the saved filtered domain
+    # # Reload so all subsequent muspan operations use the saved filtered file
+    # logger.info(f"Reloading saved filtered domain for {roi}...")
+    # saved_domain_path = domains_dir / f"{roi}_muspan_domain.muspan"
+    # domain = ms.io.load_domain(str(saved_domain_path))
+    # logger.info(f"Reloaded domain: {domain}")
 
     # Convert cell boundaries to cell centers (centroids)
     logger.info("Convert cell boundaries to cell centers (centroids)")
