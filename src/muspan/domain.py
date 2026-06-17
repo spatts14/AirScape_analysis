@@ -7,6 +7,7 @@ from pathlib import Path
 
 import matplotlib.pyplot as plt
 import pandas as pd
+import numpy as np
 
 import muspan as ms
 
@@ -136,6 +137,97 @@ def map_cell_types_to_domain(
     return domain
 
 
+def filter_cell_types(domain, roi, logger):
+    """Filter unwanted cell types from a domain based on the ROI condition.
+
+    Removes 'Unknown' and 'nan' cell types from all domains, and additionally
+    removes biologically absent cell types from COPD domains. Filtering is
+    applied to all per-object label arrays to maintain alignment. Should be
+    called after label mapping but before network construction and domain saving.
+
+    Args:
+        domain: A MuSpAn domain object with labels accessible via
+            domain.labels[label_name]["labels"].
+        roi (str): The name of the ROI being processed. If "COPD" is present
+            in the name, COPD-specific cell types are also removed.
+        logger: A logging object for logging information and debugging.
+
+    Returns:
+        domain: The modified MuSpAn domain object with unwanted cell types
+            removed from all per-object label arrays.
+    """
+    # Cell types to remove from ALL domains regardless of condition
+    CELLS_TO_REMOVE_ALL = ["Unknown", "nan"]
+
+    # Cell types to remove from COPD domains only —
+    # these cell types are not biologically present in COPD
+    COPD_CELLS_TO_REMOVE = [
+        "AT1 cells",
+        "AT2 cells",
+        "Proliferating AT2 cells",
+        "Airway/Alveolar macrophages",
+        "Alveolar fibroblasts (collagen high)",
+        "Alveolar fibroblasts",
+        "Lipid-associated macrophages",
+    ]
+
+    # Build the full removal list for this ROI
+    cells_to_remove = list(CELLS_TO_REMOVE_ALL)
+    if "COPD" in roi:
+        cells_to_remove.extend(COPD_CELLS_TO_REMOVE)
+        logger.info(
+            f"[{roi}] COPD domain detected — applying COPD-specific cell type "
+            f"filtering in addition to universal filtering."
+        )
+    else:
+        logger.info(
+            f"[{roi}] Non-COPD domain — applying universal filtering only "
+            f"(Unknown + nan)."
+        )
+
+    # Get the Cell Type label array
+    cell_type_labels = domain.labels["Cell Type"]["labels"]
+    n_objects_before = len(cell_type_labels)
+    types_before = sorted(set(cell_type_labels))
+
+    # Build boolean keep mask: True = keep, False = remove
+    keep_mask = ~np.isin(cell_type_labels, cells_to_remove)
+
+    n_removed = int((~keep_mask).sum())
+    types_being_removed = [ct for ct in cells_to_remove if ct in types_before]
+
+    logger.info(f"[{roi}] Objects BEFORE filtering: {n_objects_before}")
+    logger.info(f"[{roi}] Cell types being removed: {types_being_removed}")
+    logger.info(f"[{roi}] Objects to remove: {n_removed}")
+
+    # Apply mask to every per-object label array
+    for label_name in list(domain.labels.keys()):
+        arr = domain.labels[label_name]["labels"]
+        if len(arr) == n_objects_before:  # only filter per-object arrays
+            domain.labels[label_name]["labels"] = arr[keep_mask]
+
+    n_objects_after = int(keep_mask.sum())
+    types_after = sorted(set(domain.labels["Cell Type"]["labels"]))
+
+    logger.info(
+        f"[{roi}] Objects AFTER filtering: {n_objects_after} ({n_removed} removed)"
+    )
+    logger.info(f"[{roi}] Remaining cell types: {types_after}")
+
+    # Verify none of the removed types remain
+    remaining_removed = [ct for ct in cells_to_remove if ct in types_after]
+    if remaining_removed:
+        logger.warning(
+            f"[{roi}] WARNING — these types were not fully removed: {remaining_removed}"
+        )
+    else:
+        logger.info(
+            f"[{roi}] Filtering verified — all target cell types successfully removed."
+        )
+
+    return domain
+
+
 def main():
     """Main function to create and save a MuSpAn domain for a given ROI."""
     (
@@ -262,6 +354,10 @@ def main():
         label_name="Cell Type level 3",
         logger=logger,
     )
+
+    # Filter unwanted cell types from the domain based on the ROI condition
+    logger.info(f"Filtering unwanted cell types from domain for {roi}...")
+    domain = filter_cell_types(domain, roi, logger)
 
     # Convert cell boundaries to cell centers (centroids)
     logger.info("Convert cell boundaries to cell centers (centroids)")

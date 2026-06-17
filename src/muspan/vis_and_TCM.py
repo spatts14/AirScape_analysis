@@ -17,7 +17,14 @@ output_dir = Path(base_dir / "manual_visualizations")
 output_dir.mkdir(parents=True, exist_ok=True)
 
 # Load domain
-domain = ms.io.load_domain(str(data_dir / "COPD_R003_V2_muspan_domain.muspan"))
+domain = ms.io.load_domain(str(data_dir / "COPD_R009_V2_muspan_domain.muspan"))
+
+# COPD_R009
+# COPD_R021
+# COPD_R025
+# COPD_R036
+# COPD_R039
+# COPD_R041
 
 # make domain directory for saving visualizations
 domain_output_dir = output_dir / domain.name
