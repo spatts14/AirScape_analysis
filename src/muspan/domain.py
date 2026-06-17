@@ -349,19 +349,19 @@ def main():
     logger.info(f"Filtering unwanted cell types from domain for {roi}...")
     domain = filter_cell_types(domain, roi, logger)
 
-    # # Save the filtered domain
-    # logger.info(f"Saving filtered domain for {roi}...")
-    # ms.io.save_domain(
-    #     domain, name_of_file=f"{roi}_muspan_domain", path_to_save=str(domains_dir)
-    # )
-    # logger.info("Filtered domain saved")
+    # Save the filtered domain
+    logger.info(f"Saving filtered domain for {roi}...")
+    ms.io.save_domain(
+        domain, name_of_file=f"{roi}_muspan_domain", path_to_save=str(domains_dir)
+    )
+    logger.info("Filtered domain saved")
 
-    # # Reload the saved filtered domain
-    # # Reload so all subsequent muspan operations use the saved filtered file
-    # logger.info(f"Reloading saved filtered domain for {roi}...")
-    # saved_domain_path = domains_dir / f"{roi}_muspan_domain.muspan"
-    # domain = ms.io.load_domain(str(saved_domain_path))
-    # logger.info(f"Reloaded domain: {domain}")
+    # Reload the saved filtered domain
+    # Reload so all subsequent muspan operations use the saved filtered file
+    logger.info(f"Reloading saved filtered domain for {roi}...")
+    saved_domain_path = domains_dir / f"{roi}_muspan_domain.muspan"
+    domain = ms.io.load_domain(str(saved_domain_path))
+    logger.info(f"Reloaded domain: {domain}")
 
     # Convert cell boundaries to cell centers (centroids)
     logger.info("Convert cell boundaries to cell centers (centroids)")
@@ -470,16 +470,6 @@ def main():
                 edgecolors="none",
             ),
         ),
-        add_scalebar=True,
-        scalebar_kwargs={
-            "size": 1000,
-            "label": "1000µm",
-            "loc": "lower right",
-            "pad": 0.1,
-            "color": "black",
-            "frameon": False,
-            "size_vertical": 2,
-        },
     )
 
     plt.savefig(roi_dir / f"{roi}_delaunay_cc.png")
@@ -493,7 +483,6 @@ def main():
         edge_width=0.2,
         edge_cmap="#060606",
         add_cbar=False,
-        add_scalebar=True,
         visualise_kwargs=dict(
             objects_to_plot=("collection", "Cell centroids"),
             marker_size=0.5,
@@ -503,15 +492,6 @@ def main():
                 edgecolors="none",
             ),
         ),
-        scalebar_kwargs={
-            "size": 1000,
-            "label": "1000µm",
-            "loc": "lower right",
-            "pad": 0.1,
-            "color": "black",
-            "frameon": False,
-            "size_vertical": 2,
-        },
     )
     plt.savefig(roi_dir / f"{roi}_delaunay_cc_filtered.png")
     plt.savefig(roi_dir / f"{roi}_delaunay_cc_filtered.pdf")
@@ -524,7 +504,6 @@ def main():
         edge_width=0.2,
         edge_cmap="#060606",
         add_cbar=False,
-        add_scalebar=True,
         visualise_kwargs=dict(
             objects_to_plot=("collection", "Cell centroids"),
             marker_size=0.5,
@@ -534,15 +513,6 @@ def main():
                 edgecolors="none",
             ),
         ),
-        scalebar_kwargs={
-            "size": 1000,
-            "label": "1000µm",
-            "loc": "lower right",
-            "pad": 0.1,
-            "color": "black",
-            "frameon": False,
-            "size_vertical": 2,
-        },
     )
     plt.savefig(roi_dir / f"{roi}_proximity_30um.png")
     plt.savefig(roi_dir / f"{roi}_proximity_30um.pdf")
