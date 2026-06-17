@@ -222,6 +222,7 @@ outpath = base_path / "output" / "muspan" / "APT_plots"
 heatmap_path = outpath / "heatmaps_zscores"
 barplot_path_zscore = outpath / "barplots_zscores"
 
+
 # Create directories
 for path in [outpath, heatmap_path, barplot_path_zscore]:
     path.mkdir(parents=True, exist_ok=True)
