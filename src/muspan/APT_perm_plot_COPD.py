@@ -516,6 +516,25 @@ def make_plot(
     return stats_results
 
 
+def is_valid_for_analysis(df, min_n=3):
+    required = [
+        "BASELINE SHAM",
+        "BASELINE TREATMENT",
+        "6 WEEKS SHAM",
+        "6 WEEKS TREATMENT",
+        "6 MONTHS SHAM",
+        "6 MONTHS TREATMENT",
+    ]
+
+    counts = df.groupby("time_treatment_arm")["SES (p-val nonfiltered)"].count()
+
+    for r in required:
+        if counts.get(r, 0) < min_n:
+            return False
+
+    return True
+
+
 # # Base project path
 base_path = Path(
     "/rds/general/user/sep22/projects/phenotypingsputumasthmaticsaurorawellcomea1/live/Sara_Patti/009_ST_Xenium/"
@@ -740,6 +759,14 @@ for celltype_1 in all_cell_types_list:
 
         # Drop NaN values before plotting
         plot_df = plot_df.dropna(subset=["SES (p-val nonfiltered)"])
+
+        # Ensure sufficient observations for plotting and statistical analysis
+        if not is_valid_for_analysis(plot_df):
+            print(
+                f"Skipping {celltype_1} vs {cell_type_2}: "
+                f"insufficient observations per time_treatment_arm"
+            )
+            continue
 
         # Set order of conditions for plotting if diagnosis column is present
         if meta_column in plot_df.columns:
