@@ -615,7 +615,7 @@ all_cell_types_list = list(celltype_dict.keys())
 stats_results_dict = {}
 
 # Plot heatmaps and barplots for each cell type
-for celltype_1 in all_cell_types_list[:2]:
+for celltype_1 in all_cell_types_list:
     # Sanitize cell type name for file paths
     safe_cell_type_1 = celltype_1.replace("/", "_").replace(" ", "_")
 
