@@ -571,7 +571,12 @@ for celltype_1 in all_cell_types_list:
     safe_cell_type_1 = celltype_1.replace("/", "_").replace(" ", "_")
 
     # HEATMAP OF APT Z-SCORES FOR ALL NEIGHBORING CELL TYPES
-    # Heatmap data
+
+    # Make directory for heatmaps if it doesn't exist
+    fig_dir_heatmap = fig_dir / "heatmaps"
+    fig_dir_heatmap.mkdir(parents=True, exist_ok=True)
+
+    # Build heatmap dataframe for this cell type
     celltype_df = pd.DataFrame(celltype_dict[celltype_1])
     heatmap_df = celltype_df.apply(pd.to_numeric, errors="coerce").fillna(0)
 
@@ -636,7 +641,7 @@ for celltype_1 in all_cell_types_list:
     )
 
     plt.savefig(
-        fig_dir / f"{safe_cell_type_1}_APT_SES_p_val_nonfiltered_heatmap.pdf",
+        fig_dir_heatmap / f"{safe_cell_type_1}_APT_SES_p_val_nonfiltered_heatmap.pdf",
         bbox_inches="tight",
     )
     plt.close()
@@ -652,7 +657,11 @@ for celltype_1 in all_cell_types_list:
             )
 
         # make directory for this cell type if it doesn't exist
-        celltype_dir = fig_dir / f"{safe_cell_type_1}_{safe_cell_type_2}"
+        celltype_dir = (
+            fig_dir
+            / "cellcomparison_boxplots"
+            / f"{safe_cell_type_1}_{safe_cell_type_2}"
+        )
         celltype_dir.mkdir(parents=True, exist_ok=True)
 
         # Extract the dataframe for this cell type across conditions
@@ -733,12 +742,12 @@ for celltype_1 in all_cell_types_list:
         ax.set_title(f"{celltype_1}", fontsize=14)
         ax.set_xticklabels([""])
         ax.set_xlabel(cell_type_2, fontsize=14)
-        ax.set_ylabel("SES (p-val nonfiltered)", fontsize=14)
+        ax.set_ylabel("SES", fontsize=14)
 
         plt.tight_layout()
         plt.savefig(
             celltype_dir
-            / f"{safe_cell_type_1}_{safe_cell_type_2}_{meta_column}_SES_p_val_filt.pdf"
+            / f"{safe_cell_type_1}_{safe_cell_type_2}_{meta_column}_SES_p_val_nonfiltered.pdf"
         )
         plt.close()
 
@@ -760,11 +769,12 @@ for celltype_1 in all_cell_types_list:
             palette=treatment_arm_palette_list,
             ax=ax,
         )
+        ax.set_ylabel("SES", fontsize=14)
 
         plt.tight_layout()
         plt.savefig(
             celltype_dir
-            / f"TREATMENT_SHAM_{safe_cell_type_1}_{safe_cell_type_2}_{meta_column}_SES_p_val.pdf"
+            / f"TREATMENT_SHAM_{safe_cell_type_1}_{safe_cell_type_2}_{meta_column}_SES_p_val_nonfiltered.pdf"
         )
 
         plt.close()
@@ -841,12 +851,12 @@ for celltype_1 in all_cell_types_list:
         )
 
         plt.title(f"{celltype_1} vs {cell_type_2}", fontsize=14)
-        plt.xlabel("Time Point", fontsize=14)
-        plt.ylabel("Change from Baseline (SES)", fontsize=14)
+        plt.xlabel(" ", fontsize=14)
+        plt.ylabel("SES (normalized to baseline)", fontsize=14)
         plt.tight_layout()
         plt.savefig(
             celltype_dir
-            / f"CHANGE_FROM_BASELINE_{safe_cell_type_1}_{safe_cell_type_2}_{meta_column}_SES_p_val.pdf"
+            / f"CHANGE_FROM_BASELINE_{safe_cell_type_1}_{safe_cell_type_2}_{meta_column}_SES_p_val_nonfiltered.pdf"
         )
         plt.close()
 
@@ -867,12 +877,12 @@ for celltype_1 in all_cell_types_list:
         plt.axhline(0, color="gray", linestyle="--")
 
         plt.title(f"{celltype_1} vs {cell_type_2}", fontsize=14)
-        plt.xlabel("Time Point", fontsize=14)
-        plt.ylabel("Change from Baseline (SES)", fontsize=14)
+        plt.xlabel(" ", fontsize=14)
+        plt.ylabel("SES (normalized to baseline)", fontsize=14)
         plt.tight_layout()
         plt.savefig(
             celltype_dir
-            / f"LINEPLOT_CHANGE_FROM_BASELINE_{safe_cell_type_1}_{safe_cell_type_2}_{meta_column}_SES_p_val.pdf"
+            / f"LINEPLOT_CHANGE_FROM_BASELINE_{safe_cell_type_1}_{safe_cell_type_2}_{meta_column}_SES_p_val_nonfiltered.pdf"
         )
 
         plt.close()
