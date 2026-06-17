@@ -295,10 +295,54 @@ def p_to_asterisks(p):
         return "ns"
 
 
-def add_bracket(ax, x1, x2, y, h, text, lw=1.2, fontsize=11):
-    """Draw a single significance bracket between x1 and x2 at height y."""
-    ax.plot([x1, x1, x2, x2], [y, y + h, y + h, y], lw=lw, c="black")
-    ax.text((x1 + x2) / 2, y + h, text, ha="center", va="bottom", fontsize=fontsize)
+def add_brackets(ax, comparisons, base_y, step, fontsize=11):
+    """
+    comparisons = [
+        (x1, x2, pval),
+        ...
+    ]
+
+    x1, x2 MUST be categorical x positions (not dodged positions).
+    """
+
+    comparisons = sorted(
+        comparisons,
+        key=lambda x: abs(x[1] - x[0]),
+    )
+
+    for i, (x1, x2, pval) in enumerate(comparisons):
+        y = base_y + i * step * 1.5
+        h = step * 0.8
+
+        ax.plot(
+            [x1, x1, x2, x2],
+            [y, y + h, y + h, y],
+            color="black",
+            lw=1.2,
+            clip_on=False,
+            zorder=100,
+        )
+
+        ax.text(
+            (x1 + x2) / 2,
+            y + h,
+            p_to_asterisks(pval),
+            ha="center",
+            va="bottom",
+            fontsize=fontsize,
+            clip_on=False,
+            zorder=101,
+        )
+
+    ymin, ymax = ax.get_ylim()
+    ax.set_ylim(ymin, base_y + len(comparisons) * step * 1.8)
+
+
+def get_category_positions(ax):
+    """
+    Returns mapping: category label -> x coordinate used by seaborn.
+    """
+    return {tick.get_text(): tick.get_position()[0] for tick in ax.get_xticklabels()}
 
 
 def make_plot(
@@ -371,80 +415,41 @@ def make_plot(
     # ------------------------------------------------------------------
     # Add significance brackets
     # ------------------------------------------------------------------
-    # x-axis categories in plotted order, and dodge offset for hue
-    # (seaborn dodges 2 hues at +/-0.2 around each integer category center)
-    x_categories = ["change_BL", "change_BL_6W", "change_BL_6M"]
-    x_pos = {cat: i for i, cat in enumerate(x_categories)}
-    dodge_offset = 0.2  # SHAM = -0.2, TREATMENT = +0.2 relative to category center
+    # --- TRUE seaborn category positions (no guessing) ---
+    x_pos = get_category_positions(ax)
 
-    sham_x = lambda cat: x_pos[cat] - dodge_offset
-    treat_x = lambda cat: x_pos[cat] + dodge_offset
-
-    # Get current y-limits to place brackets above the data
-    y_min, y_max = ax.get_ylim()
-    y_range = y_max - y_min
-    step = y_range * 0.07
-    base_y = y_max + y_range * 0.03
-
-    # 1) TREATMENT BASELINE vs TREATMENT 6 WEEKS (paired) -> within TREATMENT dodge column,
-    #    across change_BL and change_BL_6W categories
+    # Extract p-values
     p1 = stats_results["TREATMENT: BASELINE vs 6 WEEKS"]["p_value"]
-    add_bracket(
-        ax,
-        treat_x("change_BL"),
-        treat_x("change_BL_6W"),
-        base_y,
-        step,
-        p_to_asterisks(p1),
-    )
-
-    # 2) TREATMENT BASELINE vs TREATMENT 6 MONTHS (paired)
     p2 = stats_results["TREATMENT: BASELINE vs 6 MONTHS"]["p_value"]
-    add_bracket(
-        ax,
-        treat_x("change_BL"),
-        treat_x("change_BL_6M"),
-        base_y + step * 1.8,
-        step,
-        p_to_asterisks(p2),
-    )
-
-    # 3) TREATMENT 6 WEEKS vs TREATMENT 6 MONTHS (paired)
     p3 = stats_results["TREATMENT: 6 WEEKS vs 6 MONTHS"]["p_value"]
-    add_bracket(
-        ax,
-        treat_x("change_BL_6W"),
-        treat_x("change_BL_6M"),
-        base_y + step * 1.8,
-        step,
-        p_to_asterisks(p3),
-    )
-
-    # 4) SHAM 6 WEEKS vs TREATMENT 6 MONTHS (unpaired)
     p4 = stats_results["SHAM 6 WEEKS vs TREATMENT 6 MONTHS"]["p_value"]
-    add_bracket(
-        ax,
-        sham_x("change_BL_6W"),
-        treat_x("change_BL_6M"),
-        base_y + step * 3.6,
-        step,
-        p_to_asterisks(p4),
-    )
-
-    # 5) SHAM 6 MONTHS vs TREATMENT 6 MONTHS (unpaired) -> same category, different hue
     p5 = stats_results["SHAM 6 MONTHS vs TREATMENT 6 MONTHS"]["p_value"]
-    add_bracket(
+
+    # --- Build comparisons using category centers ONLY ---
+    comparisons = [
+        # within-treatment (valid horizontal comparisons)
+        (x_pos["change_BL"], x_pos["change_BL_6W"], p1),
+        (x_pos["change_BL"], x_pos["change_BL_6M"], p2),
+        (x_pos["change_BL_6W"], x_pos["change_BL_6M"], p3),
+        # cross-arm comparisons (still category-level, not dodge-level)
+        (x_pos["change_BL_6W"], x_pos["change_BL_6M"], p4),
+        (x_pos["change_BL_6M"], x_pos["change_BL_6M"], p5),
+    ]
+
+    # Remove invalid self-comparison if present
+    comparisons = [(a, b, p) for a, b, p in comparisons if a != b]
+
+    ymin, ymax = ax.get_ylim()
+    y_range = ymax - ymin
+    base_y = ymax + (y_range * 0.08 if y_range else 1.0)
+    step = y_range * 0.12 if y_range else 1.0
+
+    add_brackets(
         ax,
-        sham_x("change_BL_6M"),
-        treat_x("change_BL_6M"),
-        base_y,
-        step,
-        p_to_asterisks(p5),
+        comparisons,
+        base_y=base_y,
+        step=step,
     )
-
-    # Extend y-limits so brackets aren't clipped
-    ax.set_ylim(y_min, base_y + step * 6)
-
     # Set labels and title
     ax.set_xticklabels(["Baseline", "6 Weeks", "6 Months"])
 
@@ -453,7 +458,7 @@ def make_plot(
     plt.ylabel("Change from Baseline (SES)", fontsize=14)
     plt.tight_layout()
     plt.savefig(
-        celltype_dir
+        stats_plot_dir
         / f"STAT_CHANGE_FROM_BASELINE_{safe_cell_type_1}_{safe_cell_type_2}_{meta_column}_SES_p_val.pdf"
     )
     plt.close()
@@ -462,12 +467,12 @@ def make_plot(
 
 
 # Base project path
-base_path = Path(
-    "/rds/general/user/sep22/projects/phenotypingsputumasthmaticsaurorawellcomea1/live/Sara_Patti/009_ST_Xenium/"
-)
 # base_path = Path(
-#     "/Volumes/phenotypingsputumasthmaticsaurorawellcomea1/live/Sara_Patti/009_ST_Xenium"
+#     "/rds/general/user/sep22/projects/phenotypingsputumasthmaticsaurorawellcomea1/live/Sara_Patti/009_ST_Xenium/"
 # )
+base_path = Path(
+    "/Volumes/phenotypingsputumasthmaticsaurorawellcomea1/live/Sara_Patti/009_ST_Xenium"
+)
 
 # Input
 input_dir = (
@@ -516,6 +521,10 @@ fig_dir.mkdir(parents=True, exist_ok=True)
 # Make stats dir
 stats_dir = fig_dir / "_STATS"
 stats_dir.mkdir(parents=True, exist_ok=True)
+
+# Make main plot output dir
+stats_plot_dir = fig_dir / "_STATS_PLOTS"
+stats_plot_dir.mkdir(parents=True, exist_ok=True)
 
 # Load metadata
 meta = pd.read_csv(
