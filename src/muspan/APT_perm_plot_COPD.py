@@ -347,7 +347,7 @@ def get_category_positions(ax):
 
 def make_plot(
     plot_df,
-    celltype_dir,
+    stats_plot_dir,
     celltype_1,
     cell_type_2,
     safe_cell_type_1,
@@ -467,12 +467,12 @@ def make_plot(
 
 
 # Base project path
-# base_path = Path(
-#     "/rds/general/user/sep22/projects/phenotypingsputumasthmaticsaurorawellcomea1/live/Sara_Patti/009_ST_Xenium/"
-# )
 base_path = Path(
-    "/Volumes/phenotypingsputumasthmaticsaurorawellcomea1/live/Sara_Patti/009_ST_Xenium"
+    "/rds/general/user/sep22/projects/phenotypingsputumasthmaticsaurorawellcomea1/live/Sara_Patti/009_ST_Xenium/"
 )
+# base_path = Path(
+#     "/Volumes/phenotypingsputumasthmaticsaurorawellcomea1/live/Sara_Patti/009_ST_Xenium"
+# )
 
 # Input
 input_dir = (
@@ -783,9 +783,11 @@ for celltype_1 in all_cell_types_list:
             var_name="time_point_label",
             value_name="change_from_baseline",
         )
+
+        # Plot with stats
         stats_results = make_plot(
             plot_df=plot_df,
-            celltype_dir=celltype_dir,
+            stats_plot_dir=stats_plot_dir,
             celltype_1=celltype_1,
             cell_type_2=cell_type_2,
             safe_cell_type_1=safe_cell_type_1,
@@ -794,9 +796,10 @@ for celltype_1 in all_cell_types_list:
             treatment_arm_palette_list=treatment_arm_palette_list,
         )
 
+        # Store stats results in dictionary for later export
         stats_results_dict[(celltype_1, cell_type_2)] = stats_results
 
-        # Box plot
+        # Box plot (without stats brackets)
         sns.set_style("white")
         fig, ax = plt.subplots(figsize=(6, 5))
         sns.stripplot(
@@ -847,7 +850,7 @@ for celltype_1 in all_cell_types_list:
         )
         plt.close()
 
-        ## Line plot
+        ## Line plot (without stats brackets)
         sns.set_style("white")
         fig, ax = plt.subplots(figsize=(6, 5))
         sns.lineplot(
