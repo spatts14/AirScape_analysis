@@ -368,6 +368,20 @@ def main():
     logger.info(f"Filtering unwanted cell types from domain for {roi}...")
     domain = filter_cell_types(domain, roi, logger)
 
+    # Save the filtered domain
+    logger.info(f"Saving filtered domain for {roi}...")
+    ms.io.save_domain(
+        domain, name_of_file=f"{roi}_muspan_domain", path_to_save=str(domains_dir)
+    )
+    logger.info("Filtered domain saved")
+
+    # Reload the saved filtered domain
+    # Reload so all subsequent muspan operations use the saved filtered file
+    logger.info(f"Reloading saved filtered domain for {roi}...")
+    saved_domain_path = domains_dir / f"{roi}_muspan_domain.muspan"
+    domain = ms.io.load_domain(str(saved_domain_path))
+    logger.info(f"Reloaded domain: {domain}")
+
     # Convert cell boundaries to cell centers (centroids)
     logger.info("Convert cell boundaries to cell centers (centroids)")
     domain.convert_objects(
@@ -392,6 +406,15 @@ def main():
         color_by=("label", "Cell Type"),
         objects_to_plot=boundCells,
         shape_kwargs=dict(alpha=1, linewidth=0.01, edgecolor="#00000000"),
+        scalebar_kwargs={
+            "size": 1000,
+            "label": "1000µm",
+            "loc": "lower right",
+            "pad": 0.1,
+            "color": "black",
+            "frameon": False,
+            "size_vertical": 2,
+        },
     )
     plt.savefig(roi_dir / f"{roi}_cell_types_boundaries.png")
     plt.savefig(roi_dir / f"{roi}_cell_types_boundaries.pdf")
@@ -455,7 +478,17 @@ def main():
                 edgecolors="none",
             ),
         ),
+        scalebar_kwargs={
+            "size": 1000,
+            "label": "1000µm",
+            "loc": "lower right",
+            "pad": 0.1,
+            "color": "black",
+            "frameon": False,
+            "size_vertical": 2,
+        },
     )
+
     plt.savefig(roi_dir / f"{roi}_delaunay_cc.png")
     plt.savefig(roi_dir / f"{roi}_delaunay_cc.pdf")
 
@@ -476,6 +509,15 @@ def main():
                 edgecolors="none",
             ),
         ),
+        scalebar_kwargs={
+            "size": 1000,
+            "label": "1000µm",
+            "loc": "lower right",
+            "pad": 0.1,
+            "color": "black",
+            "frameon": False,
+            "size_vertical": 2,
+        },
     )
     plt.savefig(roi_dir / f"{roi}_delaunay_cc_filtered.png")
     plt.savefig(roi_dir / f"{roi}_delaunay_cc_filtered.pdf")
@@ -497,6 +539,15 @@ def main():
                 edgecolors="none",
             ),
         ),
+        scalebar_kwargs={
+            "size": 1000,
+            "label": "1000µm",
+            "loc": "lower right",
+            "pad": 0.1,
+            "color": "black",
+            "frameon": False,
+            "size_vertical": 2,
+        },
     )
     plt.savefig(roi_dir / f"{roi}_proximity_30um.png")
     plt.savefig(roi_dir / f"{roi}_proximity_30um.pdf")
