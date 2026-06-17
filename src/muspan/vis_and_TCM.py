@@ -32,7 +32,7 @@ for domain_name in list:
     print(f"Processing domain: {domain_name}")
 
     # Load domain
-    domain = ms.io.load_domain(str(data_dir / f"{domain_name}_muspan_domain.muspan"))
+    domain = ms.io.load_domain(str(data_dir / f"{domain_name}_V2_muspan_domain.muspan"))
 
     # make domain directory for saving visualizations
     domain_output_dir = output_dir / domain.name
