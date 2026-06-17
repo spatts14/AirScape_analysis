@@ -367,7 +367,7 @@ for celltype_1 in all_cell_types_list:
     plt.close()
 
     # BOX PLOTS OF APT Z-SCORES FOR EACH NEIGHBORING CELL TYPE, FACETTED BY DIAGNOSIS
-    for cell_type_2 in all_cell_types_list[:2]:
+    for cell_type_2 in all_cell_types_list:
         # Make cell_type_2_of_interest safe for file paths
         safe_cell_type_2 = cell_type_2.replace("/", "_").replace(" ", "_")
 
@@ -377,7 +377,7 @@ for celltype_1 in all_cell_types_list:
             )
 
         # make directory for this cell type if it doesn't exist
-        celltype_dir = fig_dir / safe_cell_type_1
+        celltype_dir = fig_dir / safe_cell_type_1 + "_" + safe_cell_type_2
         celltype_dir.mkdir(parents=True, exist_ok=True)
 
         # Extract the dataframe for this cell type across conditions
