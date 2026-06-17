@@ -52,6 +52,7 @@ domain.update_colors(
 
 
 # Visualize the domain with cell boundaries
+print("Visualizing the domain with cell boundaries...")
 fig, ax = plt.subplots(figsize=(10, 5))
 ms.visualise.visualise(
     domain,
@@ -84,15 +85,16 @@ ms.visualise.visualise(
         "size_vertical": 2,
     },
 )
-plt.title(f"Domain: {domain.name} - Cell Types: {cell1} and {cell2}")
+plt.title(f"Cell Types: {cell1} and {cell2}")
 plt.tight_layout()
 plt.savefig(
-    domain_output_dir / f"{domain.name}_cell_types_{cell1}_{cell2}.png", dpi=300
+    domain_output_dir / f"cell_types_{cell1}_{cell2}_{domain.name}.png", dpi=300
 )
 
 
 # Calculate TCM
-# compute and visualise the topographical correlation map between points '
+# compute and visualise the topographical correlation map between points
+print(f"Calculating TCM between {cell1} and {cell2}...")
 TCM_array = ms.spatial_statistics.topographical_correlation_map(
     domain,
     population_A=("Cell Type", cell1),
@@ -105,6 +107,7 @@ TCM_array = ms.spatial_statistics.topographical_correlation_map(
 )
 
 # Visualize TCM
+print(f"Visualizing TCM between {cell1} and {cell2}...")
 fig, ax = plt.subplots(figsize=(10, 8))
 ms.visualise.visualise(
     domain,
@@ -137,8 +140,11 @@ ms.visualise.visualise_topographical_correlation_map(
     tcm_cmap="RdBu_r",
     colorbar_label="TCM",
 )
-plt.title(f"Domain: {domain.name} - Cell Types: {cell1} and {cell2}")
+plt.title(f"Cell Types: {cell1} and {cell2}")
 plt.tight_layout()
 plt.savefig(
-    domain_output_dir / f"{domain.name}_cell_types_{cell1}_{cell2}_TCM.png", dpi=300
+    domain_output_dir / f"cell_types_{cell1}_{cell2}_{domain.name}_TCM.png", dpi=300
 )
+
+print(f"TCM calculation and visualization completed for {cell1} and {cell2}.")
+print("Finished!")
