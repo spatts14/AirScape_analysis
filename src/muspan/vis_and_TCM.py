@@ -58,12 +58,14 @@ for domain_name in list:
         label_name="Cell Type",
     )
 
+    bound_cells_query = ms.query.query(domain, ("Collection",), "is", "Cell boundaries")
+
     # Visualize the domain with cell boundaries
     print("Visualizing the domain with cell boundaries...")
     fig, ax = plt.subplots(figsize=(10, 5))
     ms.visualise.visualise(
         domain,
-        objects_to_plot=("collection", "Cell boundaries"),
+        objects_to_plot=bound_cells_query,
         add_cbar=False,
         shape_kwargs={
             "alpha": 0.5,
@@ -117,7 +119,7 @@ for domain_name in list:
     fig, ax = plt.subplots(figsize=(10, 8))
     ms.visualise.visualise(
         domain,
-        objects_to_plot=("collection", "Cell boundaries"),
+        objects_to_plot=bound_cells_query,
         add_cbar=False,
         shape_kwargs={
             "alpha": 0.5,
