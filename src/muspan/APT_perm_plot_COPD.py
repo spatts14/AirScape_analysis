@@ -377,7 +377,7 @@ for celltype_1 in all_cell_types_list:
             )
 
         # make directory for this cell type if it doesn't exist
-        celltype_dir = fig_dir / safe_cell_type_1 + "_" + safe_cell_type_2
+        celltype_dir = fig_dir / f"{safe_cell_type_1}_{safe_cell_type_2}"
         celltype_dir.mkdir(parents=True, exist_ok=True)
 
         # Extract the dataframe for this cell type across conditions
