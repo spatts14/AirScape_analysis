@@ -493,6 +493,9 @@ alpha_level = 0.05
 fig_dir = outpath / "COPD"
 fig_dir.mkdir(parents=True, exist_ok=True)
 
+# Make stats dir
+stats_dir = fig_dir / "stats"
+stats_dir.mkdir(parents=True, exist_ok=True)
 
 # Load metadata
 meta = pd.read_csv(
@@ -530,6 +533,8 @@ for cell_type in cell_type_list:
 
 # Get all cell types for plotting barplots
 all_cell_types_list = list(celltype_dict.keys())
+
+stats_results_dict = {}
 
 # Plot heatmaps and barplots for each cell type
 for celltype_1 in all_cell_types_list:
@@ -701,27 +706,6 @@ for celltype_1 in all_cell_types_list:
         ax.set_xlabel(cell_type_2, fontsize=14)
         ax.set_ylabel("SES (p-val nonfiltered)", fontsize=14)
 
-        # Add significance annotation if p-value is below alpha level
-        # if p_value < alpha_level:
-        #     # add significance annotation
-        #     ax.annotate(
-        #         "",
-        #         xy=(0.25, 0.97),
-        #         xycoords="axes fraction",
-        #         xytext=(0.75, 0.97),
-        #         textcoords="axes fraction",
-        #         arrowprops=dict(arrowstyle="-", color="k", lw=1),
-        #     )
-        #     ax.text(
-        #         0.5,
-        #         0.96,
-        #         "*",
-        #         ha="center",
-        #         va="bottom",
-        #         transform=ax.transAxes,
-        #         color="k",
-        #     )
-
         plt.tight_layout()
         plt.savefig(
             celltype_dir
@@ -780,6 +764,8 @@ for celltype_1 in all_cell_types_list:
             meta_column=meta_column,
             treatment_arm_palette_list=treatment_arm_palette_list,
         )
+
+        stats_results_dict[(celltype_1, cell_type_2)] = stats_results
 
         # Box plot
         sns.set_style("white")
@@ -858,3 +844,15 @@ for celltype_1 in all_cell_types_list:
         )
 
         plt.close()
+
+        print(f"Completed plots for {celltype_1} vs {cell_type_2}.")
+
+# Export stats results to CSV
+stats_results_df = pd.DataFrame.from_dict(
+    {(i, j): stats_results_dict[(i, j)] for i, j in stats_results_dict.keys()},
+    orient="index",
+)
+stats_results_df.to_csv(stats_dir / "APT_stats_results.csv")
+
+print(f"All plots and stats results saved to {fig_dir} and {stats_dir}.")
+print("Script completed successfully.")
