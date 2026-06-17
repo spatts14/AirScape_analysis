@@ -400,26 +400,37 @@ def make_plot(
         p_to_asterisks(p2),
     )
 
-    # 3) SHAM 6 WEEKS vs TREATMENT 6 MONTHS (unpaired)
-    p3 = stats_results["SHAM 6 WEEKS vs TREATMENT 6 MONTHS"]["p_value"]
+    # 3) TREATMENT 6 WEEKS vs TREATMENT 6 MONTHS (paired)
+    p3 = stats_results["TREATMENT: 6 WEEKS vs 6 MONTHS"]["p_value"]
+    add_bracket(
+        ax,
+        treat_x("change_BL_6W"),
+        treat_x("change_BL_6M"),
+        base_y + step * 1.8,
+        step,
+        p_to_asterisks(p3),
+    )
+
+    # 4) SHAM 6 WEEKS vs TREATMENT 6 MONTHS (unpaired)
+    p4 = stats_results["SHAM 6 WEEKS vs TREATMENT 6 MONTHS"]["p_value"]
     add_bracket(
         ax,
         sham_x("change_BL_6W"),
         treat_x("change_BL_6M"),
         base_y + step * 3.6,
         step,
-        p_to_asterisks(p3),
+        p_to_asterisks(p4),
     )
 
-    # 4) SHAM 6 MONTHS vs TREATMENT 6 MONTHS (unpaired) -> same category, different hue
-    p4 = stats_results["SHAM 6 MONTHS vs TREATMENT 6 MONTHS"]["p_value"]
+    # 5) SHAM 6 MONTHS vs TREATMENT 6 MONTHS (unpaired) -> same category, different hue
+    p5 = stats_results["SHAM 6 MONTHS vs TREATMENT 6 MONTHS"]["p_value"]
     add_bracket(
         ax,
         sham_x("change_BL_6M"),
         treat_x("change_BL_6M"),
         base_y,
         step,
-        p_to_asterisks(p4),
+        p_to_asterisks(p5),
     )
 
     # Extend y-limits so brackets aren't clipped
