@@ -2,12 +2,14 @@
 
 import os
 from pathlib import Path
+import sys
 
 import anndata as ad
 import pandas as pd
 import scanpy as sc
 from scipy.sparse import issparse
 
+sys.path.append(str(Path(__file__).resolve().parents[1]))
 from utils.safe_name import safe_name
 from utils.seed_everything import seed_everything
 from utils.setup_logger import setup_logger
