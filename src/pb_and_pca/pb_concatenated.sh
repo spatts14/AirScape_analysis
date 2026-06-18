@@ -1,7 +1,7 @@
 
 #!/bin/bash
 #PBS -l walltime=01:00:00
-#PBS -lselect=1:ncpus=1:mem=96gb
+#PBS -lselect=1:ncpus=1:mem=256gb
 #PBS -N pb_concatenated
 #PBS -j oe
 
