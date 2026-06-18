@@ -106,8 +106,7 @@ logger = setup_logger(log_dir=logs_dir, log_name="pseudobulk_data_celltype")
 path = Path(
     "/rds/general/user/sep22/projects/phenotypingsputumasthmaticsaurorawellcomea1/live/Sara_Patti/009_ST_Xenium"
 )
-dir = path / "output/AIRSCAPE"
-input_dir = path / "data"
+input_dir = path / "output/AIRSCAPE"
 
 # Set figure directory
 out_dir = path / "output" / "pb" / "pb_data_celltype"
@@ -122,7 +121,7 @@ ROI_names = "ROI"
 
 # Load data
 logger.info("Loading data...")
-adata = ad.read_zarr(dir / "adata_final_object/adata_with_metadata.zarr")
+adata = ad.read_zarr(input_dir / "adata_final_object/adata_with_metadata.zarr")
 
 logger.info(f"adata shape: {adata.shape}")
 logger.info(f"adata.obs columns: {adata.obs.columns.tolist()}")
