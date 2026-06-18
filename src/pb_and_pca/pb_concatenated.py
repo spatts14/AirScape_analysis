@@ -1,6 +1,7 @@
 """Calculate pseudobulk differential expression for Xenium data."""
 
 import os
+import sys
 from pathlib import Path
 
 import anndata as ad
@@ -9,6 +10,7 @@ import scanpy as sc
 import seaborn as sns
 from scipy.sparse import issparse
 
+sys.path.append(str(Path(__file__).resolve().parents[2]))
 from utils.seed_everything import seed_everything
 from utils.setup_logger import setup_logger
 
