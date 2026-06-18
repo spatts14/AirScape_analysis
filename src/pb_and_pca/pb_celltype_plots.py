@@ -227,7 +227,7 @@ def main():
                 fontsize=14,
             )
             plt.tight_layout()
-            plt.savefig(cell_type_dir / f"{col}_{safe_name(cell_type)}_pca.pdf")
+            plt.savefig(out_dir / f"{col}_{safe_name(cell_type)}_pca.pdf")
             plt.close(fig)
             logger.info(f"PCA plot saved to {col}_{safe_name(cell_type)}_pca.pdf")
 
@@ -254,9 +254,7 @@ def main():
             g.figure.suptitle(f"PCA Pairplot of Pseudobulk Data: {col}", y=1.02)
             g.figure.tight_layout()
             g.figure.subplots_adjust(right=0.85)
-            g.figure.savefig(
-                cell_type_dir / f"{col}_{safe_name(cell_type)}_pca_pairplot.pdf"
-            )
+            g.figure.savefig(out_dir / f"{col}_{safe_name(cell_type)}_pca_pairplot.pdf")
             plt.close(g.figure)
             logger.info(
                 f"PCA pairplot saved to {col}_{safe_name(cell_type)}_pca_pairplot.pdf"
