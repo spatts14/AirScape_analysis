@@ -67,6 +67,7 @@ for domain_name in list:
     boundCells = ms.query.query(domain, ("Collection",), "is", "Cell boundaries")
 
     # Level 1
+    print("Visualizing level 1 cell types...")
     ms.visualise.visualise(
         domain,
         color_by=("label", "Cell Type level 1"),
@@ -95,6 +96,7 @@ for domain_name in list:
     )
 
     # Level 2
+    print("Visualizing level 2 cell types...")
     ms.visualise.visualise(
         domain,
         color_by=("label", "Cell Type"),
