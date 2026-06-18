@@ -97,8 +97,8 @@ def main():
     logs_dir = Path(path) / "logs"
     logger = setup_logger(log_dir=logs_dir, log_name="pseudobulk_plots")
 
-    dir = path / "output/2026-03-27_analysis_run"
-    out_dir = path / "output" / "pb" / "pb_data_celltype"
+    input_dir = path / "output" / "pb" / "pb_data_celltype"
+    out_dir = path / "output" / "pb" / "pb_plots_celltype"
 
     cmap = sns.color_palette("ch:start=.2,rot=-.3", as_cmap=True)
     cat_palette = sns.color_palette("Set2")
@@ -119,7 +119,7 @@ def main():
     ]
 
     logger.info("Loading saved pseudobulk outputs...")
-    results = load_celltype_results(out_dir)
+    results = load_celltype_results(input_dir)
     logger.info(f"Found {len(results)} cell type folders with saved outputs.")
 
     for cell_type, cell_type_dir, pb_sample, meta_df in results:
