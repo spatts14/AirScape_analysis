@@ -214,5 +214,7 @@ for domain_name in list:
     )
 
     print(f"TCM calculation and visualization completed for {cell1} and {cell2}.")
+    plt.close("all")
+    del domain
 
 print("Finished!")
