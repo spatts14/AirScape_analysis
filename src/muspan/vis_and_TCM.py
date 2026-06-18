@@ -41,6 +41,65 @@ for domain_name in list:
     # Print the unique cell types in the domain
     print(np.unique(domain.labels["Cell Type"]["labels"]))
 
+    # Boundaries of cells
+    boundCells = ms.query.query(domain, ("Collection",), "is", "Cell boundaries")
+
+    # Level 1
+    ms.visualise.visualise(
+        domain,
+        color_by=("label", "Cell Type level 1"),
+        objects_to_plot=boundCells,
+        shape_kwargs=dict(alpha=1, linewidth=0.01, edgecolor="#00000000"),
+        add_scalebar=True,
+        scalebar_kwargs={
+            "size": 1000,
+            "label": "1000µm",
+            "loc": "lower right",
+            "pad": 0.1,
+            "color": "black",
+            "frameon": False,
+            "size_vertical": 2,
+        },
+    )
+    plt.savefig(
+        domain_output_dir / "level_1_cell_types_boundaries.png",
+        bbox_inches="tight",
+        dpi=600,
+    )
+    plt.savefig(
+        domain_output_dir / "level_1_cell_types_boundaries.pdf",
+        bbox_inches="tight",
+        dpi=600,
+    )
+
+    # Level 2
+    ms.visualise.visualise(
+        domain,
+        color_by=("label", "Cell Type"),
+        objects_to_plot=boundCells,
+        shape_kwargs=dict(alpha=1, linewidth=0.01, edgecolor="#00000000"),
+        add_scalebar=True,
+        scalebar_kwargs={
+            "size": 1000,
+            "label": "1000µm",
+            "loc": "lower right",
+            "pad": 0.1,
+            "color": "black",
+            "frameon": False,
+            "size_vertical": 2,
+        },
+    )
+    plt.savefig(
+        domain_output_dir / "level_2_cell_types_boundaries.png",
+        bbox_inches="tight",
+        dpi=600,
+    )
+    plt.savefig(
+        domain_output_dir / "level_2_cell_types_boundaries.pdf",
+        bbox_inches="tight",
+        dpi=600,
+    )
+
     # Choose two cell types of interest for analysis
     cell1 = "Interstitial macrophages"
     cell2 = "Interstitial macrophages"
