@@ -3,6 +3,7 @@
 import os
 from pathlib import Path
 
+import anndata as ad
 import pandas as pd
 import scanpy as sc
 import seaborn as sns
@@ -195,14 +196,13 @@ ROI_names = "ROI"
 path = Path(
     "/rds/general/user/sep22/projects/phenotypingsputumasthmaticsaurorawellcomea1/live/Sara_Patti/009_ST_Xenium"
 )
-dir = path / "output/2026-03-27_analysis_run"
-input_dir = path / "data"
+path = Path(
+    "/rds/general/user/sep22/projects/phenotypingsputumasthmaticsaurorawellcomea1/live/Sara_Patti/009_ST_Xenium"
+)
+input_dir = path / "output/AIRSCAPE"
 
 # Set figure directory
-folder_name = "pb_data"
-out_path = f"project_analysis/general/{folder_name}"
-
-out_dir = dir / out_path
+out_dir = path / "output" / "pb" / "pb_data_concatenated"
 os.makedirs(out_dir, exist_ok=True)
 
 # set fig dir for plots to save to
@@ -214,7 +214,9 @@ color_palette_level_1 = sns.color_palette("hls", 12)
 
 # Load data
 logger.info("Loading data...")
-adata = sc.read_h5ad(dir / "annotate/adata_level_2_level_3.h5ad")  # full dataset
+adata = ad.read_zarr(
+    input_dir / "adata_final_object/adata_with_metadata.zarr"
+)  # full adata with all cells and metadata
 
 logger.info(f"adata shape: {adata.shape}")
 logger.info(f"adata.obs columns: {adata.obs.columns.tolist()}")
@@ -240,7 +242,7 @@ manual_meta = pd.read_csv(
 
 ### CALCULATE PSEUDOBULK AND PCA ON DONOR AND CELL LEVEL
 
-# Pseudobulk and PCA on all samples
+# Pseudobulk on all samples
 logger.info("Calculating pseudobulk for each cell type for each donor...")
 pb, meta = pseudobulk_sampleID_celltype(
     adata, celltype_col=level, donor_col=ROI_names, agg="sum"
