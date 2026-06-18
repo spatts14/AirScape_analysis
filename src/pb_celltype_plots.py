@@ -11,6 +11,7 @@ import sklearn
 from utils.confidence_ellipse import confidence_ellipse
 from utils.safe_name import safe_name
 from utils.setup_logger import setup_logger
+from utils.seed_everything import seed_everything
 
 
 def plot_metric(df, x, y, cell_type, palette_name="Set2"):
@@ -87,16 +88,17 @@ def load_celltype_results(out_dir: Path):
 
 def main():
     """Plot metrics and PCA from saved pseudobulk outputs."""
+    seed_everything(19960915)
 
     path = Path(
-        "/Volumes/phenotypingsputumasthmaticsaurorawellcomea1/live/Sara_Patti/009_ST_Xenium/"
+        "/rds/general/user/sep22/projects/phenotypingsputumasthmaticsaurorawellcomea1/live/Sara_Patti/009_ST_Xenium"
     )
 
     logs_dir = Path(path) / "logs"
     logger = setup_logger(log_dir=logs_dir, log_name="pseudobulk_plots")
 
     dir = path / "output/2026-03-27_analysis_run"
-    out_dir = dir / "project_analysis/general/pb_data_celltype"
+    out_dir = path / "output" / "pb" / "pb_data_celltype"
 
     cmap = sns.color_palette("ch:start=.2,rot=-.3", as_cmap=True)
     cat_palette = sns.color_palette("Set2")
