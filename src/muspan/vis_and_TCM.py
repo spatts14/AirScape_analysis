@@ -26,13 +26,35 @@ output_dir.mkdir(parents=True, exist_ok=True)
 # COPD_R041
 
 ## TREATMENT
-list = ["COPD_R011", "COPD_46005", "COPD_R003", "COPD_R014", "COPD_R035", "COPD_R038"]
+list = [
+    "IPF_RBH_16",
+    "PM08_167",
+    "MICA_III_319_315_311",
+    "COPD_R011_V1",
+    "COPD_46005_V1",
+    "COPD_R003_V1",
+    "COPD_R014_V1",
+    "COPD_R035_V1",
+    "COPD_R038_V1",
+    "COPD_R011_V2",
+    "COPD_46005_V2",
+    "COPD_R003_V2",
+    "COPD_R014_V2",
+    "COPD_R035_V2",
+    "COPD_R038_V2",
+    "COPD_R009_V2",
+    "COPD_R021_V2",
+    "COPD_R025_V2",
+    "COPD_R036_V2",
+    "COPD_R039_V2",
+    "COPD_R041_V2",
+]
 
 for domain_name in list:
     print(f"Processing domain: {domain_name}")
 
     # Load domain
-    domain = ms.io.load_domain(str(data_dir / f"{domain_name}_V2_muspan_domain.muspan"))
+    domain = ms.io.load_domain(str(data_dir / f"{domain_name}_muspan_domain.muspan"))
 
     # make domain directory for saving visualizations
     domain_output_dir = output_dir / domain.name
