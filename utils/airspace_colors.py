@@ -35,8 +35,8 @@ treatment_arm_palette = {
 
 time_point_palette = {
     "BASELINE": "#4A6699",  # deeper blue
-    "6 WEEKS":  "#B07D4A",  # warm tan
-    "6 MONTHS": "#7EB0B8",  # dusty teal
+    "6 WEEKS":  "#D09A64",  # warm tan
+    "6 MONTHS": "#8F5517",  # dusty teal
 }
 
 sex_palette = {
@@ -126,6 +126,8 @@ level_2_palette= {
     "Unknown":  "#A0A0A0",
     "nan": "#DDD9D9",
 }
+
+
 
 # Convert to ListedColormap for use in scanpy/squidpy
 level_2_listed = mcolors.ListedColormap([level_2_palette[key] for key in level_2_palette.keys()])

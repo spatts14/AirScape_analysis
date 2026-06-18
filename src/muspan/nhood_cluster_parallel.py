@@ -9,7 +9,8 @@ def ExecuteProcess(command):
     os.system(command)
 
 
-number_of_clusters_list = [8, 10, 12, 14, 16, 18, 20]
+number_of_clusters_list = [8, 20]
+# 10, 12, 14, 16, 18,
 
 # create empty multiprocessing tuples
 multiprocessing_tuple = tuple()
