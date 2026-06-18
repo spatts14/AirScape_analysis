@@ -2,6 +2,8 @@
 #!/bin/bash
 #PBS -l walltime=01:00:00
 #PBS -lselect=1:ncpus=1:mem=96gb
+#PBS -N pb_celltype
+#PBS -j oe
 
 # Load production tools
 module load tools/prod
