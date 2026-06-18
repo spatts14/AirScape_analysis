@@ -10,7 +10,6 @@ import sklearn
 
 from utils.confidence_ellipse import confidence_ellipse
 from utils.safe_name import safe_name
-from utils.seed_everything import seed_everything
 from utils.setup_logger import setup_logger
 
 
@@ -88,7 +87,6 @@ def load_celltype_results(out_dir: Path):
 
 def main():
     """Plot metrics and PCA from saved pseudobulk outputs."""
-    seed_everything(19960915)
 
     path = Path(
         "/Volumes/phenotypingsputumasthmaticsaurorawellcomea1/live/Sara_Patti/009_ST_Xenium/"
