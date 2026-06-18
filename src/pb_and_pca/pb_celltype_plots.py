@@ -101,6 +101,7 @@ def main():
 
     input_dir = path / "output" / "pb" / "pb_data_celltype"
     out_dir = path / "output" / "pb" / "pb_plots_celltype"
+    out_dir.mkdir(parents=True, exist_ok=True)
 
     cmap = sns.color_palette("ch:start=.2,rot=-.3", as_cmap=True)
     cat_palette = sns.color_palette("Set2")
