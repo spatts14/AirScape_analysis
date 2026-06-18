@@ -1,8 +1,8 @@
-"""Calculate pseudobulk and PCA for each cell type in Xenium data."""
+"""Calculate pseudobulk for each cell type in Xenium data."""
 
 import os
-from pathlib import Path
 import sys
+from pathlib import Path
 
 import anndata as ad
 import pandas as pd

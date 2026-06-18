@@ -1,5 +1,6 @@
 """Plot metrics and PCA for pseudobulk cell type data."""
 
+import sys
 from pathlib import Path
 
 import matplotlib.pyplot as plt
@@ -8,10 +9,11 @@ import pandas as pd
 import seaborn as sns
 import sklearn
 
+sys.path.append(str(Path(__file__).resolve().parents[2]))
 from utils.confidence_ellipse import confidence_ellipse
 from utils.safe_name import safe_name
-from utils.setup_logger import setup_logger
 from utils.seed_everything import seed_everything
+from utils.setup_logger import setup_logger
 
 
 def plot_metric(df, x, y, cell_type, palette_name="Set2"):
@@ -54,10 +56,10 @@ def plot_metric(df, x, y, cell_type, palette_name="Set2"):
     return fig
 
 
-def load_celltype_results(out_dir: Path):
+def load_celltype_results(input_dir: Path):
     """Load saved pseudobulk matrices and metadata for each cell type."""
     results = []
-    for cell_type_dir in sorted(p for p in out_dir.iterdir() if p.is_dir()):
+    for cell_type_dir in sorted(p for p in input_dir.iterdir() if p.is_dir()):
         matrix_files = list(cell_type_dir.glob("*_pseudobulk_matrix_ROI.csv"))
         meta_files = list(cell_type_dir.glob("*_pseudobulk_metadata_ROI.csv"))
 
