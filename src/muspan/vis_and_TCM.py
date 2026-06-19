@@ -1,66 +1,82 @@
 from pathlib import Path
+import sys
+import argparse
 
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 
 import muspan as ms
+
+sys.path.append(str(Path(__file__).resolve().parents[2]))
 from utils.setup_logger import setup_logger
 
-# Set directory paths
-base_dir = Path(
-    "/rds/general/user/sep22/projects/phenotypingsputumasthmaticsaurorawellcomea1/live/Sara_Patti/009_ST_Xenium/output/muspan"
-)
-input_dir = Path(base_dir / "domains")
-output_dir = Path(base_dir / "manual_visualizations")
 
-# Make sure the output directory exists
-output_dir.mkdir(parents=True, exist_ok=True)
+def parse_args(args):
+    parser = argparse.ArgumentParser(description="Compute cross-PCF for a domain")
 
-# Set up logger
-wd = "/rds/general/user/sep22/home/Projects/AirScape_analysis/HPC_jobs/"
-logs_dir = Path(wd) / "logs"
-logs_dir.mkdir(parents=True, exist_ok=True)
-logger = setup_logger(log_dir=logs_dir, log_name="vis_TCM")
+    parser.add_argument(
+        "-dn",
+        "--domain_name",
+        help="Name of the domain being processed [required]",
+        type=str,
+        dest="domain_name",
+        required=True,
+    )
+    parser.add_argument(
+        "-d",
+        "--domain",
+        help="Path to the .muspan domain file [required]",
+        type=str,
+        dest="domain_path",  # renamed to make clear it's a path
+        required=True,
+    )
 
-
-# Make list of all domains to process
-domain_list = []
-
-logger.info(f"Loading domains from {input_dir}...")
-for path in input_dir.glob("*.muspan"):
-    if not path.is_file():
-        logger.warning(f"Skipping {path.stem} as it is not a file.")
-        continue
-    if subset is not None and not any(sub in path.stem for sub in subset):
-        logger.info(
-            f"Skipping {path.stem} as it does not contain any of '{subset}' in the name"
-        )
-        continue
-    logger.info(f"Loading {path.stem}...")
-    domain = ms.io.load_domain(str(path))
-    domain_list.append(domain)
-logger.info(f"Loaded {len(domain_list)} domains from {input_dir}")
+    results = parser.parse_args(args)
+    return results.domain_name, results.domain_path
 
 
-for domain in domain_list:
-    print(f"Processing domain: {domain.name}")
+def main():
+    # Set directory paths
+    base_dir = Path(
+        "/rds/general/user/sep22/projects/phenotypingsputumasthmaticsaurorawellcomea1/live/Sara_Patti/009_ST_Xenium/output/muspan"
+    )
+    output_dir = Path(base_dir / "manual_visualizations")
 
-    # Load domain
-    domain = ms.io.load_domain(str(data_dir / f"{domain.name}_muspan_domain.muspan"))
+    # Make sure the output directory exists
+    output_dir.mkdir(parents=True, exist_ok=True)
+
+    # Set up logger
+    wd = "/rds/general/user/sep22/home/Projects/AirScape_analysis/HPC_jobs/"
+    logs_dir = Path(wd) / "logs"
+    logs_dir.mkdir(parents=True, exist_ok=True)
+    logger = setup_logger(log_dir=logs_dir, log_name="vis_TCM")
+
+    # Choose two cell types of interest for analysis
+    cell1 = "Airway/Alveolar macrophages"
+    cell1_safe = cell1.replace("/", "_").replace(" ", "_")
+    cell2 = "AT2 cells"
+    cell2_safe = cell2.replace("/", "_").replace(" ", "_")
+    clusters_of_interest = [cell1, cell2]
+
+    # Make list of all domains to process
+    domain_name, domain_path = parse_args(sys.argv[1:])
+
+    # Load the domain inside the worker process
+    domain = ms.io.load_domain(domain_path)
 
     # make domain directory for saving visualizations
-    domain_output_dir = output_dir / domain.name
+    domain_output_dir = output_dir / domain_name
     domain_output_dir.mkdir(parents=True, exist_ok=True)
 
     # Print the unique cell types in the domain
-    print(np.unique(domain.labels["Cell Type"]["labels"]))
+    logger.info(np.unique(domain.labels["Cell Type"]["labels"]))
 
     # Boundaries of cells
     boundCells = ms.query.query(domain, ("Collection",), "is", "Cell boundaries")
 
     # Level 1
-    print("Visualizing level 1 cell types...")
+    logger.info("Visualizing level 1 cell types...")
     ms.visualise.visualise(
         domain,
         color_by=("label", "Cell Type level 1"),
@@ -89,7 +105,7 @@ for domain in domain_list:
     )
 
     # Level 2
-    print("Visualizing level 2 cell types...")
+    logger.info("Visualizing level 2 cell types...")
     ms.visualise.visualise(
         domain,
         color_by=("label", "Cell Type"),
@@ -117,12 +133,6 @@ for domain in domain_list:
         dpi=600,
     )
 
-    # Choose two cell types of interest for analysis
-    cell1 = "Airway/Alveolar macrophages"
-    cell1_safe = cell1.replace("/", "_").replace(" ", "_")
-    cell2 = "AT2 cells"
-    cell2_safe = cell2.replace("/", "_").replace(" ", "_")
-    clusters_of_interest = [cell1, cell2]
     # 'Interstitial macrophages', 'Ciliated cells'
     cluster_of_interest_query = ms.query.query(
         domain, ("label", "Cell Type"), "in", clusters_of_interest
@@ -136,10 +146,11 @@ for domain in domain_list:
     #     label_name="Cell Type",
     # )
 
+    # Visualize the domain with cell boundaries
     bound_cells_query = ms.query.query(domain, ("Collection",), "is", "Cell boundaries")
 
     # Visualize the domain with cell boundaries
-    print("Visualizing the domain with cell boundaries...")
+    logger.info("Visualizing the domain with cell boundaries...")
     fig, ax = plt.subplots(figsize=(10, 5))
     ms.visualise.visualise(
         domain,
@@ -181,7 +192,7 @@ for domain in domain_list:
 
     # Calculate TCM
     # compute and visualise the topographical correlation map between points
-    print(f"Calculating TCM between {cell1} and {cell2}...")
+    logger.info(f"Calculating TCM between {cell1} and {cell2}...")
     TCM_array = ms.spatial_statistics.topographical_correlation_map(
         domain,
         population_A=("Cell Type", cell1),
@@ -194,7 +205,7 @@ for domain in domain_list:
     )
 
     # Visualize TCM
-    print(f"Visualizing TCM between {cell1} and {cell2}...")
+    logger.info(f"Visualizing TCM between {cell1} and {cell2}...")
     fig, ax = plt.subplots(figsize=(10, 8))
     ms.visualise.visualise(
         domain,
@@ -235,8 +246,12 @@ for domain in domain_list:
         dpi=300,
     )
 
-    print(f"TCM calculation and visualization completed for {cell1} and {cell2}.")
+    logger.info(f"TCM calculation and visualization completed for {cell1} and {cell2}.")
     plt.close("all")
     del domain
 
-print("Finished!")
+    logger.info("Finished script!")
+
+
+if __name__ == "__main__":
+    main()
