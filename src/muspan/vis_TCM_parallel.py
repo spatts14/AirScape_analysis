@@ -22,13 +22,13 @@ domain_paths = {path.stem: str(path) for path in input_dir.glob("*.muspan")}
 
 # Build commands passing the FILE PATH, not the object
 commands = [
-    f"python src/muspan/vis_TCM_parallel.py --domain_name {name} --domain {path}"
+    f"python src/muspan/vis_and_TCM.py --domain_name {name} --domain {path}"
     for name, path in domain_paths.items()
 ]
 
 # Limit parallelism — spawning one process per domain risks OOM with 55+ domains
-# Tune this based on your available RAM; 8–16 is usually safe
-n_parallel = min(8, len(commands))
+# Tune this based on your available RAM; 8-16 is usually safe
+n_parallel = min(16, len(commands))
 
 pool = multiprocessing.Pool(processes=n_parallel)
 pool.map(execute_process, commands)
