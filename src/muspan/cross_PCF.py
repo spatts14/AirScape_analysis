@@ -1,3 +1,5 @@
+"""Compute cross-PCF for a given domain and save the results."""
+
 import argparse
 import gc
 import sys
@@ -15,6 +17,7 @@ from utils.setup_logger import setup_logger
 
 
 def parse_args(args):
+    """Parse command-line arguments."""
     parser = argparse.ArgumentParser(description="Compute cross-PCF for a domain")
 
     parser.add_argument(
@@ -39,6 +42,7 @@ def parse_args(args):
 
 
 def main():
+    """Main function to compute cross-PCF for a given domain."""
     domain_name, domain_path = parse_args(sys.argv[1:])
 
     # Load the domain inside the worker process
@@ -130,7 +134,7 @@ def main():
             # Add to the records list
             records.append(df_cPCF)
 
-            # Store cPCF and confidence interval dataframes in the dictionary for this cell type pair
+            # Store cPCF and confidence interval df in the dictionary cell type pair
             # TODO: FIGURE OUT WHAT TO DO WITH THIS AND HOW TO SAVE
             pair_key = f"{celltypes[i]}_x_{celltypes[j]}"
             records_dict[pair_key] = {"cPCF": df_cPCF, "confidence_intervals": df_ci}
@@ -139,7 +143,7 @@ def main():
             plt.figure(figsize=(4, 4))
             ax = axes[i, j]
             ax.plot(r, PCF, label="PCF", color="#5c91c6")
-            ax.set_title(f"{celltypes[i]} × {celltypes[j]}", fontsize=10)
+            ax.set_title(f"{celltypes[i]} vs {celltypes[j]}", fontsize=10)
             ax.set_xlabel("Distance (r)")
             ax.set_ylabel("PCF")
             ax.legend()
