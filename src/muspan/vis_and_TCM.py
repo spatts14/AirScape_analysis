@@ -1,10 +1,11 @@
+"""Visualize cell types and compute TCM for a given domain."""
+
 import argparse
 import sys
 from pathlib import Path
 
 import matplotlib.pyplot as plt
 import numpy as np
-import pandas as pd
 
 import muspan as ms
 
@@ -13,6 +14,7 @@ from utils.setup_logger import setup_logger
 
 
 def parse_args(args):
+    """Parse command-line arguments."""
     parser = argparse.ArgumentParser(description="Compute cross-PCF for a domain")
 
     parser.add_argument(
@@ -61,6 +63,9 @@ def main():
 
     # Make list of all domains to process
     domain_name, domain_path = parse_args(sys.argv[1:])
+
+    # Only name domain name
+    domain_name = domain_name.replace("_muspan_domain", "")
 
     # Load the domain inside the worker process
     domain = ms.io.load_domain(domain_path)
