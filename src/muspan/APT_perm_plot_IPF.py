@@ -222,7 +222,13 @@ meta = pd.read_csv(
 ROI_APT_dict = load_adjacency_p_values(input_dir)
 
 # Get list of all cell types across conditions
-cell_type_list = next(iter(ROI_APT_dict.values())).index.tolist()
+cell_type_list = []
+seen_cell_types = set()
+for df in ROI_APT_dict.values():
+    for cell_type in df.index.tolist():
+        if cell_type not in seen_cell_types:
+            seen_cell_types.add(cell_type)
+            cell_type_list.append(cell_type)
 
 # Combine dataframes for each cell type across conditions
 celltype_dict = make_APT_celltype_dict(ROI_APT_dict, cell_type_list)

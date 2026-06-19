@@ -48,10 +48,11 @@ def main():
 
     # Define variables
     khop = 1
-    network_type = "Delaunay"  # 'Delaunay' or 'proximity'
+    network_type = "proximity"  # 'Delaunay' or 'proximity'
     max_edge_distance = 30
     subset = ["IPF", "PM08"]  # COPD or IPF and PM08
     subset_safe_name = "v".join(subset)
+    subset_safe_name = f"{subset_safe_name}_159removed"
 
     # Base project path
     paths = [
@@ -133,6 +134,12 @@ def main():
         domain = ms.io.load_domain(str(path))
         domain_list.append(domain)
     logger.info(f"Loaded {len(domain_list)} domains from {input_dir}")
+
+    # Rewmove IPF_RBH_159 domain from the list
+    domain_list = [
+        domain for domain in domain_list if "IPF_RBH_159" not in str(domain.name)
+    ]
+    logger.info(f"After filtering, {len(domain_list)} domains remain for processing.")
 
     # Make cluster number of clusters
     plots_dir_cluster = plots_dir / f"{number_of_clusters}_clusters"
