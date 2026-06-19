@@ -86,7 +86,9 @@ def main():
     # Set up logger
     logs_dir = Path(base_path) / "logs" / "muspan"
     logs_dir.mkdir(parents=True, exist_ok=True)
-    logger = setup_logger(log_dir=logs_dir, log_name="nhood_cluster")
+    logger = setup_logger(
+        log_dir=logs_dir, log_name=f"nhood_cluster_{number_of_clusters}"
+    )
 
     # Define a color palette for the neighbourhood labels
     cmap = sns.color_palette("coolwarm", as_cmap=True)

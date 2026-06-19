@@ -1,6 +1,6 @@
 #!/bin/bash
 #PBS -l walltime=48:0:0
-#PBS -l select=1:ncpus=12:mem=512gb
+#PBS -l select=1:ncpus=12:mem=192gb
 #PBS -N nhood_cluster
 #PBS -j oe
 
