@@ -27,28 +27,28 @@ output_dir.mkdir(parents=True, exist_ok=True)
 
 ## TREATMENT
 list = [
-    # "COPD_R039_V1"
     "IPF_RBH_16",
     "PM08_167",
-    # "MICA_III_319_315_311",
-    # "COPD_R011_V1",
-    # "COPD_46005_V1",
-    # "COPD_R003_V1",
-    # "COPD_R014_V1",
-    # "COPD_R035_V1",
-    # "COPD_R038_V1",
-    # "COPD_R011_V2",
-    # "COPD_46005_V2",
-    # "COPD_R003_V2",
-    # "COPD_R014_V2",
-    # "COPD_R035_V2",
-    # "COPD_R038_V2",
-    # "COPD_R009_V2",
-    # "COPD_R021_V2",
-    # "COPD_R025_V2",
-    # "COPD_R036_V2",
-    # "COPD_R039_V2",
-    # "COPD_R041_V2",
+    "MICA_III_319_315_311",
+    "COPD_R039_V1",
+    "COPD_R011_V1",
+    "COPD_46005_V1",
+    "COPD_R003_V1",
+    "COPD_R014_V1",
+    "COPD_R035_V1",
+    "COPD_R038_V1",
+    "COPD_R011_V2",
+    "COPD_46005_V2",
+    "COPD_R003_V2",
+    "COPD_R014_V2",
+    "COPD_R035_V2",
+    "COPD_R038_V2",
+    "COPD_R009_V2",
+    "COPD_R021_V2",
+    "COPD_R025_V2",
+    "COPD_R036_V2",
+    "COPD_R039_V2",
+    "COPD_R041_V2",
 ]
 
 for domain_name in list:
@@ -127,7 +127,9 @@ for domain_name in list:
 
     # Choose two cell types of interest for analysis
     cell1 = "Airway/Alveolar macrophages"
+    cell1_safe = cell1.replace("/", "_").replace(" ", "_")
     cell2 = "AT2 cells"
+    cell2_safe = cell2.replace("/", "_").replace(" ", "_")
     clusters_of_interest = [cell1, cell2]
     # 'Interstitial macrophages', 'Ciliated cells'
     cluster_of_interest_query = ms.query.query(
@@ -181,7 +183,8 @@ for domain_name in list:
     plt.title(f"Cell Types: {cell1} and {cell2}")
     plt.tight_layout()
     plt.savefig(
-        domain_output_dir / f"cell_types_{cell1}_{cell2}_{domain.name}.png", dpi=300
+        domain_output_dir / f"cell_types_{cell1_safe}_{cell2_safe}_{domain.name}.png",
+        dpi=300,
     )
 
     # Calculate TCM
@@ -235,7 +238,9 @@ for domain_name in list:
     plt.title(f"Cell Types: {cell1} and {cell2}")
     plt.tight_layout()
     plt.savefig(
-        domain_output_dir / f"cell_types_{cell1}_{cell2}_{domain.name}_TCM.png", dpi=300
+        domain_output_dir
+        / f"cell_types_{cell1_safe}_{cell2_safe}_{domain.name}_TCM.png",
+        dpi=300,
     )
 
     print(f"TCM calculation and visualization completed for {cell1} and {cell2}.")
