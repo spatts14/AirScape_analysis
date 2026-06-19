@@ -126,8 +126,8 @@ for domain_name in list:
     )
 
     # Choose two cell types of interest for analysis
-    cell1 = "Monocytes/Neutrophils"
-    cell2 = "Adventitial fibroblasts"
+    cell1 = "Airway/Alveolar macrophages"
+    cell2 = "Plasma cells"
     clusters_of_interest = [cell1, cell2]
     # 'Interstitial macrophages', 'Ciliated cells'
     cluster_of_interest_query = ms.query.query(
