@@ -27,9 +27,9 @@ output_dir.mkdir(parents=True, exist_ok=True)
 
 ## TREATMENT
 list = [
-    "COPD_R039_V1"
-    # "IPF_RBH_16",
-    # "PM08_167",
+    # "COPD_R039_V1"
+    "IPF_RBH_16",
+    "PM08_167",
     # "MICA_III_319_315_311",
     # "COPD_R011_V1",
     # "COPD_46005_V1",
@@ -126,8 +126,8 @@ for domain_name in list:
     )
 
     # Choose two cell types of interest for analysis
-    cell1 = "Interstitial macrophages"
-    cell2 = "Interstitial macrophages"
+    cell1 = "Monocytes/Neutrophils"
+    cell2 = "Adventitial fibroblasts"
     clusters_of_interest = [cell1, cell2]
     # 'Interstitial macrophages', 'Ciliated cells'
     cluster_of_interest_query = ms.query.query(
@@ -136,11 +136,11 @@ for domain_name in list:
 
     # Update color if needed
     # Set color for interstitial macrophages
-    domain.update_colors(
-        {"Interstitial macrophages": "#f7b7d2"},
-        colors_to_update="labels",
-        label_name="Cell Type",
-    )
+    # domain.update_colors(
+    #     {"Interstitial macrophages": "#f7b7d2"},
+    #     colors_to_update="labels",
+    #     label_name="Cell Type",
+    # )
 
     bound_cells_query = ms.query.query(domain, ("Collection",), "is", "Cell boundaries")
 
