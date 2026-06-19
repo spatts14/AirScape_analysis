@@ -1,3 +1,5 @@
+"""Calculate neighbourhood clusters for a given dataset and visualize the results."""
+
 import argparse
 import sys
 from pathlib import Path

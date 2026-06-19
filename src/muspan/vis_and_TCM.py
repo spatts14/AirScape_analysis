@@ -49,8 +49,7 @@ def main():
     output_dir.mkdir(parents=True, exist_ok=True)
 
     # Set up logger
-    wd = "/rds/general/user/sep22/home/Projects/AirScape_analysis/HPC_jobs/"
-    logs_dir = Path(wd) / "logs"
+    logs_dir = Path(base_dir) / "logs" / "muspan"
     logs_dir.mkdir(parents=True, exist_ok=True)
     logger = setup_logger(log_dir=logs_dir, log_name="vis_TCM")
 
