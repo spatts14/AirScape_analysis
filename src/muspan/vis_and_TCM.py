@@ -39,6 +39,7 @@ def parse_args(args):
 
 
 def main():
+    """Main function to visualize cell types and compute TCM for a given domain."""
     # Set directory paths
     base_dir = Path(
         "/rds/general/user/sep22/projects/phenotypingsputumasthmaticsaurorawellcomea1/live/Sara_Patti/009_ST_Xenium/output/muspan"
@@ -54,9 +55,9 @@ def main():
     logger = setup_logger(log_dir=logs_dir, log_name="vis_TCM")
 
     # Choose two cell types of interest for analysis
-    cell1 = "Airway/Alveolar macrophages"
+    cell1 = "Ciliated cells"
     cell1_safe = cell1.replace("/", "_").replace(" ", "_")
-    cell2 = "AT2 cells"
+    cell2 = "Adventitial fibroblasts"
     cell2_safe = cell2.replace("/", "_").replace(" ", "_")
     clusters_of_interest = [cell1, cell2]
 
