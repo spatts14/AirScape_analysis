@@ -55,13 +55,16 @@ def main():
     logger = setup_logger(log_dir=logs_dir, log_name="vis_TCM")
 
     # Choose two cell types of interest for analysis
-    cell1 = "Plasma cells"
-    cell2 = "Plasma cells"
+    cell1 = "CTHRC1+ fibroblasts"
+    cell2 = "CTHRC1+ fibroblasts"
 
     # Make cell type names safe for filenames
-    cell1_safe = cell1.replace("/", "_").replace(" ", "_")
-    cell2_safe = cell2.replace("/", "_").replace(" ", "_")
+    # cell1_safe = cell1.replace("/", "_").replace(" ", "_")
+    # cell2_safe = cell2.replace("/", "_").replace(" ", "_")
     clusters_of_interest = [cell1, cell2]
+    clusters_of_interest = (
+        ("_").join(clusters_of_interest).replace("/", "_").replace(" ", "_")
+    )
 
     # Make list of all domains to process
     domain_name, domain_path = parse_args(sys.argv[1:])
@@ -193,7 +196,7 @@ def main():
     plt.title(f"Cell Types: {cell1} and {cell2}")
     plt.tight_layout()
     plt.savefig(
-        domain_output_dir / f"cell_types_{cell1_safe}_{cell2_safe}_{domain.name}.png",
+        clusters_of_interest / f"{domain_name}.png",
         dpi=300,
     )
 
@@ -248,9 +251,8 @@ def main():
     plt.title(f"Cell Types: {cell1} and {cell2}")
     plt.tight_layout()
     plt.savefig(
-        domain_output_dir
-        / f"cell_types_{cell1_safe}_{cell2_safe}_{domain.name}_TCM.png",
-        dpi=300,
+        clusters_of_interest / f"{domain_name}_TCM.png",
+        dpi=600,
     )
 
     logger.info(f"TCM calculation and visualization completed for {cell1} and {cell2}.")
