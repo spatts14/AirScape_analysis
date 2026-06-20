@@ -56,8 +56,10 @@ def main():
 
     # Choose two cell types of interest for analysis
     cell1 = "Ciliated cells"
+    cell2 = "CD8+ T cells"
+
+    # Make cell type names safe for filenames
     cell1_safe = cell1.replace("/", "_").replace(" ", "_")
-    cell2 = "Adventitial fibroblasts"
     cell2_safe = cell2.replace("/", "_").replace(" ", "_")
     clusters_of_interest = [cell1, cell2]
 
