@@ -55,8 +55,8 @@ def main():
     logger = setup_logger(log_dir=logs_dir, log_name="vis_TCM")
 
     # Choose two cell types of interest for analysis
-    cell1 = "Ciliated cells"
-    cell2 = "CD8+ T cells"
+    cell1 = "Plasma cells"
+    cell2 = "Plasma cells"
 
     # Make cell type names safe for filenames
     cell1_safe = cell1.replace("/", "_").replace(" ", "_")
