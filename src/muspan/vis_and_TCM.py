@@ -65,6 +65,7 @@ def main():
     clusters_of_interest = (
         ("_").join(clusters_of_interest).replace("/", "_").replace(" ", "_")
     )
+    clusters_of_interest.mkdir(parents=True, exist_ok=True)
 
     # Make list of all domains to process
     domain_name, domain_path = parse_args(sys.argv[1:])
