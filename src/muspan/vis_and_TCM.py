@@ -137,8 +137,8 @@ def main():
     logger = setup_logger(log_dir=logs_dir, log_name="vis_TCM")
 
     # Choose two cell types of interest for analysis
-    cell1 = "Plasma cells"
-    cell2 = "Plasma cells"
+    cell1 = "CTHRC1+ fibroblasts"
+    cell2 = "CTHRC1+ fibroblasts"
 
     vmax = 100  # Set the maximum value for the color scale, will do + and - integer
 
@@ -263,7 +263,7 @@ def main():
             "alpha": 0.5,
             "linewidth": 0.005,
             "edgecolor": "#00000000",
-            "color": "#A9A9A9",
+            "color": "#707374",
         },
         add_scalebar=True,
         scalebar_kwargs={
