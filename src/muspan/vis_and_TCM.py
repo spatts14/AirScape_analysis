@@ -63,13 +63,8 @@ def main():
     # cell2_safe = cell2.replace("/", "_").replace(" ", "_")
     clusters_of_interest = [cell1, cell2]
     clusters_of_interest = (
-        ("_")
-        .join(clusters_of_interest)
-        .replace("/", "_")
-        .replace(" ", "_")
-        .replace("+", "plus")
+        ("_").join(clusters_of_interest).replace("/", "_").replace(" ", "_")
     )
-    clusters_of_interest.mkdir(parents=True, exist_ok=True)
 
     # Make list of all domains to process
     domain_name, domain_path = parse_args(sys.argv[1:])
@@ -83,6 +78,9 @@ def main():
     # make domain directory for saving visualizations
     domain_output_dir = output_dir / domain_name
     domain_output_dir.mkdir(parents=True, exist_ok=True)
+
+    clusters_of_interest = output_dir / clusters_of_interest
+    clusters_of_interest.mkdir(parents=True, exist_ok=True)
 
     # Print the unique cell types in the domain
     logger.info(np.unique(domain.labels["Cell Type"]["labels"]))
@@ -230,7 +228,7 @@ def main():
             "alpha": 0.5,
             "linewidth": 0.005,
             "edgecolor": "#00000000",
-            "color": "#bec1c2",
+            "color": "#707374",
         },
         add_scalebar=True,
         scalebar_kwargs={
