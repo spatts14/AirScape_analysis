@@ -55,7 +55,7 @@ def main():
     logger = setup_logger(log_dir=logs_dir, log_name="density")
 
     # Choose two cell types of interest for analysis
-    cell1 = "Plasma cells"
+    cell1 = "CTHRC1+ fibroblasts"
 
     cell1_safe = "_".join(cell1).replace(" ", "_")
 
