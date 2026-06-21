@@ -65,6 +65,16 @@ def main():
     # Make a safe version of cell1 for directory naming
     cell1_safe = cell1.replace("+", "").replace(" ", "_")
 
+    # Make directories for the cell types of interest
+    cell1_dir = output_dir / cell1_safe
+    cell1_dir.mkdir(parents=True, exist_ok=True)
+
+    GDE_dir = cell1_dir / "GDE"
+    GDE_dir.mkdir(parents=True, exist_ok=True)
+
+    KDE_dir = cell1_dir / "KDE"
+    KDE_dir.mkdir(parents=True, exist_ok=True)
+
     # Make list of all domains to process
     domain_name, domain_path = parse_args(sys.argv[1:])
 
@@ -73,9 +83,6 @@ def main():
 
     # Load the domain inside the worker process
     domain = ms.io.load_domain(domain_path)
-
-    cell1_dir = output_dir / cell1_safe
-    cell1_dir.mkdir(parents=True, exist_ok=True)
 
     # Print the unique cell types in the domain
     logger.info(np.unique(domain.labels["Cell Type"]["labels"]))
@@ -95,7 +102,7 @@ def main():
     plt.title(f"Cell Type: {cell1}")
     plt.tight_layout()
     plt.savefig(
-        cell1_dir / f"KDE_{domain_name}.pdf",
+        KDE_dir / f"KDE_{domain_name}.pdf",
         dpi=300,
     )
 
@@ -110,7 +117,7 @@ def main():
         },
     )
     plt.savefig(
-        cell1_dir / f"GD_{domain_name}.pdf",
+        GDE_dir / f"GDE_{domain_name}.pdf",
         dpi=300,
     )
 
