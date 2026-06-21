@@ -38,6 +38,88 @@ def parse_args(args):
     return results.domain_name, results.domain_path
 
 
+def level_1_vis(domain, domain_output_dir, boundCells, logger):
+    """Visualize level 1 cell types in the domain.
+
+    Args:
+        domain: The muspan domain object.
+        domain_output_dir: Path to the output directory for saving visualizations.
+        boundCells: Query result for cell boundaries in the domain.
+        logger: Logger object for logging messages.
+
+    Returns:
+        None
+    """
+    logger.info("Visualizing level 1 cell types...")
+    ms.visualise.visualise(
+        domain,
+        color_by=("label", "Cell Type level 1"),
+        objects_to_plot=boundCells,
+        shape_kwargs=dict(alpha=1, linewidth=0.01, edgecolor="#00000000"),
+        add_scalebar=True,
+        scalebar_kwargs={
+            "size": 1000,
+            "label": "1000µm",
+            "loc": "lower right",
+            "pad": 0.1,
+            "color": "black",
+            "frameon": False,
+            "size_vertical": 2,
+        },
+    )
+    plt.savefig(
+        domain_output_dir / "level_1_cell_types_boundaries.png",
+        bbox_inches="tight",
+        dpi=600,
+    )
+    plt.savefig(
+        domain_output_dir / "level_1_cell_types_boundaries.pdf",
+        bbox_inches="tight",
+        dpi=600,
+    )
+
+
+def level_2_vis(domain, domain_output_dir, boundCells, logger):
+    """Visualize level 2 cell types in the domain.
+
+    Args:
+        domain: The muspan domain object.
+        domain_output_dir: Path to the output directory for saving visualizations.
+        boundCells: Query result for cell boundaries in the domain.
+        logger: Logger object for logging messages.
+
+    Returns:
+        None
+    """
+    logger.info("Visualizing level 2 cell types...")
+    ms.visualise.visualise(
+        domain,
+        color_by=("label", "Cell Type"),
+        objects_to_plot=boundCells,
+        shape_kwargs=dict(alpha=1, linewidth=0.01, edgecolor="#00000000"),
+        add_scalebar=True,
+        scalebar_kwargs={
+            "size": 1000,
+            "label": "1000µm",
+            "loc": "lower right",
+            "pad": 0.1,
+            "color": "black",
+            "frameon": False,
+            "size_vertical": 2,
+        },
+    )
+    plt.savefig(
+        domain_output_dir / "level_2_cell_types_boundaries.png",
+        bbox_inches="tight",
+        dpi=600,
+    )
+    plt.savefig(
+        domain_output_dir / "level_2_cell_types_boundaries.pdf",
+        bbox_inches="tight",
+        dpi=600,
+    )
+
+
 def main():
     """Main function to visualize cell types and compute TCM for a given domain."""
     # Set directory paths
@@ -88,63 +170,11 @@ def main():
     # Boundaries of cells
     boundCells = ms.query.query(domain, ("Collection",), "is", "Cell boundaries")
 
-    # Level 1
-    logger.info("Visualizing level 1 cell types...")
-    ms.visualise.visualise(
-        domain,
-        color_by=("label", "Cell Type level 1"),
-        objects_to_plot=boundCells,
-        shape_kwargs=dict(alpha=1, linewidth=0.01, edgecolor="#00000000"),
-        add_scalebar=True,
-        scalebar_kwargs={
-            "size": 1000,
-            "label": "1000µm",
-            "loc": "lower right",
-            "pad": 0.1,
-            "color": "black",
-            "frameon": False,
-            "size_vertical": 2,
-        },
-    )
-    plt.savefig(
-        domain_output_dir / "level_1_cell_types_boundaries.png",
-        bbox_inches="tight",
-        dpi=600,
-    )
-    plt.savefig(
-        domain_output_dir / "level_1_cell_types_boundaries.pdf",
-        bbox_inches="tight",
-        dpi=600,
-    )
+    # # Level 1
+    # level_1_vis(domain, domain_output_dir, boundCells, logger)
 
-    # Level 2
-    logger.info("Visualizing level 2 cell types...")
-    ms.visualise.visualise(
-        domain,
-        color_by=("label", "Cell Type"),
-        objects_to_plot=boundCells,
-        shape_kwargs=dict(alpha=1, linewidth=0.01, edgecolor="#00000000"),
-        add_scalebar=True,
-        scalebar_kwargs={
-            "size": 1000,
-            "label": "1000µm",
-            "loc": "lower right",
-            "pad": 0.1,
-            "color": "black",
-            "frameon": False,
-            "size_vertical": 2,
-        },
-    )
-    plt.savefig(
-        domain_output_dir / "level_2_cell_types_boundaries.png",
-        bbox_inches="tight",
-        dpi=600,
-    )
-    plt.savefig(
-        domain_output_dir / "level_2_cell_types_boundaries.pdf",
-        bbox_inches="tight",
-        dpi=600,
-    )
+    # # Level 2
+    # level_2_vis(domain, domain_output_dir, boundCells, logger)
 
     # 'Interstitial macrophages', 'Ciliated cells'
     cluster_of_interest_query = ms.query.query(
@@ -160,14 +190,11 @@ def main():
     # )
 
     # Visualize the domain with cell boundaries
-    bound_cells_query = ms.query.query(domain, ("Collection",), "is", "Cell boundaries")
-
-    # Visualize the domain with cell boundaries
     logger.info("Visualizing the domain with cell boundaries...")
     fig, ax = plt.subplots(figsize=(10, 5))
     ms.visualise.visualise(
         domain,
-        objects_to_plot=bound_cells_query,
+        objects_to_plot=boundCells,
         add_cbar=False,
         shape_kwargs={
             "alpha": 0.5,
@@ -222,7 +249,7 @@ def main():
     fig, ax = plt.subplots(figsize=(10, 8))
     ms.visualise.visualise(
         domain,
-        objects_to_plot=bound_cells_query,
+        objects_to_plot=boundCells,
         add_cbar=False,
         shape_kwargs={
             "alpha": 0.5,
