@@ -58,9 +58,9 @@ def main():
     cell1 = "CTHRC1+ fibroblasts"
 
     # # Set max
-    # max_value = (
-    #     100  # Set the maximum value for the color scale, will do + and - integer
-    # )
+    max_value = (
+        0.0000004  # Set the maximum value for the color scale, will do + and - integer
+    )
 
     # Make a safe version of cell1 for directory naming
     cell1_safe = cell1.replace("+", "").replace(" ", "_")
@@ -96,7 +96,7 @@ def main():
         visualise_output=True,
         visualise_heatmap_kwargs={
             "heatmap_cmap": "coolwarm",
-            # "colorbar_limit": max_value, # does not look right
+            "colorbar_limit": max_value,  # does not look right
         },
     )
     plt.title(f"Cell Type: {cell1}")
