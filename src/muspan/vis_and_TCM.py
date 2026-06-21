@@ -137,8 +137,8 @@ def main():
     logger = setup_logger(log_dir=logs_dir, log_name="vis_TCM")
 
     # Choose two cell types of interest for analysis
-    cell1 = "CTHRC1+ fibroblasts"
-    cell2 = "CTHRC1+ fibroblasts"
+    cell1 = "Plasma cells"
+    cell2 = "Plasma cells"
 
     # Visualization levels
     vis_levels = False  # Set to True to visualize level 1 and level 2
