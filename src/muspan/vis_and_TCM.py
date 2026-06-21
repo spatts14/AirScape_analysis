@@ -169,6 +169,11 @@ def main():
     # Boundaries of cells
     boundCells = ms.query.query(domain, ("Collection",), "is", "Cell boundaries")
 
+    # Cell types selected for downstream plotting and TCM calculation
+    cluster_of_interest_query = ms.query.query(
+        domain, ("label", "Cell Type"), "in", clusters_of_interest
+    )
+
     # # Level 1
     if vis_levels:
         # make domain directory for saving visualizations
@@ -181,11 +186,6 @@ def main():
         # Level 2
         logger.info("Visualizing level 2...")
         level_2_vis(domain, domain_output_dir, boundCells, logger)
-
-        # 'Interstitial macrophages', 'Ciliated cells'
-        cluster_of_interest_query = ms.query.query(
-            domain, ("label", "Cell Type"), "in", clusters_of_interest
-        )
 
     # Update color if needed
     # Set color for interstitial macrophages
