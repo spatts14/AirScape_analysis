@@ -87,7 +87,10 @@ def main():
         population=("Cell Type", cell1),
         contribution_label_name="Distribution values",
         visualise_output=True,
-        visualise_heatmap_kwargs={"heatmap_cmap": "Reds", "colorbar_limit": max_value},
+        visualise_heatmap_kwargs={
+            "heatmap_cmap": "coolwarm",
+            "colorbar_limit": max_value,
+        },
     )
     plt.title(f"Cell Type: {cell1}")
     plt.tight_layout()
@@ -102,7 +105,10 @@ def main():
         population=("Cell Type", cell1),
         contribution_label_name="Distribution values",
         visualise_output=True,
-        visualise_heatmap_kwargs={"heatmap_cmap": "Reds", "colorbar_limit": max_value},
+        visualise_heatmap_kwargs={
+            "heatmap_cmap": "coolwarm",
+            "colorbar_limit": max_value,
+        },
     )
     plt.savefig(
         cell1_dir / f"GD_{domain_name}.pdf",
