@@ -44,7 +44,7 @@ def main():
     base_dir = Path(
         "/rds/general/user/sep22/projects/phenotypingsputumasthmaticsaurorawellcomea1/live/Sara_Patti/009_ST_Xenium/output/muspan"
     )
-    output_dir = Path(base_dir / "manual_visualizations")
+    output_dir = Path(base_dir / "TCM_visualizations")
 
     # Make sure the output directory exists
     output_dir.mkdir(parents=True, exist_ok=True)
@@ -63,7 +63,11 @@ def main():
     # cell2_safe = cell2.replace("/", "_").replace(" ", "_")
     clusters_of_interest = [cell1, cell2]
     clusters_of_interest = (
-        ("_").join(clusters_of_interest).replace("/", "_").replace(" ", "_")
+        ("_")
+        .join(clusters_of_interest)
+        .replace("/", "_")
+        .replace(" ", "_")
+        .replace("+", "plus")
     )
     clusters_of_interest.mkdir(parents=True, exist_ok=True)
 
