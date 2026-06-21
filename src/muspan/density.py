@@ -63,7 +63,7 @@ def main():
     )
 
     # Make a safe version of cell1 for directory naming
-    cell1_safe = "_".join(cell1).replace(" ", "_")
+    cell1_safe = cell1.replace("+", "").replace(" ", "_")
 
     # Make list of all domains to process
     domain_name, domain_path = parse_args(sys.argv[1:])
