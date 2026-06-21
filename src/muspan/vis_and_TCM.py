@@ -263,7 +263,7 @@ def main():
             "alpha": 0.5,
             "linewidth": 0.005,
             "edgecolor": "#00000000",
-            "color": "#707374",
+            "color": "#A9A9A9",
         },
         add_scalebar=True,
         scalebar_kwargs={
