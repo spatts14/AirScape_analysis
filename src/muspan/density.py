@@ -57,7 +57,7 @@ def main():
     # Choose two cell types of interest for analysis
     cell1 = "Plasma cells"
 
-    cell1_safe = "_".join(cell1).replace("/", "_").replace(" ", "_")
+    cell1_safe = "_".join(cell1).replace(" ", "_")
 
     # Make list of all domains to process
     domain_name, domain_path = parse_args(sys.argv[1:])
