@@ -208,7 +208,7 @@ def main():
             "alpha": 0.5,
             "linewidth": 0.005,
             "edgecolor": "#00000000",
-            "color": "#e5e3c4",
+            "color": "#707374",
         },
         ax=ax,
     )
