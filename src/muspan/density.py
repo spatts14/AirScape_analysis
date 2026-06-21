@@ -61,6 +61,7 @@ def main():
     max_value = (
         0.0000004  # Set the maximum value for the color scale, will do + and - integer
     )
+    min_value = 0  # Set the minimum value for the color scale
 
     # Make a safe version of cell1 for directory naming
     cell1_safe = cell1.replace("+", "").replace(" ", "_")
@@ -97,6 +98,7 @@ def main():
         visualise_heatmap_kwargs={
             "heatmap_cmap": "coolwarm",
             "colorbar_limit": max_value,  # does not look right
+            "colorbar_min": min_value,  # does not look right
         },
     )
     plt.title(f"Cell Type: {cell1}")
