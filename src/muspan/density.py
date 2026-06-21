@@ -44,7 +44,7 @@ def main():
     base_dir = Path(
         "/rds/general/user/sep22/projects/phenotypingsputumasthmaticsaurorawellcomea1/live/Sara_Patti/009_ST_Xenium/output/muspan"
     )
-    output_dir = Path(base_dir / "TCM_visualizations")
+    output_dir = Path(base_dir / "density")
 
     # Make sure the output directory exists
     output_dir.mkdir(parents=True, exist_ok=True)
