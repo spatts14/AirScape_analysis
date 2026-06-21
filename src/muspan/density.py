@@ -70,10 +70,10 @@ def main():
     cell1_dir = output_dir / cell1_safe
     cell1_dir.mkdir(parents=True, exist_ok=True)
 
-    GDE_dir = cell1_dir / "GDE"
+    GDE_dir = output_dir / "GDE"
     GDE_dir.mkdir(parents=True, exist_ok=True)
 
-    KDE_dir = cell1_dir / "KDE"
+    KDE_dir = output_dir / "KDE"
     KDE_dir.mkdir(parents=True, exist_ok=True)
 
     # Make list of all domains to process
