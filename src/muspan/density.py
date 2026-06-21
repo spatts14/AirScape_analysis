@@ -57,6 +57,12 @@ def main():
     # Choose two cell types of interest for analysis
     cell1 = "CTHRC1+ fibroblasts"
 
+    # Set max
+    max_value = (
+        100  # Set the maximum value for the color scale, will do + and - integer
+    )
+
+    # Make a safe version of cell1 for directory naming
     cell1_safe = "_".join(cell1).replace(" ", "_")
 
     # Make list of all domains to process
@@ -81,7 +87,7 @@ def main():
         population=("Cell Type", cell1),
         contribution_label_name="Distribution values",
         visualise_output=True,
-        visualise_heatmap_kwargs={"heatmap_cmap": "Reds"},
+        visualise_heatmap_kwargs={"heatmap_cmap": "Reds", "colorbar_limit": max_value},
     )
     plt.title(f"Cell Type: {cell1}")
     plt.tight_layout()
@@ -96,7 +102,7 @@ def main():
         population=("Cell Type", cell1),
         contribution_label_name="Distribution values",
         visualise_output=True,
-        visualise_heatmap_kwargs={"heatmap_cmap": "Reds"},
+        visualise_heatmap_kwargs={"heatmap_cmap": "Reds", "colorbar_limit": max_value},
     )
     plt.savefig(
         cell1_dir / f"GD_{domain_name}.pdf",
