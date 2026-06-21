@@ -140,6 +140,9 @@ def main():
     cell1 = "CTHRC1+ fibroblasts"
     cell2 = "CTHRC1+ fibroblasts"
 
+    # Visualization levels
+    vis_levels = False  # Set to True to visualize level 1 and level 2
+
     # Make cell type names safe for filenames
     # cell1_safe = cell1.replace("/", "_").replace(" ", "_")
     # cell2_safe = cell2.replace("/", "_").replace(" ", "_")
@@ -157,10 +160,6 @@ def main():
     # Load the domain inside the worker process
     domain = ms.io.load_domain(domain_path)
 
-    # make domain directory for saving visualizations
-    domain_output_dir = output_dir / domain_name
-    domain_output_dir.mkdir(parents=True, exist_ok=True)
-
     clusters_of_interest_dir = output_dir / clusters_of_interest_name
     clusters_of_interest_dir.mkdir(parents=True, exist_ok=True)
 
@@ -171,15 +170,22 @@ def main():
     boundCells = ms.query.query(domain, ("Collection",), "is", "Cell boundaries")
 
     # # Level 1
-    # level_1_vis(domain, domain_output_dir, boundCells, logger)
+    if vis_levels:
+        # make domain directory for saving visualizations
+        domain_output_dir = output_dir / domain_name
+        domain_output_dir.mkdir(parents=True, exist_ok=True)
 
-    # # Level 2
-    # level_2_vis(domain, domain_output_dir, boundCells, logger)
+        logger.info("Visualizing level 1...")
+        level_1_vis(domain, domain_output_dir, boundCells, logger)
 
-    # 'Interstitial macrophages', 'Ciliated cells'
-    cluster_of_interest_query = ms.query.query(
-        domain, ("label", "Cell Type"), "in", clusters_of_interest
-    )
+        # Level 2
+        logger.info("Visualizing level 2...")
+        level_2_vis(domain, domain_output_dir, boundCells, logger)
+
+        # 'Interstitial macrophages', 'Ciliated cells'
+        cluster_of_interest_query = ms.query.query(
+            domain, ("label", "Cell Type"), "in", clusters_of_interest
+        )
 
     # Update color if needed
     # Set color for interstitial macrophages
