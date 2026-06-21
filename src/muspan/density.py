@@ -1,4 +1,4 @@
-"""Visualize cell types and compute TCM for a given domain."""
+"""Compute KDE and GDE maps for a given cell type in a domain."""
 
 import argparse
 import sys
@@ -15,7 +15,9 @@ from utils.setup_logger import setup_logger
 
 def parse_args(args):
     """Parse command-line arguments."""
-    parser = argparse.ArgumentParser(description="Compute cross-PCF for a domain")
+    parser = argparse.ArgumentParser(
+        description="Compute KDE and GDE maps for a domain"
+    )
 
     parser.add_argument(
         "-dn",
@@ -70,10 +72,10 @@ def main():
     cell1_dir = output_dir / cell1_safe
     cell1_dir.mkdir(parents=True, exist_ok=True)
 
-    GDE_dir = output_dir / "GDE"
+    GDE_dir = cell1_dir / "GDE"
     GDE_dir.mkdir(parents=True, exist_ok=True)
 
-    KDE_dir = output_dir / "KDE"
+    KDE_dir = cell1_dir / "KDE"
     KDE_dir.mkdir(parents=True, exist_ok=True)
 
     # Make list of all domains to process
@@ -107,6 +109,7 @@ def main():
         KDE_dir / f"KDE_{domain_name}.pdf",
         dpi=300,
     )
+    plt.close("all")
 
     logger.info(f"Visualizing generate distribution for {cell1}..")
     ms.distribution.generate_distribution(
