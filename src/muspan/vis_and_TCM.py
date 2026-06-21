@@ -144,8 +144,8 @@ def main():
     # cell1_safe = cell1.replace("/", "_").replace(" ", "_")
     # cell2_safe = cell2.replace("/", "_").replace(" ", "_")
     clusters_of_interest = [cell1, cell2]
-    clusters_of_interest = (
-        ("_").join(clusters_of_interest).replace("/", "_").replace(" ", "_")
+    clusters_of_interest_name = (
+        "_".join(clusters_of_interest).replace("/", "_").replace(" ", "_")
     )
 
     # Make list of all domains to process
@@ -161,8 +161,8 @@ def main():
     domain_output_dir = output_dir / domain_name
     domain_output_dir.mkdir(parents=True, exist_ok=True)
 
-    clusters_of_interest = output_dir / clusters_of_interest
-    clusters_of_interest.mkdir(parents=True, exist_ok=True)
+    clusters_of_interest_dir = output_dir / clusters_of_interest_name
+    clusters_of_interest_dir.mkdir(parents=True, exist_ok=True)
 
     # Print the unique cell types in the domain
     logger.info(np.unique(domain.labels["Cell Type"]["labels"]))
@@ -191,7 +191,7 @@ def main():
 
     # Visualize the domain with cell boundaries
     logger.info("Visualizing the domain with cell boundaries...")
-    fig, ax = plt.subplots(figsize=(10, 5))
+    _, ax = plt.subplots(figsize=(10, 5))
     ms.visualise.visualise(
         domain,
         objects_to_plot=boundCells,
@@ -226,7 +226,7 @@ def main():
     plt.title(f"Cell Types: {cell1} and {cell2}")
     plt.tight_layout()
     plt.savefig(
-        clusters_of_interest / f"{domain_name}.png",
+        clusters_of_interest_dir / f"{domain_name}.png",
         dpi=300,
     )
 
@@ -246,7 +246,7 @@ def main():
 
     # Visualize TCM
     logger.info(f"Visualizing TCM between {cell1} and {cell2}...")
-    fig, ax = plt.subplots(figsize=(10, 8))
+    _, ax = plt.subplots(figsize=(10, 8))
     ms.visualise.visualise(
         domain,
         objects_to_plot=boundCells,
@@ -281,7 +281,7 @@ def main():
     plt.title(f"Cell Types: {cell1} and {cell2}")
     plt.tight_layout()
     plt.savefig(
-        clusters_of_interest / f"{domain_name}_TCM.png",
+        clusters_of_interest_dir / f"{domain_name}_TCM.png",
         dpi=600,
     )
 
