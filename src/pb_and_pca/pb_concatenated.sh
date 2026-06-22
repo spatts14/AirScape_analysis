@@ -22,6 +22,5 @@ echo "Starting at $(date)"
 
 # calculate pseudobulk
 python src/pb_and_pca/pb_concatenated.py
-# python src/pb_and_pca/pb_pca.py
 
 echo "Completed at $(date)"

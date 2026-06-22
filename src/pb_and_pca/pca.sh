@@ -19,6 +19,6 @@ source airscape_venv/bin/activate
 echo "Starting at $(date)"
 
 # subset adata
-python src/projects/general/pca.py
+python src/pb_and_pca/pca.py
 
 echo "Completed at $(date)"
