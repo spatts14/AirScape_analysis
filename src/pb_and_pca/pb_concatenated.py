@@ -198,9 +198,6 @@ ROI_names = "ROI"
 path = Path(
     "/rds/general/user/sep22/projects/phenotypingsputumasthmaticsaurorawellcomea1/live/Sara_Patti/009_ST_Xenium"
 )
-path = Path(
-    "/rds/general/user/sep22/projects/phenotypingsputumasthmaticsaurorawellcomea1/live/Sara_Patti/009_ST_Xenium"
-)
 input_dir = path / "output/AIRSCAPE"
 
 # Set figure directory
