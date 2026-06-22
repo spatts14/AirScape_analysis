@@ -114,7 +114,7 @@ def main():
         contribution_label_name="Distribution values",
         visualise_output=True,
         visualise_heatmap_kwargs={
-            "heatmap_cmap": "coolwarm",
+            "heatmap_cmap": "Reds",
         },
     )
     plt.title(f"Cell Type: {cell1}")
