@@ -97,7 +97,7 @@ def main():
     )
 
     logs_dir = Path(path) / "logs"
-    logger = setup_logger(log_dir=logs_dir, log_name="pseudobulk_plots")
+    logger = setup_logger(log_dir=logs_dir, log_name="pseudobulk_celltype_PCA")
 
     input_dir = path / "output" / "pb" / "pb_data_celltype"
     out_dir = path / "output" / "pb" / "pb_plots_celltype"

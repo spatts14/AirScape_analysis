@@ -13,13 +13,6 @@ import sklearn
 from utils.confidence_ellipse import confidence_ellipse
 from utils.setup_logger import setup_logger
 
-# Set up loggers
-wd = "/rds/general/user/sep22/home/Projects/AirScape_analysis/HPC_jobs/general/"
-logs_dir = Path(wd) / "logs"
-logs_dir.mkdir(parents=True, exist_ok=True)
-logger = setup_logger(log_dir=logs_dir, log_name="pseudobulk")
-
-
 # Set directory
 path = Path(
     "/rds/general/user/sep22/projects/phenotypingsputumasthmaticsaurorawellcomea1/live/Sara_Patti/009_ST_Xenium"
@@ -32,6 +25,12 @@ os.makedirs(out_dir, exist_ok=True)
 
 # set fig dir for plots to save to
 sc.settings.figdir = out_dir
+
+# Set up logger
+logs_dir = path / "logs"
+logs_dir.mkdir(parents=True, exist_ok=True)
+logger = setup_logger(log_dir=logs_dir, log_name="pseudobulk_sampleID_pca")
+
 
 # Set colors
 cont_cmap = sns.color_palette("ch:start=.2,rot=-.3", as_cmap=True)

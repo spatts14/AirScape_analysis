@@ -182,13 +182,6 @@ def pseudobulk_sampleID(adata, donor_col="ROI", agg="sum"):
 # Set random seed for reproducibility
 seed_everything(19960915)
 
-# Set up logger
-wd = "/rds/general/user/sep22/home/Projects/AirScape_analysis/HPC_jobs/general/"
-logs_dir = Path(wd) / "logs"
-logs_dir.mkdir(parents=True, exist_ok=True)
-logger = setup_logger(log_dir=logs_dir, log_name="pseudobulk_concatenated_data")
-
-
 # Set variables
 level = "level_2"
 ROI_names = "ROI"
@@ -206,6 +199,12 @@ os.makedirs(out_dir, exist_ok=True)
 
 # set fig dir for plots to save to
 sc.settings.figdir = out_dir
+
+# Set up logger
+logs_dir = path / "logs"
+logs_dir.mkdir(parents=True, exist_ok=True)
+logger = setup_logger(log_dir=logs_dir, log_name="pseudobulk_concatenated_data")
+
 
 # Set colors
 cmap = sns.color_palette("ch:start=.2,rot=-.3", as_cmap=True)
