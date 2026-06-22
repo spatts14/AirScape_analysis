@@ -95,8 +95,8 @@ def main():
         contribution_label_name="Distribution values",
         visualise_output=True,
         visualise_heatmap_kwargs={
-            "heatmap_cmap": "coolwarm",
-            "colorbar_limit": max_value,
+            "heatmap_cmap": "Reds",
+            "colorbar_limit": [0, max_value],
         },
     )
     plt.title(f"Cell Type: {cell1}")
