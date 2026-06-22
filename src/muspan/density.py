@@ -41,7 +41,7 @@ def parse_args(args):
 
 
 def main():
-    """Main function to visualize cell types and compute TCM for a given domain."""
+    """Main function to compute KDE and GDE for a cell type in a domain."""
     # Set directory paths
     base_dir = Path(
         "/rds/general/user/sep22/projects/phenotypingsputumasthmaticsaurorawellcomea1/live/Sara_Patti/009_ST_Xenium/output/muspan"
@@ -59,11 +59,8 @@ def main():
     # Choose two cell types of interest for analysis
     cell1 = "CTHRC1+ fibroblasts"
 
-    # # Set max
-    max_value = (
-        0.0000004  # Set the maximum value for the color scale, will do + and - integer
-    )
-    min_value = 0  # Set the minimum value for the color scale
+    # Set colorbar limit (will create symmetric range +/- this value)
+    max_value = 0.0000004
 
     # Make a safe version of cell1 for directory naming
     cell1_safe = cell1.replace("+", "").replace(" ", "_")
@@ -99,8 +96,7 @@ def main():
         visualise_output=True,
         visualise_heatmap_kwargs={
             "heatmap_cmap": "coolwarm",
-            "colorbar_limit": max_value,  # does not look right
-            "colorbar_min": min_value,  # does not look right
+            "colorbar_limit": max_value,
         },
     )
     plt.title(f"Cell Type: {cell1}")
@@ -121,6 +117,8 @@ def main():
             "heatmap_cmap": "coolwarm",
         },
     )
+    plt.title(f"Cell Type: {cell1}")
+    plt.tight_layout()
     plt.savefig(
         GDE_dir / f"GDE_{domain_name}.pdf",
         dpi=300,
