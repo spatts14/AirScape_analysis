@@ -92,124 +92,139 @@ def pseudobulk_sampleID(adata, donor_col="ROI", agg="sum"):
     return pb, meta
 
 
-# Set random seed for reproducibility
-seed_everything(19960915)
+def main():
+    """Main function to calculate pb for each cell type for each ROI."""
+    # Set random seed for reproducibility
+    seed_everything(19960915)
 
-# Set directory
-path = Path(
-    "/rds/general/user/sep22/projects/phenotypingsputumasthmaticsaurorawellcomea1/live/Sara_Patti/009_ST_Xenium"
-)
-input_dir = path / "output/AIRSCAPE"
-
-# Set figure directory
-out_dir = path / "output" / "pb" / "pb_data_celltype"
-os.makedirs(out_dir, exist_ok=True)
-
-# set fig dir for plots to save to
-sc.settings.figdir = out_dir
-
-# Set up logger
-logs_dir = path / "logs"
-logs_dir.mkdir(parents=True, exist_ok=True)
-logger = setup_logger(log_dir=logs_dir, log_name="pseudobulk_data_celltype")
-
-# Set variables
-level = "level_2"
-ROI_names = "ROI"
-
-# Load data
-logger.info("Loading data...")
-adata = ad.read_zarr(input_dir / "adata_final_object/adata_with_metadata.zarr")
-
-logger.info(f"adata shape: {adata.shape}")
-logger.info(f"adata.obs columns: {adata.obs.columns.tolist()}")
-logger.info(adata)
-
-# Extract relevant metadata from adata.obs
-logger.info("Extracting metadata from adata.obs...")
-adata_meta = (
-    adata.obs[
-        [ROI_names, "sample_ID", "batch", "condition", "timepoint", "timepoint_label"]
-    ]
-    .drop_duplicates(subset=[ROI_names])
-    .set_index(ROI_names)
-)
-logger.info(f"Extracted metadata: {adata_meta.head()}")
-
-# Add metadata from excel file
-logger.info("Loading manual metadata from Excel file...")
-manual_meta = pd.read_csv(
-    path / "data/meta/STx_meta_analysis_only_cleaned.csv", index_col="ROI"
-)
-logger.info(f"Manual metadata {manual_meta.head()}")
-
-# Make empty dict
-pseudo_celltype_dict = {}
-
-# Make list of cell types to loop through
-cell_types = adata.obs[level].cat.categories.tolist()
-logger.info(f"Cell types: {cell_types}")
-
-logger.info("Calculating pseudobulk for each cell type...")
-for cell_type in cell_types:
-    # Make directory for each cell type
-    cell_type_safe = safe_name(
-        cell_type
-    )  # make safe name to use in directory and file names
-    cell_type_dir = out_dir / cell_type_safe
-    os.makedirs(cell_type_dir, exist_ok=True)
-
-    logger.info(f"Calculating pseudobulk for cell type: {cell_type}...")
-    # subset adata to cell type of interest
-    adata_subset = adata[adata.obs[level] == cell_type].copy()
-
-    logger.info("Calculating pseudobulk for each donor...")
-    pb_sample, meta_sample = pseudobulk_sampleID(
-        adata_subset, donor_col=ROI_names, agg="sum"
+    # Set directory
+    path = Path(
+        "/rds/general/user/sep22/projects/phenotypingsputumasthmaticsaurorawellcomea1/live/Sara_Patti/009_ST_Xenium"
     )
+    input_dir = path / "output/AIRSCAPE"
 
-    # Combine into one meta data df
-    logger.info("Combining metadata from pseudobulk, adata.obs, and manual metadata...")
-    meta_df = meta_sample.merge(
-        adata_meta,
-        left_on=ROI_names,
-        right_index=True,
-        how="left",
-        suffixes=("", "_adata_meta"),
+    # Set figure directory
+    out_dir = path / "output" / "pb" / "pb_data_celltype"
+    os.makedirs(out_dir, exist_ok=True)
+
+    # set fig dir for plots to save to
+    sc.settings.figdir = out_dir
+
+    # Set up logger
+    logs_dir = path / "logs"
+    logs_dir.mkdir(parents=True, exist_ok=True)
+    logger = setup_logger(log_dir=logs_dir, log_name="pseudobulk_data_celltype")
+
+    # Set variables
+    level = "level_2"
+    ROI_names = "ROI"
+
+    # Load data
+    logger.info("Loading data...")
+    adata = ad.read_zarr(input_dir / "adata_final_object/adata_with_metadata.zarr")
+
+    logger.info(f"adata shape: {adata.shape}")
+    logger.info(f"adata.obs columns: {adata.obs.columns.tolist()}")
+    logger.info(adata)
+
+    # Extract relevant metadata from adata.obs
+    logger.info("Extracting metadata from adata.obs...")
+    adata_meta = (
+        adata.obs[
+            [
+                ROI_names,
+                "sample_ID",
+                "batch",
+                "condition",
+                "timepoint",
+                "timepoint_label",
+            ]
+        ]
+        .drop_duplicates(subset=[ROI_names])
+        .set_index(ROI_names)
     )
-    logger.info(f"Metadata after merging with adata.obs: {meta_df.head()}")
+    logger.info(f"Extracted metadata: {adata_meta.head()}")
 
-    meta_df = meta_df.merge(
-        manual_meta,
-        left_on=ROI_names,
-        right_index=True,
-        how="left",
-        suffixes=("", "_manual"),
+    # Add metadata from excel file
+    logger.info("Loading manual metadata from Excel file...")
+    manual_meta = pd.read_csv(
+        path / "data/meta/STx_meta_analysis_only_cleaned.csv", index_col="ROI"
     )
-    logger.info(f"Metadata after merging with manual metadata: {meta_df.head()}")
+    logger.info(f"Manual metadata {manual_meta.head()}")
 
-    # Remove samples with <n cells to reduce noise in PCA later on
-    num_cells_threshold = 10
-    logger.info(f"Filtering out samples with <{num_cells_threshold} cells...")
-    valid_samples = meta_sample[meta_sample["n_cells"] >= num_cells_threshold].index
-    pb_sample = pb_sample[valid_samples]
-    meta_sample = meta_sample.loc[valid_samples]
+    # Make empty dict
+    pseudo_celltype_dict = {}
 
-    logger.info(f"{cell_type} filtered pseudobulk matrix shape: {pb_sample.shape}")
-    logger.info(f"{cell_type} filtered metadata shape: {meta_sample.shape}")
+    # Make list of cell types to loop through
+    cell_types = adata.obs[level].cat.categories.tolist()
+    logger.info(f"Cell types: {cell_types}")
 
-    # Keep metadata aligned to the filtered pseudobulk matrix
-    meta_df = meta_df.loc[valid_samples]
+    logger.info("Calculating pseudobulk for each cell type...")
+    for cell_type in cell_types:
+        # Make directory for each cell type
+        cell_type_safe = safe_name(
+            cell_type
+        )  # make safe name to use in directory and file names
+        cell_type_dir = out_dir / cell_type_safe
+        os.makedirs(cell_type_dir, exist_ok=True)
 
-    # Save pseudobulk matrix and metadata
-    pb_sample.to_csv(
-        cell_type_dir / f"{cell_type_safe}_pseudobulk_matrix_ROI.csv", index=True
-    )
-    meta_df.to_csv(
-        cell_type_dir / f"{cell_type_safe}_pseudobulk_metadata_ROI.csv", index=True
-    )
+        logger.info(f"Calculating pseudobulk for cell type: {cell_type}...")
+        # subset adata to cell type of interest
+        adata_subset = adata[adata.obs[level] == cell_type].copy()
 
-    # Add to dict for later use in PCA module
-    pseudo_celltype_dict[cell_type] = (pb_sample, meta_df)
+        logger.info("Calculating pseudobulk for each donor...")
+        pb_sample, meta_sample = pseudobulk_sampleID(
+            adata_subset, donor_col=ROI_names, agg="sum"
+        )
 
-logger.info("Pseudobulk matrix and metadata saved.")
+        # Combine into one meta data df
+        logger.info(
+            "Combining metadata from pseudobulk, adata.obs, and manual metadata..."
+        )
+        meta_df = meta_sample.merge(
+            adata_meta,
+            left_on=ROI_names,
+            right_index=True,
+            how="left",
+            suffixes=("", "_adata_meta"),
+        )
+        logger.info(f"Metadata after merging with adata.obs: {meta_df.head()}")
+
+        meta_df = meta_df.merge(
+            manual_meta,
+            left_on=ROI_names,
+            right_index=True,
+            how="left",
+            suffixes=("", "_manual"),
+        )
+        logger.info(f"Metadata after merging with manual metadata: {meta_df.head()}")
+
+        # Remove samples with <n cells to reduce noise in PCA later on
+        num_cells_threshold = 10
+        logger.info(f"Filtering out samples with <{num_cells_threshold} cells...")
+        valid_samples = meta_sample[meta_sample["n_cells"] >= num_cells_threshold].index
+        pb_sample = pb_sample[valid_samples]
+        meta_sample = meta_sample.loc[valid_samples]
+
+        logger.info(f"{cell_type} filtered pseudobulk matrix shape: {pb_sample.shape}")
+        logger.info(f"{cell_type} filtered metadata shape: {meta_sample.shape}")
+
+        # Keep metadata aligned to the filtered pseudobulk matrix
+        meta_df = meta_df.loc[valid_samples]
+
+        # Save pseudobulk matrix and metadata
+        pb_sample.to_csv(
+            cell_type_dir / f"{cell_type_safe}_pseudobulk_matrix_ROI.csv", index=True
+        )
+        meta_df.to_csv(
+            cell_type_dir / f"{cell_type_safe}_pseudobulk_metadata_ROI.csv", index=True
+        )
+
+        # Add to dict for later use in PCA module
+        pseudo_celltype_dict[cell_type] = (pb_sample, meta_df)
+
+    logger.info("Pseudobulk matrix and metadata saved.")
+
+
+if __name__ == "__main__":
+    main()

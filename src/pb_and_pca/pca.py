@@ -4,6 +4,7 @@ import os
 from collections.abc import Sequence
 from pathlib import Path
 
+import anndata as ad
 import matplotlib.pyplot as plt
 import numpy as np
 import scanpy as sc
@@ -131,26 +132,23 @@ def get_palette(n):
 # Set random seed for reproducibility
 seed_everything(19960915)
 
-# Set up logger
-wd = "/rds/general/user/sep22/home/Projects/AirScape_analysis/HPC_jobs/general/"
-logs_dir = Path(wd) / "logs"
-logs_dir.mkdir(parents=True, exist_ok=True)
-logger = setup_logger(log_dir=logs_dir, log_name="pseudobulk_sampleID")
-
-
 # Set directory
-dir = Path(
-    "/rds/general/user/sep22/projects/phenotypingsputumasthmaticsaurorawellcomea1/live/Sara_Patti/009_ST_Xenium/output/2026-03-27_analysis_run/"
+path = Path(
+    "/rds/general/user/sep22/projects/phenotypingsputumasthmaticsaurorawellcomea1/live/Sara_Patti/009_ST_Xenium"
 )
-data_dir = dir / "project_analysis/general/pseudobulk_data/"
+input_dir = path / "output/AIRSCAPE"
 
 # Set figure directory
-folder_name = "pca"
-out_path = f"project_analysis/general/{folder_name}"
-
-out_dir = dir / out_path
+out_dir = path / "output" / "pb" / "pb_sampleID_pb"
 os.makedirs(out_dir, exist_ok=True)
 
+# set fig dir for plots to save to
+sc.settings.figdir = out_dir
+
+# Set up logger
+logs_dir = path / "logs"
+logs_dir.mkdir(parents=True, exist_ok=True)
+logger = setup_logger(log_dir=logs_dir, log_name="pseudobulk_sampleID_pca")
 
 # Create fig subdirectory for scanpy figures
 fig_dir = out_dir
@@ -165,8 +163,12 @@ cmap = sns.color_palette("crest", as_cmap=True)
 palette = sns.color_palette("Set2", 12)
 
 # Load data
+
+# Load data
 logger.info("Loading data...")
-adata = sc.read_h5ad(dir / "annotate/adata_level_2_level_3.h5ad")  # full dataset
+adata = ad.read_zarr(
+    input_dir / "adata_final_object/adata_with_metadata.zarr"
+)  # full adata with all cells and metadata
 
 # Ensure PCA is computed (only compute if not already present)
 if "X_pca" not in adata.obsm:
