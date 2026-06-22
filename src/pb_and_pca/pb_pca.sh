@@ -20,6 +20,6 @@ echo "Starting at $(date)"
 
 # calculate pseudobulk
 #python src/projects/general/pb.py
-python src/projects/general/pb_pca.py
+python src/pb_and_pca/pb_pca.sh
 
 echo "Completed at $(date)"

@@ -21,16 +21,13 @@ logger = setup_logger(log_dir=logs_dir, log_name="pseudobulk")
 
 
 # Set directory
-dir = Path(
-    "/rds/general/user/sep22/projects/phenotypingsputumasthmaticsaurorawellcomea1/live/Sara_Patti/009_ST_Xenium/output/2026-03-27_analysis_run/"
+path = Path(
+    "/rds/general/user/sep22/projects/phenotypingsputumasthmaticsaurorawellcomea1/live/Sara_Patti/009_ST_Xenium"
 )
-data_dir = dir / "project_analysis/general/pb_data/"
+input_dir = path / "output/AIRSCAPE"
 
 # Set figure directory
-folder_name = "pb_pca"
-out_path = f"project_analysis/general/{folder_name}"
-
-out_dir = dir / out_path
+out_dir = path / "output" / "pb" / "pb_sampleID"
 os.makedirs(out_dir, exist_ok=True)
 
 # set fig dir for plots to save to
@@ -42,8 +39,8 @@ cat_palette = sns.color_palette("Set2")
 
 # Load data
 logger.info("Loading data...")
-df = pd.read_csv(data_dir / "pseudobulk_matrix_ROI.csv", index_col=0)
-meta = pd.read_csv(data_dir / "pseudobulk_metadata_ROI.csv", index_col=0)
+df = pd.read_csv(out_dir / "pseudobulk_matrix_ROI.csv", index_col=0)
+meta = pd.read_csv(out_dir / "pseudobulk_metadata_ROI.csv", index_col=0)
 logger.info(f"Pseudobulk matrix shape: {df.shape}")
 logger.info(f"Metadata shape: {meta.shape}")
 
