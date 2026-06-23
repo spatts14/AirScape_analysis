@@ -20,7 +20,7 @@ path = Path(
 input_dir = path / "output/AIRSCAPE"
 
 # Set figure directory
-out_dir = path / "output" / "pb" / "pb_sampleID"
+out_dir = path / "output" / "pb" / "pb_data_concatenated"
 os.makedirs(out_dir, exist_ok=True)
 
 # set fig dir for plots to save to
