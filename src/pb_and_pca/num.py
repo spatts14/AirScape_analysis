@@ -136,9 +136,13 @@ def main():
 
         for y in y_metrics:
             # Plot time and hue
+            plot_df = meta_df[["time_point_label", "treatment_arm", y]].dropna().copy()
+            plot_df["time_point_label"] = plot_df["time_point_label"].astype(str)
+            plot_df["treatment_arm"] = plot_df["treatment_arm"].astype(str)
+
             fig, ax = plt.subplots(figsize=(6, 4))
             sns.boxenplot(
-                data=meta_df,
+                data=plot_df,
                 x="time_point_label",
                 y=y,
                 order=["BASELINE", "6 WEEKS", "6 MONTHS"],
@@ -150,14 +154,16 @@ def main():
             )
 
             sns.stripplot(
-                data=meta_df,
+                data=plot_df,
                 x="time_point_label",
                 y=y,
                 order=["BASELINE", "6 WEEKS", "6 MONTHS"],
                 hue="treatment_arm",
                 hue_order=["SHAM", "TREATMENT"],
+                palette=treatment_arm_palette,
                 size=2.5,
                 jitter=True,
+                dodge=True,
                 ax=ax,
                 legend=False,
             )
@@ -166,7 +172,7 @@ def main():
             ax.set_ylabel(y)
             plt.tight_layout()
             plt.savefig(
-                cell_out_dir / f"{safe_name(cell_type)}_{y}_by_time_point_label.pdf",
+                cell_out_dir / f"{safe_name(cell_type)}_{y}_by_time_treatmentarm.pdf",
                 bbox_inches="tight",
             )
             plt.close(fig)
