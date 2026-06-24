@@ -7,11 +7,8 @@ import anndata as ad
 import scanpy as sc
 import seaborn as sns
 
-sys.path.append(
-    str(Path(__file__).resolve().parents[3])
-)  # goes up 3 levels to AirScape/
+sys.path.append(str(Path(__file__).resolve().parents[1]))
 
-from utils.airspace_colors import level_2_listed
 from utils.seed_everything import seed_everything
 
 # Set random seed for reproducibility
@@ -30,7 +27,6 @@ sc.settings.figdir = fig_dir
 
 # Set colors
 cmap = sns.color_palette("ch:start=.2,rot=-.3", as_cmap=True)
-palette = level_2_listed
 
 # Load data
 print(f"Loading data from {dir / 'adata_final_object/adata_with_metadata.zarr'}...")
@@ -62,7 +58,6 @@ for col in meta_list:
     sc.pl.umap(
         adata,
         color=col,
-        cmap=palette,
         wspace=0.4,
         show=False,
         frameon=False,
