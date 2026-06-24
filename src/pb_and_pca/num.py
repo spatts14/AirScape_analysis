@@ -47,6 +47,7 @@ def load_celltype_results(input_dir: Path):
         meta_df = meta_df.loc[common_samples]
 
         results.append((cell_type_label, cell_type_dir, pb_sample, meta_df))
+    return results
 
 
 def plot_metric(df, x, y, cell_type, palette):
@@ -68,7 +69,26 @@ def plot_metric(df, x, y, cell_type, palette):
         saturation=0.25,
         ax=ax,
     )
-    ...
+
+    sns.stripplot(
+        data=plot_df,
+        x=x,
+        y=y,
+        order=group_order,
+        color="0.2",
+        size=2.5,
+        alpha=0.7,
+        jitter=True,
+        ax=ax,
+        legend=False,
+    )
+
+    ax.set_xlabel(x)
+    ax.set_ylabel(y)
+    ax.set_title(f"{cell_type}: {y} by {x}")
+    plt.tight_layout()
+
+    return fig
 
 
 def main():
