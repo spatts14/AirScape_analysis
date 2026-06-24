@@ -75,7 +75,7 @@ def main():
     """Visualize number of cells per sample."""
     # Set directory
     path = Path(
-        "/rds/general/user/sep22/projects/phenotypingsputumasthmaticsaurorawellcomea1/live/Sara_Patti/009_ST_Xenium"
+        "/Volumes/phenotypingsputumasthmaticsaurorawellcomea1/live/Sara_Patti/009_ST_Xenium"
     )
 
     # Set directories
