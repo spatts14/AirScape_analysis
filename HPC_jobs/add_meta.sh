@@ -16,5 +16,5 @@ source airscape_venv/bin/activate
 
 # Run
 echo "Starting at manual metadata addition... $(date)"
-python src/manual_src/add_metadata.py
+python src/add_metadata.py
 echo "Completed at $(date)"
