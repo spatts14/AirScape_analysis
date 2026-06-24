@@ -19,12 +19,11 @@ seed_everything(19960915)
 
 # Set directories
 dir = Path(
-    "/rds/general/user/sep22/projects/phenotypingsputumasthmaticsaurorawellcomea1/live/Sara_Patti/009_ST_Xenium/output/2026-03-27_analysis_run/"
+    "/rds/general/user/sep22/projects/phenotypingsputumasthmaticsaurorawellcomea1/live/Sara_Patti/009_ST_Xenium/output/AIRSCAPE"
 )
 
-fig_dir = dir / "project_analysis/general/umap"
+fig_dir = dir / "final_umap"
 fig_dir.mkdir(parents=True, exist_ok=True)
-
 
 # Configure scanpy to save figures in our custom directory
 sc.settings.figdir = fig_dir
