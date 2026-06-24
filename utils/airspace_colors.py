@@ -6,7 +6,7 @@ import matplotlib.colors as mcolors
 import seaborn as sns
 
 # Predefined color palettes for consistent plotting across modules
-condition_palettes = {
+condition_palette = {
     "IPF":   "#6A7FB5",  # slate blue
     "PM08":  "#B07D4A",  # warm tan
     "COPD":  "#7EB0B8",  # dusty teal
