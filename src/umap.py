@@ -51,7 +51,7 @@ meta_list = [
     # "sex",
     # "smoking_status",
     # "batch",
-    # "level_1",
+    "level_1",
     "level_2",
 ]
 

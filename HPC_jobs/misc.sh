@@ -19,11 +19,11 @@ source airscape_venv/bin/activate
 # Run with error logging
 echo "Starting at $(date)"
 
+python src/umap.py
 #python src/manual_src/misc_plots/gene_celltype.py
 #python src/manual_src/misc_plots/transcript_parquet.py
 #python src/manual_src/misc_plots/composition.py
 #python src/manual_src/misc_plots/violin_plt.py
-# python src/projects/general/umap.py
 # python src/projects/general/spatial_plot.py
 
 echo "Completed at $(date)"
