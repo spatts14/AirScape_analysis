@@ -138,9 +138,9 @@ def main():
 
     # Choose two cell types of interest for analysis
     cell1 = "CTHRC1+ fibroblasts"
-    cell2 = "CTHRC1+ fibroblasts"
+    cell2 = "Adventitial fibroblasts"
 
-    vmax = 100  # Set the maximum value for the color scale, will do + and - integer
+    vmax = 30  # Set the maximum value for the color scale, will do + and - integer
 
     # Visualization levels
     vis_levels = False  # Set to True to visualize level 1 and level 2
