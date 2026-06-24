@@ -134,6 +134,43 @@ def main():
         cell_out_dir = out_dir / cell_type_dir.name
         cell_out_dir.mkdir(parents=True, exist_ok=True)
 
+        for y in y_metrics:
+            # Plot time and hue
+            fig, ax = plt.subplots(figsize=(6, 4))
+            sns.boxenplot(
+                data=meta_df,
+                x="time_point_label",
+                y=y,
+                order=["BASELINE", "6 WEEKS", "6 MONTHS"],
+                hue="treatment_arm",
+                hue_order=["SHAM", "TREATMENT"],
+                palette=treatment_arm_palette,
+                saturation=0.75,
+                ax=ax,
+            )
+
+            sns.stripplot(
+                data=meta_df,
+                x="time_point_label",
+                y=y,
+                order=["BASELINE", "6 WEEKS", "6 MONTHS"],
+                hue="treatment_arm",
+                hue_order=["SHAM", "TREATMENT"],
+                size=2.5,
+                jitter=True,
+                ax=ax,
+                legend=False,
+            )
+
+            ax.set_xlabel("time_point_label")
+            ax.set_ylabel(y)
+            plt.tight_layout()
+            plt.savefig(
+                cell_out_dir / f"{safe_name(cell_type)}_{y}_by_time_point_label.pdf",
+                bbox_inches="tight",
+            )
+            plt.close(fig)
+
         for x in group_cols:
             if x not in meta_df.columns:
                 logger.warning(f"{x} not in columns for {cell_type}. Skipping.")
