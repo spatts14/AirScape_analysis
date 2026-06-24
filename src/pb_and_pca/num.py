@@ -65,8 +65,9 @@ def plot_metric(df, x, y, cell_type, palette):
         x=x,
         y=y,
         order=group_order,
+        hue=x,
         palette=palette_to_use,
-        saturation=0.25,
+        saturation=0.75,
         ax=ax,
     )
 
@@ -74,10 +75,10 @@ def plot_metric(df, x, y, cell_type, palette):
         data=plot_df,
         x=x,
         y=y,
+        hue=x,
         order=group_order,
-        color="0.2",
+        palette=palette_to_use,
         size=2.5,
-        alpha=0.7,
         jitter=True,
         ax=ax,
         legend=False,
@@ -118,11 +119,11 @@ def main():
 
     # Metrics and Grouping columns
     y_metrics = ["n_cells", "total_counts", "mean_transcripts"]
-    group_cols = ["condition", "diagnosis", "timepoint_label", "treatment_arm"]
+    group_cols = ["condition", "diagnosis", "time_point_label", "treatment_arm"]
     group_palettes = {
         "condition": condition_palette,
         "diagnosis": diagnosis_palette,
-        "timepoint_label": time_point_palette,
+        "time_point_label": time_point_palette,
         "treatment_arm": treatment_arm_palette,
     }
 
