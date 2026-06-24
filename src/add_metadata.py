@@ -54,8 +54,7 @@ def setup_logger(log_dir: Path, log_name: str) -> logging.Logger:
 path = Path(
     "/rds/general/user/sep22/projects/phenotypingsputumasthmaticsaurorawellcomea1/live/Sara_Patti/009_ST_Xenium"
 )
-dir = path / "output/2026-03-27_analysis_run"
-
+dir = path / "output/AIRSCAPE/"
 
 logs_dir = Path(path) / "logs"
 logger = setup_logger(log_dir=logs_dir, log_name="metadata_addition")
