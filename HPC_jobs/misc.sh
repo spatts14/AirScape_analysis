@@ -19,8 +19,8 @@ source airscape_venv/bin/activate
 # Run with error logging
 echo "Starting at $(date)"
 
-python src/umap.py
-#python src/manual_src/misc_plots/gene_celltype.py
+# python src/umap.py
+python src/composition.py
 #python src/manual_src/misc_plots/transcript_parquet.py
 #python src/manual_src/misc_plots/composition.py
 #python src/manual_src/misc_plots/violin_plt.py
