@@ -1,5 +1,5 @@
 #!/bin/bash
-#PBS -l walltime=8:0:0
+#PBS -l walltime=01:0:0
 #PBS -lselect=1:ncpus=1:mem=128gb
 #PBS -N misc_analysis
 #PBS -j oe
