@@ -1,18 +1,21 @@
 """Generate composition of celltype plots."""
 
+import sys
 from pathlib import Path
 
+import anndata as ad
 import matplotlib.pyplot as plt
 import numpy as np
 import scanpy as sc
 import seaborn as sns
 
+sys.path.append(str(Path(__file__).resolve().parents[1]))
 from utils.seed_everything import seed_everything
 
 
 def plot_celltype_composition(
     adata,
-    celltype_col: str = "level_0_annotation",
+    celltype_col: str = "level_2",
     groupby_col: str = "condition",
     figsize: tuple = (10, 6),
     palette: str = "tab20",
@@ -134,14 +137,15 @@ def plot_celltype_composition(
 seed_everything(19960915)
 
 # Set variables
-color = "level_0_annotation"
+color = "level_2"
 
 # Set directories
-dir = Path(
-    "/rds/general/user/sep22/projects/phenotypingsputumasthmaticsaurorawellcomea1/live/Sara_Patti/009_ST_Xenium/output/2026-02-21_analysis_run_HVG500/"
+path = Path(
+    "/rds/general/user/sep22/projects/phenotypingsputumasthmaticsaurorawellcomea1/live/Sara_Patti/009_ST_Xenium"
 )
+dir = path / "output/AIRSCAPE/"
 
-fig_dir = dir / "manual_analysis/plots"
+fig_dir = dir / "celltype_composition"
 fig_dir.mkdir(parents=True, exist_ok=True)
 
 # Configure scanpy to save figures in our custom directory
@@ -149,23 +153,22 @@ sc.settings.figdir = fig_dir
 
 # Set colors
 cmap = sns.color_palette("ch:start=.2,rot=-.3", as_cmap=True)
-color_palette_level_1 = sns.color_palette("hls", 12)
 
 # Load data
-print(f"Loading data from {dir / 'annotate/adata.h5ad'}...")
-adata = sc.read_h5ad(dir / "annotate/adata.h5ad")
+print("Loading data from 'adata_final_object/adata_with_metadata.zarr'...")
+adata = ad.read_zarr(dir / "adata_final_object/adata_with_metadata.zarr")
 
 print("Data loaded successfully.")
 
 # Plot
 fig, ax = plot_celltype_composition(
-    adata, celltype_col="level_0_annotation", groupby_col="condition"
+    adata, celltype_col="level_2", groupby_col="condition"
 )
 
-fig, ax = plot_celltype_composition(
-    adata, celltype_col="level_0_annotation", groupby_col="ROI"
-)
+fig, ax = plot_celltype_composition(adata, celltype_col="level_2", groupby_col="ROI")
 
 fig, ax = plot_celltype_composition(
-    adata, celltype_col="level_0_annotation", groupby_col="timepoint"
+    adata, celltype_col="level_2", groupby_col="diagnosis"
 )
+
+print("Composition plots generated and saved successfully.")
