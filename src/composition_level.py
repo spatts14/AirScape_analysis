@@ -382,28 +382,41 @@ def main():
     adata = ad.read_zarr(dir / "adata_final_object/adata_with_metadata.zarr")
     print("Data loaded successfully.")
 
+    # Subset on conditions of interest
+    conditions_of_interest = ["IPF", "PM08"]
+    adata = adata[adata.obs["condition"].isin(conditions_of_interest)].copy()
+
+    # Save to subset df
+    if conditions_of_interest:
+        subset_conditions = "v".join(conditions_of_interest)
+        fig_dir = fig_dir / f"{subset_conditions}"
+        fig_dir.mkdir(parents=True, exist_ok=True)
+    else:
+        fig_dir = fig_dir / "all"
+        fig_dir.mkdir(parents=True, exist_ok=True)
+
     # Original level 2 composition plots
-    fig, ax = plot_celltype_composition(
+    plot_celltype_composition(
         adata, fig_dir=fig_dir, celltype_col="level_2", groupby_col="condition"
     )
-    fig, ax = plot_celltype_composition(
+    plot_celltype_composition(
         adata, fig_dir=fig_dir, celltype_col="level_2", groupby_col="ROI"
     )
-    fig, ax = plot_celltype_composition(
+    plot_celltype_composition(
         adata, fig_dir=fig_dir, celltype_col="level_2", groupby_col="diagnosis"
     )
 
     # New: level 2 composition within each level 1 group
     # One PDF per level 1 group; only the whitelisted level 2 subtypes are shown.
-    figs = plot_level2_within_level1(
+    plot_level2_within_level1(
         adata,
         fig_dir=fig_dir,
         level1_col="level_1",
         level2_col="level_2",
         groupby_col="diagnosis",
     )
-    figs = plot_level2_within_level1(adata, fig_dir=fig_dir, groupby_col="condition")
-    figs = plot_level2_within_level1(adata, fig_dir=fig_dir, groupby_col="ROI")
+    plot_level2_within_level1(adata, fig_dir=fig_dir, groupby_col="condition")
+    plot_level2_within_level1(adata, fig_dir=fig_dir, groupby_col="ROI")
 
     print("Composition plots generated and saved successfully.")
 
