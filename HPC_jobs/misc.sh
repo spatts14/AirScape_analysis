@@ -20,7 +20,8 @@ source airscape_venv/bin/activate
 echo "Starting at $(date)"
 
 # python src/umap.py
-python src/composition.py
+python src/composition_level.py
+# python src/composition.py
 #python src/manual_src/misc_plots/transcript_parquet.py
 #python src/manual_src/misc_plots/composition.py
 #python src/manual_src/misc_plots/violin_plt.py
