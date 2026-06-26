@@ -15,6 +15,7 @@ from utils.seed_everything import seed_everything
 
 def plot_celltype_composition(
     adata,
+    fig_dir: Path,
     celltype_col: str = "level_2",
     groupby_col: str = "condition",
     figsize: tuple = (10, 6),
@@ -39,6 +40,8 @@ def plot_celltype_composition(
             Y-axis label
         legend_bbox : tuple
             Legend position (bbox_to_anchor)
+        fig_dir : Path
+            Directory to save the figure
 
     Returns:
         fig, ax : matplotlib figure and axes objects
@@ -179,6 +182,7 @@ LEVEL1_TO_LEVEL2 = {
 
 def plot_level2_within_level1(
     adata,
+    fig_dir: Path,
     level1_col: str = "level_1",
     level2_col: str = "level_2",
     groupby_col: str = "diagnosis",
@@ -380,25 +384,26 @@ def main():
 
     # Original level 2 composition plots
     fig, ax = plot_celltype_composition(
-        adata, celltype_col="level_2", groupby_col="condition"
+        adata, fig_dir=fig_dir, celltype_col="level_2", groupby_col="condition"
     )
     fig, ax = plot_celltype_composition(
-        adata, celltype_col="level_2", groupby_col="ROI"
+        adata, fig_dir=fig_dir, celltype_col="level_2", groupby_col="ROI"
     )
     fig, ax = plot_celltype_composition(
-        adata, celltype_col="level_2", groupby_col="diagnosis"
+        adata, fig_dir=fig_dir, celltype_col="level_2", groupby_col="diagnosis"
     )
 
     # New: level 2 composition within each level 1 group
     # One PDF per level 1 group; only the whitelisted level 2 subtypes are shown.
     figs = plot_level2_within_level1(
         adata,
+        fig_dir=fig_dir,
         level1_col="level_1",
         level2_col="level_2",
         groupby_col="diagnosis",
     )
-    figs = plot_level2_within_level1(adata, groupby_col="condition")
-    figs = plot_level2_within_level1(adata, groupby_col="ROI")
+    figs = plot_level2_within_level1(adata, fig_dir=fig_dir, groupby_col="condition")
+    figs = plot_level2_within_level1(adata, fig_dir=fig_dir, groupby_col="ROI")
 
     print("Composition plots generated and saved successfully.")
 
