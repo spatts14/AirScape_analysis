@@ -8,6 +8,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import scanpy as sc
 import seaborn as sns
+from pandas import pd
 
 sys.path.append(str(Path(__file__).resolve().parents[1]))
 from utils.seed_everything import seed_everything
@@ -205,6 +206,8 @@ def plot_level2_within_level1(
     Args:
         adata : AnnData
             Annotated data object with obs columns for level 1, level 2, and groupby.
+        fig_dir : Path
+            Directory to save the figures.
         level1_col : str
             Column in adata.obs with coarse (level 1) cell type annotations.
         level2_col : str
@@ -383,8 +386,29 @@ def main():
     print("Data loaded successfully.")
 
     # Subset on conditions of interest
-    conditions_of_interest = ["IPF", "PM08"]
+    conditions_of_interest = ["COPD", "MICA"]
     adata = adata[adata.obs["condition"].isin(conditions_of_interest)].copy()
+
+    if conditions_of_interest == ["COPD", "MICA"]:
+        # Add a new column to adata.obs that combines treatment arm and timepoint
+        adata.obs["time_treatment_arm"] = (
+            adata.obs["treatment_arm"] + " " + adata.obs["time_point_label"]
+        )
+
+        # Set order for time_treatment_arm
+        time_treatment_order = [
+            "SHAM BASELINE",
+            "SHAM 6 WEEKS",
+            "SHAM 6 MONTHS",
+            "TREATMENT BASELINE",
+            "TREATMENT 6 WEEKS",
+            "TREATMENT 6 MONTHS",
+        ]
+        adata.obs["time_treatment_arm"] = pd.Categorical(
+            adata.obs["time_treatment_arm"],
+            categories=time_treatment_order,
+            ordered=True,
+        )
 
     # Save to subset df
     if conditions_of_interest:
@@ -405,6 +429,9 @@ def main():
     plot_celltype_composition(
         adata, fig_dir=fig_dir, celltype_col="level_2", groupby_col="diagnosis"
     )
+    plot_celltype_composition(
+        adata, fig_dir=fig_dir, celltype_col="level_2", groupby_col="time_treatment_arm"
+    )
 
     # New: level 2 composition within each level 1 group
     # One PDF per level 1 group; only the whitelisted level 2 subtypes are shown.
@@ -417,6 +444,7 @@ def main():
     )
     plot_level2_within_level1(adata, fig_dir=fig_dir, groupby_col="condition")
     plot_level2_within_level1(adata, fig_dir=fig_dir, groupby_col="ROI")
+    plot_level2_within_level1(adata, fig_dir=fig_dir, groupby_col="time_treatment_arm")
 
     print("Composition plots generated and saved successfully.")
 
