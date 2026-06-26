@@ -190,7 +190,7 @@ def plot_level2_within_level1(
     figsize: tuple = (10, 6),
     palette: str = "tab20",
     ylabel: str = "Percentage (%)",
-    level1_to_level2: dict = None,
+    level1_to_level2: dict[str, list[str]] | None = None,
 ):
     """Plot stacked bar charts showing level 2 composition within each level 1 group.
 
@@ -429,9 +429,6 @@ def main():
     plot_celltype_composition(
         adata, fig_dir=fig_dir, celltype_col="level_2", groupby_col="diagnosis"
     )
-    plot_celltype_composition(
-        adata, fig_dir=fig_dir, celltype_col="level_2", groupby_col="time_treatment_arm"
-    )
 
     # New: level 2 composition within each level 1 group
     # One PDF per level 1 group; only the whitelisted level 2 subtypes are shown.
@@ -444,7 +441,18 @@ def main():
     )
     plot_level2_within_level1(adata, fig_dir=fig_dir, groupby_col="condition")
     plot_level2_within_level1(adata, fig_dir=fig_dir, groupby_col="ROI")
-    plot_level2_within_level1(adata, fig_dir=fig_dir, groupby_col="time_treatment_arm")
+
+    if conditions_of_interest == ["COPD", "MICA"]:
+        print("Generating additional composition plots for COPD vs MICA conditions...")
+        plot_celltype_composition(
+            adata,
+            fig_dir=fig_dir,
+            celltype_col="level_2",
+            groupby_col="time_treatment_arm",
+        )
+        plot_level2_within_level1(
+            adata, fig_dir=fig_dir, groupby_col="time_treatment_arm"
+        )
 
     print("Composition plots generated and saved successfully.")
 
