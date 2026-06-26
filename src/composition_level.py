@@ -25,23 +25,23 @@ def plot_celltype_composition(
     """Plot stacked bar chart showing cell type composition per condition.
 
     Args:
-    adata : AnnData
-        Annotated data object with cell type and condition info in .obs
-    celltype_col : str
-        Column name in adata.obs containing cell type annotations
-    groupby_col : str
-        Column name in adata.obs to group by (e.g., 'condition', 'sample')
-    figsize : tuple
-        Figure size (width, height)
-    palette : str
-        Seaborn/matplotlib color palette name
-    ylabel : str
-        Y-axis label
-    legend_bbox : tuple
-        Legend position (bbox_to_anchor)
+        adata : AnnData
+            Annotated data object with cell type and condition info in .obs
+        celltype_col : str
+            Column name in adata.obs containing cell type annotations
+        groupby_col : str
+            Column name in adata.obs to group by (e.g., 'condition', 'sample')
+        figsize : tuple
+            Figure size (width, height)
+        palette : str
+            Seaborn/matplotlib color palette name
+        ylabel : str
+            Y-axis label
+        legend_bbox : tuple
+            Legend position (bbox_to_anchor)
 
     Returns:
-    fig, ax : matplotlib figure and axes objects
+        fig, ax : matplotlib figure and axes objects
     """
     # Validate columns exist
     if celltype_col not in adata.obs.columns:
@@ -82,7 +82,6 @@ def plot_celltype_composition(
     # Create figure
     fig, ax = plt.subplots(figsize=figsize)
 
-    # Plot stacked bars
     x_positions = np.arange(len(pivot_df.index))
     bar_width = 0.7
     bottom = np.zeros(len(pivot_df.index))
@@ -102,11 +101,9 @@ def plot_celltype_composition(
         )
         bottom += values
 
-    # Set x-tick labels
     ax.set_xticks(x_positions)
     ax.set_xticklabels(pivot_df.index, rotation=45, ha="right")
 
-    # Customize plot
     ax.set_title(
         f"Cell Type Composition by {groupby_col.replace('_', ' ').title()}",
         fontsize=14,
@@ -128,6 +125,58 @@ def plot_celltype_composition(
     return fig, ax
 
 
+# Mapping of level 1 group name -> the level 2 subtypes that belong to it.
+LEVEL1_TO_LEVEL2 = {
+    "Airway epithelial cells": [
+        "Ciliated cells",
+        "Goblet cells",
+        "Basal cells",
+        "Secretory epithelial cells",
+        "Proliferating Basal cells",
+    ],
+    "Alveolar epithelial cells": [
+        "Unknown",
+        "AT2 cells",
+        "AT1 cells",
+        "Proliferating AT2 cells",
+    ],
+    "Endothelial cells": [
+        "Unknown",
+        "Blood endothelial cells",
+        "Capillary endothelial cells",
+        "Pulmonary artery endothelial cells",
+        "Pulmonary vein endothelial cells",
+        "Lymphatic endothelial cells",
+        "Aerocytes",
+    ],
+    "Immune cells": [
+        "Mast cells",
+        "Plasma cells",
+        "Unknown",
+        "T cells",
+        "CD4+ T cells",
+        "CD8+ T cells",
+        "Lymphocytes",
+        "Interstitial macrophages",
+        "Lipid-associated macrophages",
+        "Monocytes/Neutrophils",
+        "Dendritic cells",
+        "B cells",
+        "Airway/Alveolar macrophages",
+        "Natural killer cells",
+    ],
+    "Stromal cells": [
+        "Pericytes",
+        "SMC",
+        "CTHRC1+ fibroblasts",
+        "Unknown",
+        "Adventitial fibroblasts",
+        "Alveolar fibroblasts",
+        "Alveolar fibroblasts - collagen hi",
+    ],
+}
+
+
 def plot_level2_within_level1(
     adata,
     level1_col: str = "level_1",
@@ -136,11 +185,17 @@ def plot_level2_within_level1(
     figsize: tuple = (10, 6),
     palette: str = "tab20",
     ylabel: str = "Percentage (%)",
+    level1_to_level2: dict = None,
 ):
-    """Plot showing level 2 cell type composition within each level 1 group.
+    """Plot stacked bar charts showing level 2 composition within each level 1 group.
 
-    For example, for level 1 = "Airway Epithelium", the plot shows what
-    percentage of airway cells are goblet, ciliated, basal, etc., broken down
+    The x-axis of each plot is groupby_col (e.g. diagnosis). Bar segments show
+    what fraction each level 2 subtype makes up of that level 1 group's total
+    cells. Only the level 2 subtypes defined in level1_to_level2 are included
+    for each group, ensuring cross-contaminating labels don't inflate results.
+
+    For example, for level 1 = "Airway epithelium", the plot shows what
+    percentage of airway cells are Goblet, Ciliated, Basal, etc., broken down
     by diagnosis.
 
     Args:
@@ -159,6 +214,12 @@ def plot_level2_within_level1(
             is found in adata.uns.
         ylabel : str
             Y-axis label.
+        level1_to_level2 : dict, optional
+            Mapping of level 1 group name -> list of valid level 2 subtypes.
+            Only the listed level 2 subtypes will be included for each level 1
+            group's plot. Defaults to the module-level LEVEL1_TO_LEVEL2 dict.
+            Pass an empty dict {} to disable filtering and plot all level 2
+            labels present in the data.
 
     Returns:
         figs : dict
@@ -169,7 +230,12 @@ def plot_level2_within_level1(
         if col not in adata.obs.columns:
             raise ValueError(f"Column '{col}' not found in adata.obs")
 
-    # Build a color dict for level 2 cell types
+    # Resolve the level1 -> level2 whitelist
+    if level1_to_level2 is None:
+        level1_to_level2 = LEVEL1_TO_LEVEL2
+
+    # Build a color dict for all level 2 cell types up front so colours are
+    # consistent across all per-level-1 plots
     palette_key = f"{level2_col}_colors"
     all_level2 = adata.obs[level2_col].cat.categories.tolist()
 
@@ -194,6 +260,26 @@ def plot_level2_within_level1(
             print(f"Skipping '{l1_group}': no cells found.")
             continue
 
+        # Apply the level 2 whitelist for this level 1 group (if defined)
+        valid_level2 = level1_to_level2.get(l1_group, None)
+        if valid_level2 is not None:
+            before = subset.shape[0]
+            subset = subset[subset[level2_col].isin(valid_level2)]
+            dropped = before - subset.shape[0]
+            if dropped > 0:
+                print(
+                    f"  '{l1_group}': excluded {dropped} cells with level 2 labels "
+                    f"not in the whitelist."
+                )
+            if subset.shape[0] == 0:
+                print(f"Skipping '{l1_group}': no cells remain after filtering.")
+                continue
+        else:
+            print(
+                f"  '{l1_group}': no whitelist entry found — "
+                f"plotting all level 2 labels present in the data."
+            )
+
         # Count level 2 subtypes within each groupby value
         counts = (
             subset.groupby([groupby_col, level2_col], observed=True)
@@ -201,11 +287,12 @@ def plot_level2_within_level1(
             .reset_index(name="count")
         )
 
-        # Drop level 2 subtypes with zero total counts in this subset
+        # Keep only level 2 subtypes that have at least one cell in this subset
         level2_present = counts.loc[counts["count"] > 0, level2_col].unique().tolist()
         counts = counts[counts[level2_col].isin(level2_present)]
 
-        # Calculate percentage of each level 2 subtype within each groupby value
+        # Percentage: denominator is total cells in this level 1 group per
+        # groupby value (i.e. after whitelist filtering)
         totals = counts.groupby(groupby_col)["count"].transform("sum")
         counts["percentage"] = (counts["count"] / totals) * 100
 
@@ -238,11 +325,9 @@ def plot_level2_within_level1(
             )
             bottom += values
 
-        # X-tick labels
         ax.set_xticks(x_positions)
         ax.set_xticklabels(pivot_df.index, rotation=45, ha="right")
 
-        # Titles and labels
         l1_title = l1_group.replace("_", " ").title()
         groupby_title = groupby_col.replace("_", " ").title()
         ax.set_title(
@@ -262,63 +347,61 @@ def plot_level2_within_level1(
 
         plt.tight_layout()
 
-        # Save with a safe filename (replace spaces/slashes)
         safe_name = l1_group.replace(" ", "_").replace("/", "-")
         out_path = fig_dir / f"level2_within_{safe_name}_{groupby_col}.pdf"
         plt.savefig(out_path)
-        print(f"Saved: {out_path}")
+        print(f"  Saved: {out_path}")
 
         figs[l1_group] = (fig, ax)
 
     return figs
 
 
-# Set random seed for reproducibility
-seed_everything(19960915)
+def main():
+    """Main function to generate cell type composition plots."""
+    # Set random seed for reproducibility
+    seed_everything(19960915)
 
-# Set variables
-color = "level_2"
+    # Set directories
+    path = Path(
+        "/rds/general/user/sep22/projects/phenotypingsputumasthmaticsaurorawellcomea1/live/Sara_Patti/009_ST_Xenium"
+    )
+    dir = path / "output/AIRSCAPE/"
 
-# Set directories
-path = Path(
-    "/rds/general/user/sep22/projects/phenotypingsputumasthmaticsaurorawellcomea1/live/Sara_Patti/009_ST_Xenium"
-)
-dir = path / "output/AIRSCAPE/"
+    fig_dir = dir / "celltype_composition"
+    fig_dir.mkdir(parents=True, exist_ok=True)
 
-fig_dir = dir / "celltype_composition"
-fig_dir.mkdir(parents=True, exist_ok=True)
+    sc.settings.figdir = fig_dir
 
-# Configure scanpy to save figures in our custom directory
-sc.settings.figdir = fig_dir
+    # Load data
+    print("Loading data from 'adata_final_object/adata_with_metadata.zarr'...")
+    adata = ad.read_zarr(dir / "adata_final_object/adata_with_metadata.zarr")
+    print("Data loaded successfully.")
 
-# Set colors
-cmap = sns.color_palette("ch:start=.2,rot=-.3", as_cmap=True)
+    # Original level 2 composition plots
+    fig, ax = plot_celltype_composition(
+        adata, celltype_col="level_2", groupby_col="condition"
+    )
+    fig, ax = plot_celltype_composition(
+        adata, celltype_col="level_2", groupby_col="ROI"
+    )
+    fig, ax = plot_celltype_composition(
+        adata, celltype_col="level_2", groupby_col="diagnosis"
+    )
 
-# Load data
-print("Loading data from 'adata_final_object/adata_with_metadata.zarr'...")
-adata = ad.read_zarr(dir / "adata_final_object/adata_with_metadata.zarr")
-print("Data loaded successfully.")
+    # New: level 2 composition within each level 1 group
+    # One PDF per level 1 group; only the whitelisted level 2 subtypes are shown.
+    figs = plot_level2_within_level1(
+        adata,
+        level1_col="level_1",
+        level2_col="level_2",
+        groupby_col="diagnosis",
+    )
+    figs = plot_level2_within_level1(adata, groupby_col="condition")
+    figs = plot_level2_within_level1(adata, groupby_col="ROI")
 
-# --- Original level 2 composition plots ---
-fig, ax = plot_celltype_composition(
-    adata, celltype_col="level_2", groupby_col="condition"
-)
-fig, ax = plot_celltype_composition(adata, celltype_col="level_2", groupby_col="ROI")
-fig, ax = plot_celltype_composition(
-    adata, celltype_col="level_2", groupby_col="diagnosis"
-)
+    print("Composition plots generated and saved successfully.")
 
-# --- New: level 2 composition within each level 1 group ---
-# One PDF per level 1 group, x-axis = diagnosis
-figs = plot_level2_within_level1(
-    adata,
-    level1_col="level_1",
-    level2_col="level_2",
-    groupby_col="diagnosis",
-)
 
-# Also run for condition and ROI if needed:
-figs = plot_level2_within_level1(adata, groupby_col="condition")
-figs = plot_level2_within_level1(adata, groupby_col="ROI")
-
-print("Composition plots generated and saved successfully.")
+if __name__ == "__main__":
+    main()
