@@ -1,6 +1,6 @@
 #!/bin/bash
 #PBS -l walltime=01:0:0
-#PBS -lselect=1:ncpus=1:mem=128gb
+#PBS -lselect=1:ncpus=1:mem=256gb
 #PBS -N misc_analysis
 #PBS -j oe
 
@@ -13,8 +13,11 @@ module load Biopython/1.84-foss-2024a
 # Change to directory
 cd /rds/general/user/sep22/home/Projects/AirScape_analysis
 
+# # Activate virtual environment
+# source airscape_venv/bin/activate
+
 # Activate virtual environment
-source airscape_venv/bin/activate
+source muspan/bin/activate
 
 # Run with error logging
 echo "Starting at $(date)"
