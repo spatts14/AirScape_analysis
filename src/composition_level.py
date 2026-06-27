@@ -6,7 +6,6 @@ from pathlib import Path
 import anndata as ad
 import matplotlib.pyplot as plt
 import numpy as np
-import pandas as pd
 import scanpy as sc
 import seaborn as sns
 
@@ -389,28 +388,28 @@ def main():
     conditions_of_interest = ["COPD", "MICA"]
     adata = adata[adata.obs["condition"].isin(conditions_of_interest)].copy()
 
-    if conditions_of_interest == ["COPD", "MICA"]:
-        # Add a new column to adata.obs that combines treatment arm and timepoint
-        adata.obs["condition"] = (
-            adata.obs["treatment_arm"].astype(str)
-            + " "
-            + adata.obs["time_point_label"].astype(str)
-        )
+    # if conditions_of_interest == ["COPD", "MICA"]:
+    #     # Add a new column to adata.obs that combines treatment arm and timepoint
+    #     adata.obs["condition"] = (
+    #         adata.obs["treatment_arm"].astype(str)
+    #         + " "
+    #         + adata.obs["time_point_label"].astype(str)
+    #     )
 
-        # Set order for time_treatment_arm
-        time_treatment_order = [
-            "SHAM BASELINE",
-            "SHAM 6 WEEKS",
-            "SHAM 6 MONTHS",
-            "TREATMENT BASELINE",
-            "TREATMENT 6 WEEKS",
-            "TREATMENT 6 MONTHS",
-        ]
-        adata.obs["time_treatment_arm"] = pd.Categorical(
-            adata.obs["time_treatment_arm"],
-            categories=time_treatment_order,
-            ordered=True,
-        )
+    #     # Set order for time_treatment_arm
+    #     time_treatment_order = [
+    #         "SHAM BASELINE",
+    #         "SHAM 6 WEEKS",
+    #         "SHAM 6 MONTHS",
+    #         "TREATMENT BASELINE",
+    #         "TREATMENT 6 WEEKS",
+    #         "TREATMENT 6 MONTHS",
+    #     ]
+    #     adata.obs["time_treatment_arm"] = pd.Categorical(
+    #         adata.obs["time_treatment_arm"],
+    #         categories=time_treatment_order,
+    #         ordered=True,
+    #     )
 
     # Save to subset df
     if conditions_of_interest:
