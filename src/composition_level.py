@@ -391,8 +391,10 @@ def main():
 
     if conditions_of_interest == ["COPD", "MICA"]:
         # Add a new column to adata.obs that combines treatment arm and timepoint
-        adata.obs["time_treatment_arm"] = (
-            adata.obs["treatment_arm"] + " " + adata.obs["time_point_label"]
+        adata.obs["condition"] = (
+            adata.obs["treatment_arm"].astype(str)
+            + " "
+            + adata.obs["time_point_label"].astype(str)
         )
 
         # Set order for time_treatment_arm
