@@ -6,9 +6,9 @@ from pathlib import Path
 import anndata as ad
 import matplotlib.pyplot as plt
 import numpy as np
+import pandas as pd
 import scanpy as sc
 import seaborn as sns
-from pandas import pd
 
 sys.path.append(str(Path(__file__).resolve().parents[1]))
 from utils.seed_everything import seed_everything
@@ -221,7 +221,7 @@ def plot_level2_within_level1(
             is found in adata.uns.
         ylabel : str
             Y-axis label.
-        level1_to_level2 : dict, optional
+        level1_to_level2 : dict[str, list[str]] | None, optional
             Mapping of level 1 group name -> list of valid level 2 subtypes.
             Only the listed level 2 subtypes will be included for each level 1
             group's plot. Defaults to the module-level LEVEL1_TO_LEVEL2 dict.
