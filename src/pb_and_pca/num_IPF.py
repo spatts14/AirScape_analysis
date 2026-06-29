@@ -115,8 +115,14 @@ def main():
     results = load_celltype_results(input_dir)
     logger.info(f"Found {len(results)} cell type folders with saved outputs.")
 
+    # Load total number of cells per sample
+    total_cells = pd.read_csv(
+        path / "output" / "pb" / "pb_data_concatenated" / "pseudobulk_metadata_ROI.csv",
+        index_col=0,
+    )
+
     # Metrics and Grouping columns
-    y_metrics = ["n_cells", "total_counts", "mean_transcripts"]
+    y_metrics = ["n_cells", "total_num_cells", "total_counts", "mean_transcripts"]
     group_cols = ["condition", "diagnosis"]
     group_palettes = {
         "condition": condition_palette,
@@ -124,6 +130,7 @@ def main():
     }
 
     # Remove COPD and MICAIII donors from the results list
+    logger.info("Removing COPD and MICAIII donors from the results list...")
     results = [
         (
             cell_type,
@@ -134,6 +141,54 @@ def main():
         for cell_type, cell_type_dir, pb_sample, meta_df in results
     ]
 
+    # Add total number of cells and normalize to total cell number per sample
+    logger.info(
+        "Adding total number of cells and normalizing to total cell number per sample"
+    )
+    results = [
+        (
+            cell_type,
+            cell_type_dir,
+            pb_sample,
+            (
+                meta_df.assign(total_num_cells=total_cells["n_cells"]).assign(
+                    normalized=lambda df: df["n_cells"] / df["total_num_cells"]
+                )
+            ),
+        )
+        for cell_type, cell_type_dir, pb_sample, meta_df in results
+    ]
+
+    logger.info("Plot absolute numbers of cells per sample.")
+    for cell_type, cell_type_dir, pb_sample, meta_df in results:
+        logger.info(f"Plotting cell type: {cell_type}...")
+
+        # One subdirectory per cell type, named after its source directory
+        cell_out_dir = out_dir / cell_type_dir.name
+        cell_out_dir.mkdir(parents=True, exist_ok=True)
+
+        for x in group_cols:
+            if x not in meta_df.columns:
+                logger.warning(f"{x} not in columns for {cell_type}. Skipping.")
+                continue
+
+            palette = group_palettes[x]  # dict mapping category → hex colour
+
+            for y in y_metrics:
+                if y not in meta_df.columns:
+                    logger.warning(f"{y} not in columns for {cell_type}. Skipping.")
+                    continue
+
+                fig = plot_metric(
+                    df=meta_df, x=x, y=y, cell_type=cell_type, palette=palette
+                )
+                fig.savefig(
+                    cell_out_dir / f"{safe_name(cell_type)}_{y}_by_{x}.pdf",
+                    bbox_inches="tight",
+                )
+                plt.close(fig)
+
+    logger.info("Plot normalized number of cells")
     for cell_type, cell_type_dir, pb_sample, meta_df in results:
         logger.info(f"Plotting cell type: {cell_type}...")
 
