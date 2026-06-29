@@ -138,7 +138,7 @@ def main():
 
     # Choose two cell types of interest for analysis
     cell1 = "Plasma cells"
-    cell2 = "Airway/Alveolar macrophages"
+    cell2 = "Adventitial fibroblasts"
 
     vmax = 30  # Set the maximum value for the color scale, will do + and - integer
 
