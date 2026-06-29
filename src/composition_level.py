@@ -6,6 +6,7 @@ from pathlib import Path
 import anndata as ad
 import matplotlib.pyplot as plt
 import numpy as np
+import pandas as pd
 import scanpy as sc
 import seaborn as sns
 
@@ -136,15 +137,16 @@ LEVEL1_TO_LEVEL2 = {
         "Basal cells",
         "Secretory epithelial cells",
         "Proliferating Basal cells",
+        # "Unknown",
     ],
     "Alveolar epithelial cells": [
-        "Unknown",
+        # "Unknown",
         "AT2 cells",
         "AT1 cells",
         "Proliferating AT2 cells",
     ],
     "Endothelial cells": [
-        "Unknown",
+        # "Unknown",
         "Blood endothelial cells",
         "Capillary endothelial cells",
         "Pulmonary artery endothelial cells",
@@ -172,10 +174,10 @@ LEVEL1_TO_LEVEL2 = {
         "Pericytes",
         "SMC",
         "CTHRC1+ fibroblasts",
-        "Unknown",
         "Adventitial fibroblasts",
         "Alveolar fibroblasts",
         "Alveolar fibroblasts - collagen hi",
+        # "Unknown",
     ],
 }
 
@@ -388,28 +390,34 @@ def main():
     conditions_of_interest = ["COPD", "MICA"]
     adata = adata[adata.obs["condition"].isin(conditions_of_interest)].copy()
 
-    # if conditions_of_interest == ["COPD", "MICA"]:
-    #     # Add a new column to adata.obs that combines treatment arm and timepoint
-    #     adata.obs["condition"] = (
-    #         adata.obs["treatment_arm"].astype(str)
-    #         + " "
-    #         + adata.obs["time_point_label"].astype(str)
-    #     )
+    if conditions_of_interest == ["COPD", "MICA"]:
+        # Check if the required columns exist in adata.obs
+        required_columns = ["treatment_arm", "time_point_label"]
+        for col in required_columns:
+            if col not in adata.obs.columns:
+                raise ValueError(f"Column '{col}' not found in adata.obs")
 
-    #     # Set order for time_treatment_arm
-    #     time_treatment_order = [
-    #         "SHAM BASELINE",
-    #         "SHAM 6 WEEKS",
-    #         "SHAM 6 MONTHS",
-    #         "TREATMENT BASELINE",
-    #         "TREATMENT 6 WEEKS",
-    #         "TREATMENT 6 MONTHS",
-    #     ]
-    #     adata.obs["time_treatment_arm"] = pd.Categorical(
-    #         adata.obs["time_treatment_arm"],
-    #         categories=time_treatment_order,
-    #         ordered=True,
-    #     )
+        # Add a new column to adata.obs that combines treatment arm and timepoint
+        adata.obs["treatment_timepoint"] = (
+            adata.obs["treatment_arm"].astype(str)
+            + " "
+            + adata.obs["time_point_label"].astype(str)
+        )
+
+        # Set order for time_treatment_arm
+        time_treatment_order = [
+            "SHAM BASELINE",
+            "SHAM 6 WEEKS",
+            "SHAM 6 MONTHS",
+            "TREATMENT BASELINE",
+            "TREATMENT 6 WEEKS",
+            "TREATMENT 6 MONTHS",
+        ]
+        adata.obs["treatment_timepoint"] = pd.Categorical(
+            adata.obs["treatment_timepoint"],
+            categories=time_treatment_order,
+            ordered=True,
+        )
 
     # Save to subset df
     if conditions_of_interest:
@@ -449,10 +457,10 @@ def main():
             adata,
             fig_dir=fig_dir,
             celltype_col="level_2",
-            groupby_col="time_treatment_arm",
+            groupby_col="treatment_timepoint",
         )
         plot_level2_within_level1(
-            adata, fig_dir=fig_dir, groupby_col="time_treatment_arm"
+            adata, fig_dir=fig_dir, groupby_col="treatment_timepoint"
         )
 
     print("Composition plots generated and saved successfully.")
