@@ -25,7 +25,7 @@ def plot_metric(df, x, y, cell_type, palette_name="Set2"):
     group_order = list(pd.unique(plot_df[x]))
     palette_to_use = sns.color_palette(palette_name, n_colors=len(group_order))
 
-    sns.boxenplot(
+    sns.boxplot(
         data=plot_df,
         x=x,
         y=y,

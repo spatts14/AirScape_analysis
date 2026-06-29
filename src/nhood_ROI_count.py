@@ -270,7 +270,7 @@ for cell_type in cell_type_list:
         ax=ax,
     )
 
-    sns.boxenplot(
+    sns.boxplot(
         data=plot_df,
         x="Neighbor Cell Type",
         y="Count",
@@ -349,7 +349,7 @@ for col in metadata_cols:
             ax=ax,
         )
 
-        sns.boxenplot(
+        sns.boxplot(
             data=plot_df,
             x="Neighbor Cell Type",
             y="Count",

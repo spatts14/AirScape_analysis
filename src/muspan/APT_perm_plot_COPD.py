@@ -301,15 +301,13 @@ def p_to_asterisks(p):
 
 
 def add_brackets(ax, comparisons, base_y, step, fontsize=11):
-    """
-    comparisons = [
+    """Comparisons = [
         (x1, x2, pval, color),
         ...
     ]
 
     x1, x2 MUST be categorical x positions (not dodged positions).
     """
-
     comparisons = sorted(
         comparisons,
         key=lambda x: abs(x[1] - x[0]),
@@ -345,15 +343,12 @@ def add_brackets(ax, comparisons, base_y, step, fontsize=11):
 
 
 def get_category_positions(ax):
-    """
-    Returns mapping: category label -> x coordinate used by seaborn.
-    """
+    """Returns mapping: category label -> x coordinate used by seaborn."""
     return {tick.get_text(): tick.get_position()[0] for tick in ax.get_xticklabels()}
 
 
 def get_dodged_category_positions(ax, hue_order):
     """Return x positions for each category and hue level."""
-
     centers = get_category_positions(ax)
     hue_count = len(hue_order)
     if hue_count < 1:
@@ -419,7 +414,7 @@ def make_plot(
         ax=ax,
     )
 
-    sns.boxenplot(
+    sns.boxplot(
         data=change_df_long,
         x="time_point_label",
         y="change_from_baseline",
@@ -793,7 +788,7 @@ for celltype_1 in all_cell_types_list:
             ax=ax,
         )
 
-        sns.boxenplot(
+        sns.boxplot(
             data=plot_df,
             x="Neighbor Cell Type",
             y="SES (p-val nonfiltered)",
@@ -892,7 +887,7 @@ for celltype_1 in all_cell_types_list:
             ax=ax,
         )
 
-        sns.boxenplot(
+        sns.boxplot(
             data=change_df_long,
             x="time_point_label",
             y="change_from_baseline",

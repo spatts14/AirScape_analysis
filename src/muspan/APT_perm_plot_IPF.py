@@ -405,7 +405,7 @@ for celltype_1 in all_cell_types_list:
             ax=ax,
         )
 
-        sns.boxenplot(
+        sns.boxplot(
             data=plot_df,
             x="Neighbor Cell Type",
             y="SES (p-val nonfiltered)",

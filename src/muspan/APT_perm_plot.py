@@ -12,7 +12,6 @@ from matplotlib.patches import Patch
 sys.path.append(str(Path(__file__).resolve().parents[2]))
 from utils.airspace_colors import diagnosis_palette
 
-
 ROI_ALIASES = {
     "IPF_RBH_15_OG": "IPF_RBH_15",
     "IPF_RBH_15_CORRECT": "IPF_RBH_15",
@@ -276,7 +275,7 @@ for col in metadata_cols:
             ax=ax,
         )
 
-        sns.boxenplot(
+        sns.boxplot(
             data=plot_df,
             x="Neighbor Cell Type",
             y="SES_p_val_nonfiltered",

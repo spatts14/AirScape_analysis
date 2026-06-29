@@ -60,7 +60,7 @@ def plot_metric(df, x, y, cell_type, palette):
     # Use the provided palette dict; fall back to a grey for unknown categories
     palette_to_use = [palette.get(g, "#888888") for g in group_order]
 
-    sns.boxenplot(
+    sns.boxplot(
         data=plot_df,
         x=x,
         y=y,
@@ -141,7 +141,7 @@ def main():
             plot_df["treatment_arm"] = plot_df["treatment_arm"].astype(str)
 
             fig, ax = plt.subplots(figsize=(6, 4))
-            sns.boxenplot(
+            sns.boxplot(
                 data=plot_df,
                 x="time_point_label",
                 y=y,

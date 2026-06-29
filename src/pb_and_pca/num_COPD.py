@@ -211,7 +211,7 @@ def main():
             plot_df["treatment_arm"] = plot_df["treatment_arm"].astype(str)
 
             fig, ax = plt.subplots(figsize=(6, 4))
-            sns.boxenplot(
+            sns.boxplot(
                 data=plot_df,
                 x="time_point_label",
                 y=y,
