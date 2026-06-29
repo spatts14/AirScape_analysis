@@ -99,7 +99,7 @@ def main():
 
     # Set directories
     input_dir = path / "output" / "pb" / "pb_data_celltype"
-    out_dir = path / "output" / "pb" / "num_cells_IPF"
+    out_dir = path / "output" / "pb" / "num_cells_COPD"
     out_dir.mkdir(parents=True, exist_ok=True)
 
     # set fig dir for plots to save to
@@ -129,14 +129,14 @@ def main():
         "diagnosis": diagnosis_palette,
     }
 
-    # Remove COPD and MICAIII donors from the results list
-    logger.info("Removing COPD and MICAIII donors from the results list...")
+    # Remove IPF and PM08 donors from the results list
+    logger.info("Removing IPF and PM08 donors from the results list...")
     results = [
         (
             cell_type,
             cell_type_dir,
-            pb_sample[meta_df.index[~meta_df["diagnosis"].isin(["COPD", "HEALTHY"])]],
-            meta_df[~meta_df["diagnosis"].isin(["COPD", "HEALTHY"])],
+            pb_sample[meta_df.index[~meta_df["diagnosis"].isin(["IPF", "PM08"])]],
+            meta_df[~meta_df["diagnosis"].isin(["IPF", "PM08"])],
         )
         for cell_type, cell_type_dir, pb_sample, meta_df in results
     ]
