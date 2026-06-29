@@ -192,7 +192,7 @@ def main():
     # Update color if needed
     # Set color for interstitial macrophages
     domain.update_colors(
-        {"Adventitial fibroblasts": "#43618d"},
+        {"Adventitial fibroblasts": "#de9c3a"},
         colors_to_update="labels",
         label_name="Cell Type",
     )
