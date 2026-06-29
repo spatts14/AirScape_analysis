@@ -12,6 +12,8 @@ sys.path.append(str(Path(__file__).resolve().parents[2]))
 from utils.airspace_colors import (
     condition_palette,
     diagnosis_palette,
+    time_point_palette,
+    treatment_arm_palette,
 )
 from utils.safe_name import safe_name
 from utils.setup_logger import setup_logger
@@ -123,20 +125,27 @@ def main():
 
     # Metrics and Grouping columns
     y_metrics = ["n_cells", "normalized_num", "total_counts", "mean_transcripts"]
-    group_cols = ["condition", "diagnosis"]
+    group_cols = ["condition", "diagnosis", "time_point_label", "treatment_arm"]
     group_palettes = {
         "condition": condition_palette,
         "diagnosis": diagnosis_palette,
+        "time_point_label": time_point_palette,
+        "treatment_arm": treatment_arm_palette,
     }
 
-    # Remove IPF and PM08 donors from the results list
     logger.info("Removing IPF and PM08 donors from the results list...")
+
     results = [
         (
             cell_type,
             cell_type_dir,
-            pb_sample[meta_df.index[~meta_df["diagnosis"].isin(["IPF", "PM08"])]],
-            meta_df[~meta_df["diagnosis"].isin(["IPF", "PM08"])],
+            pb_sample.loc[
+                :,
+                pb_sample.columns.intersection(
+                    meta_df.index[~meta_df["condition"].isin(["IPF", "PM08"])]
+                ),
+            ],
+            meta_df.loc[~meta_df["condition"].isin(["IPF", "PM08"])],
         )
         for cell_type, cell_type_dir, pb_sample, meta_df in results
     ]
@@ -167,6 +176,10 @@ def main():
         cell_out_dir = out_dir / cell_type_dir.name
         cell_out_dir.mkdir(parents=True, exist_ok=True)
 
+        logger.info("Check index")
+        logger.info(f"meta_df index: {meta_df.index}")
+
+        logger.info(f"Plotting metrics for cell type: {cell_type}...")
         for x in group_cols:
             if x not in meta_df.columns:
                 logger.warning(f"{x} not in columns for {cell_type}. Skipping.")
@@ -188,34 +201,51 @@ def main():
                 )
                 plt.close(fig)
 
-    logger.info("Plot normalized number of cells")
-    for cell_type, cell_type_dir, pb_sample, meta_df in results:
-        logger.info(f"Plotting cell type: {cell_type}...")
+        logger.info(
+            "Plotting metrics by time_point_label and treatment_arm combined..."
+        )
+        for y in y_metrics:
+            # Plot time and hue
+            plot_df = meta_df[["time_point_label", "treatment_arm", y]].dropna().copy()
+            plot_df["time_point_label"] = plot_df["time_point_label"].astype(str)
+            plot_df["treatment_arm"] = plot_df["treatment_arm"].astype(str)
 
-        # One subdirectory per cell type, named after its source directory
-        cell_out_dir = out_dir / cell_type_dir.name
-        cell_out_dir.mkdir(parents=True, exist_ok=True)
+            fig, ax = plt.subplots(figsize=(6, 4))
+            sns.boxenplot(
+                data=plot_df,
+                x="time_point_label",
+                y=y,
+                order=["BASELINE", "6 WEEKS", "6 MONTHS"],
+                hue="treatment_arm",
+                hue_order=["SHAM", "TREATMENT"],
+                palette=treatment_arm_palette,
+                saturation=0.75,
+                ax=ax,
+            )
 
-        for x in group_cols:
-            if x not in meta_df.columns:
-                logger.warning(f"{x} not in columns for {cell_type}. Skipping.")
-                continue
+            sns.stripplot(
+                data=plot_df,
+                x="time_point_label",
+                y=y,
+                order=["BASELINE", "6 WEEKS", "6 MONTHS"],
+                hue="treatment_arm",
+                hue_order=["SHAM", "TREATMENT"],
+                palette=treatment_arm_palette,
+                size=2.5,
+                jitter=True,
+                dodge=True,
+                ax=ax,
+                legend=False,
+            )
 
-            palette = group_palettes[x]  # dict mapping category → hex colour
-
-            for y in y_metrics:
-                if y not in meta_df.columns:
-                    logger.warning(f"{y} not in columns for {cell_type}. Skipping.")
-                    continue
-
-                fig = plot_metric(
-                    df=meta_df, x=x, y=y, cell_type=cell_type, palette=palette
-                )
-                fig.savefig(
-                    cell_out_dir / f"{safe_name(cell_type)}_{y}_by_{x}.pdf",
-                    bbox_inches="tight",
-                )
-                plt.close(fig)
+            ax.set_xlabel("time_point_label")
+            ax.set_ylabel(y)
+            plt.tight_layout()
+            plt.savefig(
+                cell_out_dir / f"{safe_name(cell_type)}_{y}_by_time_treatmentarm.pdf",
+                bbox_inches="tight",
+            )
+            plt.close(fig)
 
 
 if __name__ == "__main__":
