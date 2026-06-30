@@ -123,6 +123,10 @@ def main():
         "age",
     ]
 
+    # Create new dir
+    out_dir = out_dir / subset_diagnosis_safe
+    out_dir.mkdir(parents=True, exist_ok=True)
+
     logger.info("Loading saved pseudobulk outputs...")
     results = load_celltype_results(input_dir)
     logger.info(f"Found {len(results)} cell type folders with saved outputs.")
@@ -174,10 +178,6 @@ def main():
         # Subset only on samples of interest
         if subset_diagnosis:
             pca_df = pca_df[pca_df["diagnosis"].isin(subset_diagnosis)]
-
-            # Create new dir
-            out_dir = out_dir / subset_diagnosis_safe
-            out_dir.mkdir(parents=True, exist_ok=True)
 
         for col in col_list:
             if col not in meta_df.columns:
