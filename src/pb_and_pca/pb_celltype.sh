@@ -21,7 +21,7 @@ source airscape_venv/bin/activate
 echo "Starting at $(date)"
 
 # run pseudobulk + downstream plots
-python src/pb_and_pca/pb_celltype.py
+# python src/pb_and_pca/pb_celltype.py
 python src/pb_and_pca/pb_celltype_plots.py
 
 echo "Completed at $(date)"
