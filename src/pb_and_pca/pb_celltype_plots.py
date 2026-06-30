@@ -104,7 +104,10 @@ def main():
     out_dir.mkdir(parents=True, exist_ok=True)
 
     cmap = sns.color_palette("ch:start=.2,rot=-.3", as_cmap=True)
-    cat_palette = sns.color_palette("Set2")
+    cat_palette = {
+        "IPF": "#6A7FB5",  # slate blue
+        "LUNG_CANCER": "#B07D4A",  # warm tan
+    }
 
     subset_diagnosis = ["IPF", "LUNG_CANCER"]  # Diagnosis column
     subset_diagnosis_safe = "v".join(subset_diagnosis).replace(" ", "_")
