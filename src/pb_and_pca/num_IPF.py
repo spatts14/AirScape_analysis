@@ -52,7 +52,7 @@ def load_celltype_results(input_dir: Path):
 
 
 def run_pairwise_mannwhitney(df, x, y, alpha_level=0.05):
-    """Run Mann-Whitney U test for every pair of groups in column x, on values in column y.
+    """Run Mann-Whitneytest for every pair of groups in column x, on values in column y.
 
     Returns a list of (group_1, group_2, stat, p_value) tuples, restricted to
     pairs with p_value < alpha_level if you want to filter later; here we
@@ -81,10 +81,7 @@ def run_pairwise_mannwhitney(df, x, y, alpha_level=0.05):
 
 
 def plot_metric(df, x, y, cell_type, palette, alpha_level=0.05):
-    """Plot a metric (y) by a grouping variable (x) for a given cell type,
-    with Mann-Whitney U test results shown in the title and significance
-    brackets drawn between groups.
-    """
+    """Plot a metric (y) by a grouping variable (x) for a given cell type."""
     plot_df = df[[x, y]].dropna().copy()
     plot_df[x] = plot_df[x].astype(str)
 
@@ -162,7 +159,7 @@ def plot_metric(df, x, y, cell_type, palette, alpha_level=0.05):
             )
             ax.text(
                 (xy_left[0] + xy_right[0]) / 2,
-                base_y - sig_idx * step - 0.001,
+                base_y - sig_idx * step - 0.0015,
                 "*",
                 ha="center",
                 va="bottom",
@@ -186,7 +183,7 @@ def main():
 
     # Set directories
     input_dir = path / "output" / "pb" / "pb_data_celltype"
-    out_dir = path / "output" / "pb" / "num_cells_IPF_noCRD_TEST"
+    out_dir = path / "output" / "pb" / "num_cells_IPF_noCRD"
     out_dir.mkdir(parents=True, exist_ok=True)
 
     # set fig dir for plots to save to
