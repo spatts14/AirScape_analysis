@@ -390,6 +390,9 @@ def main():
     conditions_of_interest = ["COPD", "MICA"]
     adata = adata[adata.obs["condition"].isin(conditions_of_interest)].copy()
 
+    # Remove no_CRD donor PM08-159
+    adata = adata[adata.obs["diagnosis"] != "NO_CRD"].copy()
+
     if conditions_of_interest == ["COPD", "MICA"]:
         # Check if the required columns exist in adata.obs
         required_columns = ["treatment_arm", "time_point_label"]

@@ -138,7 +138,7 @@ def plot_metric(df, x, y, cell_type, palette, alpha_level=0.05):
 
     # Add significance brackets between groups, stacked if more than one pair
     n_groups = len(group_order)
-    base_y = 0.95
+    base_y = 0.9
     step = 0.08
     sig_idx = 0
     for group_1, group_2, stat, p_value in test_results:
