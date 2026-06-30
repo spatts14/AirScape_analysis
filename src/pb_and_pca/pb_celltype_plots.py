@@ -108,22 +108,23 @@ def main():
         "IPF": "#6A7FB5",  # slate blue
         "LUNG_CANCER": "#B07D4A",  # warm tan
     }
+    # cat_palette = sns.color_palette("Set2")
 
     subset_diagnosis = ["IPF", "LUNG_CANCER"]  # Diagnosis column
     subset_diagnosis_safe = "v".join(subset_diagnosis).replace(" ", "_")
     y_metrics = ["n_cells", "total_counts", "mean_transcripts"]
-    group_cols = ["condition", "timepoint_label", "treatment_arm"]
+    group_cols = ["condition", "diagnosis", "timepoint_label", "treatment_arm"]
     col_list = [
-        "sample_ID",
-        "condition",
-        "timepoint_label",
-        "batch",
-        "treatment_arm",
-        "lung_location",
-        "biopsy_type",
+        # "sample_ID",
+        # "condition",
+        # "timepoint_label",
+        # "batch",
+        # "treatment_arm",
+        # "lung_location",
+        # "biopsy_type",
         "diagnosis",
-        "sex",
-        "age",
+        # "sex",
+        # "age",
     ]
 
     # Create new dir
