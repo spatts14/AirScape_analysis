@@ -387,7 +387,7 @@ def main():
     print("Data loaded successfully.")
 
     # Subset on conditions of interest
-    conditions_of_interest = ["COPD", "MICA"]
+    conditions_of_interest = ["PM08", "IPF"]
     adata = adata[adata.obs["condition"].isin(conditions_of_interest)].copy()
 
     # Remove no_CRD donor PM08-159
