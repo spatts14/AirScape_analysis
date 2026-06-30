@@ -10,6 +10,7 @@ import seaborn as sns
 import sklearn
 
 sys.path.append(str(Path(__file__).resolve().parents[2]))
+
 from utils.confidence_ellipse import confidence_ellipse
 from utils.safe_name import safe_name
 from utils.seed_everything import seed_everything
@@ -22,16 +23,20 @@ def plot_metric(df, x, y, cell_type, palette_name="Set2"):
     plot_df[x] = plot_df[x].astype(str)
 
     fig, ax = plt.subplots(figsize=(6, 4))
+
     group_order = list(pd.unique(plot_df[x]))
     palette_to_use = sns.color_palette(palette_name, n_colors=len(group_order))
+    palette_map = dict(zip(group_order, palette_to_use))
 
     sns.boxplot(
         data=plot_df,
         x=x,
         y=y,
         order=group_order,
-        palette=palette_to_use,
-        saturation=0.25,
+        hue=x,
+        dodge=False,
+        palette=palette_map,
+        legend=False,
         ax=ax,
     )
 
@@ -45,7 +50,6 @@ def plot_metric(df, x, y, cell_type, palette_name="Set2"):
         alpha=0.7,
         jitter=True,
         ax=ax,
-        legend=False,
     )
 
     ax.set_xlabel(x)
@@ -59,6 +63,7 @@ def plot_metric(df, x, y, cell_type, palette_name="Set2"):
 def load_celltype_results(input_dir: Path):
     """Load saved pseudobulk matrices and metadata for each cell type."""
     results = []
+
     for cell_type_dir in sorted(p for p in input_dir.iterdir() if p.is_dir()):
         matrix_files = list(cell_type_dir.glob("*_pseudobulk_matrix_ROI.csv"))
         meta_files = list(cell_type_dir.glob("*_pseudobulk_metadata_ROI.csv"))
@@ -66,156 +71,148 @@ def load_celltype_results(input_dir: Path):
         if not matrix_files or not meta_files:
             continue
 
-        matrix_file = matrix_files[0]
-        meta_file = meta_files[0]
-        cell_type_label = matrix_file.name.replace("_pseudobulk_matrix_ROI.csv", "")
+        pb_sample = pd.read_csv(matrix_files[0], index_col=0)
+        meta_df = pd.read_csv(meta_files[0], index_col=0)
 
-        pb_sample = pd.read_csv(matrix_file, index_col=0)
-        meta_df = pd.read_csv(meta_file, index_col=0)
         meta_df.index = meta_df.index.astype(str)
 
-        common_samples = [
-            sample for sample in pb_sample.columns if sample in meta_df.index
-        ]
-        if not common_samples:
+        common_samples = [s for s in pb_sample.columns if s in meta_df.index]
+        if len(common_samples) == 0:
             continue
 
         pb_sample = pb_sample[common_samples]
         meta_df = meta_df.loc[common_samples]
 
-        results.append((cell_type_label, cell_type_dir, pb_sample, meta_df))
+        results.append((cell_type_dir.name, cell_type_dir, pb_sample, meta_df))
 
     return results
 
 
 def main():
-    """Plot metrics and PCA from saved pseudobulk outputs."""
     seed_everything(19960915)
 
     path = Path(
         "/rds/general/user/sep22/projects/phenotypingsputumasthmaticsaurorawellcomea1/live/Sara_Patti/009_ST_Xenium"
     )
 
-    logs_dir = Path(path) / "logs"
+    logs_dir = path / "logs"
     logger = setup_logger(log_dir=logs_dir, log_name="pseudobulk_celltype_PCA")
 
     input_dir = path / "output" / "pb" / "pb_data_celltype"
     out_dir = path / "output" / "pb" / "pb_plots_celltype"
     out_dir.mkdir(parents=True, exist_ok=True)
 
-    cmap = sns.color_palette("ch:start=.2,rot=-.3", as_cmap=True)
-    cat_palette = sns.color_palette("Set2")
-
-    subset_diagnosis = ["IPF", "LUNG_CANCER"]  # Diagnosis column
-    subset_diagnosis_safe = "v".join(subset_diagnosis).replace(" ", "_")
-    y_metrics = ["n_cells", "total_counts", "mean_transcripts"]
-    group_cols = ["condition", "timepoint_label", "treatment_arm"]
-    col_list = [
-        "sample_ID",
-        "condition",
-        "timepoint_label",
-        "batch",
-        "treatment_arm",
-        "lung_location",
-        "biopsy_type",
-        "diagnosis",
-        "sex",
-        "age",
-    ]
-
-    # Create new dir
-    out_dir = out_dir / subset_diagnosis_safe
+    subset_diagnosis = ["IPF", "LUNG_CANCER"]
+    subset_suffix = "v".join(subset_diagnosis).replace(" ", "_")
+    out_dir = out_dir / subset_suffix
     out_dir.mkdir(parents=True, exist_ok=True)
+
+    cat_palette = {
+        "IPF": "#6A7FB5",
+        "LUNG_CANCER": "#B07D4A",
+    }
+
+    y_metrics = ["n_cells", "total_counts", "mean_transcripts"]
+    group_cols = ["condition", "diagnosis", "timepoint_label", "treatment_arm"]
+    col_list = ["diagnosis"]
 
     logger.info("Loading saved pseudobulk outputs...")
     results = load_celltype_results(input_dir)
     logger.info(f"Found {len(results)} cell type folders with saved outputs.")
 
     for cell_type, cell_type_dir, pb_sample, meta_df in results:
-        logger.info(f"Plotting cell type: {cell_type}...")
+        logger.info(f"Processing cell type: {cell_type}")
 
+        # -------------------------
+        # Metric plots
+        # -------------------------
         for x in group_cols:
             if x not in meta_df.columns:
-                logger.warning(f"{x} not in columns for {cell_type}. Skipping.")
                 continue
 
             for y in y_metrics:
                 if y not in meta_df.columns:
-                    logger.warning(f"{y} not in columns for {cell_type}. Skipping.")
                     continue
 
-                fig = plot_metric(df=meta_df, x=x, y=y, cell_type=cell_type)
+                fig = plot_metric(meta_df, x, y, cell_type)
                 fig.savefig(
                     cell_type_dir / f"{safe_name(cell_type)}_{y}_by_{x}.pdf",
                     bbox_inches="tight",
                 )
                 plt.close(fig)
 
-        logger.info("Formatting data for PCA...")
-        X = pb_sample.T
+        # -------------------------
+        # PCA
+        # -------------------------
+        logger.info("Running PCA pipeline")
 
+        X = pb_sample.T.copy()
+
+        # filter low-abundance genes
         min_count = 10
-        gene_sums = X.sum(axis=0)
-        genes_to_keep = gene_sums[gene_sums > min_count].index
-        X = X[genes_to_keep]
-        logger.info(
-            f"Removed genes with less than {min_count} total counts across all samples."
-        )
-        logger.info(f"Number of filtered pseudobulk genes: {X.shape[1]}")
+        X = X.loc[:, X.sum(axis=0) > min_count]
 
-        logger.info("Log-transforming and scaling the data...")
+        logger.info(f"Filtered genes: {X.shape[1]}")
+
         X = np.log1p(X)
         X_scaled = sklearn.preprocessing.StandardScaler().fit_transform(X)
 
-        logger.info("Calculating PCA...")
         pca = sklearn.decomposition.PCA(n_components=4)
         pca_result = pca.fit_transform(X_scaled)
+
         pca_df = pd.DataFrame(
-            pca_result, columns=["PC1", "PC2", "PC3", "PC4"], index=X.index
+            pca_result,
+            columns=["PC1", "PC2", "PC3", "PC4"],
+            index=X.index,
         )
+
         pca_df = pca_df.join(meta_df)
 
-        # Subset only on samples of interest
         if subset_diagnosis:
             pca_df = pca_df[pca_df["diagnosis"].isin(subset_diagnosis)]
 
+        sns.set_style("white")
+
+        # -------------------------
+        # PCA plots
+        # -------------------------
         for col in col_list:
-            if col not in meta_df.columns:
-                logger.warning(f"Column '{col}' not found in metadata. Skipping plot.")
+            if col not in pca_df.columns:
                 continue
 
-            logger.info(f"Plotting PCA colored by '{col}'...")
-            sns.set_style("white")
             fig, ax = plt.subplots(figsize=(6, 5))
 
             is_continuous = pd.api.types.is_numeric_dtype(pca_df[col])
+
             if is_continuous:
                 scatter = ax.scatter(
                     pca_df["PC1"],
                     pca_df["PC2"],
                     c=pca_df[col],
-                    cmap=cmap,
+                    cmap="viridis",
                     s=50,
                 )
                 fig.colorbar(scatter, ax=ax, label=col)
+
             else:
                 groups = pca_df[col].dropna().unique()
-                color_map = {
-                    g: cat_palette[i % len(cat_palette)] for i, g in enumerate(groups)
-                }
+
                 sns.scatterplot(
                     data=pca_df,
                     x="PC1",
                     y="PC2",
                     hue=col,
-                    s=50,
+                    hue_order=list(cat_palette.keys()),
                     palette=cat_palette,
+                    s=50,
                     ax=ax,
                 )
 
-                for group, color in color_map.items():
-                    subset = pca_df[pca_df[col] == group]
+                for g in groups:
+                    subset = pca_df[pca_df[col] == g]
                     if len(subset) >= 2:
+                        color = cat_palette.get(g, "black")
+
                         confidence_ellipse(
                             subset["PC1"].values,
                             subset["PC2"].values,
@@ -228,26 +225,25 @@ def main():
 
                 ax.legend(title=col, bbox_to_anchor=(1.05, 1), loc="upper left")
 
-            ax.set_title(f"PCA of Pseudobulk Data: {col}")
-            ax.set_xlabel(
-                f"PC1 ({pca.explained_variance_ratio_[0] * 100:.2f}% variance)",
-                fontsize=14,
-            )
-            ax.set_ylabel(
-                f"PC2 ({pca.explained_variance_ratio_[1] * 100:.2f}% variance)",
-                fontsize=14,
-            )
-            plt.tight_layout()
-            plt.savefig(out_dir / f"{col}_{safe_name(cell_type)}_pca.pdf")
-            plt.close(fig)
-            logger.info(f"PCA plot saved to {col}_{safe_name(cell_type)}_pca.pdf")
+            ax.set_title(f"PCA: {col}")
+            ax.set_xlabel(f"PC1 ({pca.explained_variance_ratio_[0] * 100:.2f}%)")
+            ax.set_ylabel(f"PC2 ({pca.explained_variance_ratio_[1] * 100:.2f}%)")
 
+            plt.tight_layout()
+
+            fig.savefig(
+                out_dir / f"{col}_{safe_name(cell_type)}_pca.pdf",
+                bbox_inches="tight",
+            )
+            plt.close(fig)
+
+        # -------------------------
+        # Pairplot
+        # -------------------------
         for col in col_list:
-            if col not in meta_df.columns:
+            if col not in pca_df.columns:
                 continue
 
-            logger.info(f"Plotting pairplot colored by '{col}'...")
-            sns.set_style("white")
             g = sns.pairplot(
                 pca_df,
                 vars=["PC1", "PC2", "PC3", "PC4"],
@@ -258,20 +254,19 @@ def main():
             )
 
             if g._legend is not None:
-                g._legend.set_bbox_to_anchor((0.8, 0.9))
                 g._legend.set_title(col)
+                g._legend.set_bbox_to_anchor((0.8, 0.9))
                 g._legend.set_frame_on(False)
 
-            g.figure.suptitle(f"PCA Pairplot of Pseudobulk Data: {col}", y=1.02)
+            g.figure.suptitle(f"PCA Pairplot: {col}", y=1.02)
+
             g.figure.tight_layout()
             g.figure.subplots_adjust(right=0.85)
+
             g.figure.savefig(out_dir / f"{col}_{safe_name(cell_type)}_pca_pairplot.pdf")
             plt.close(g.figure)
-            logger.info(
-                f"PCA pairplot saved to {col}_{safe_name(cell_type)}_pca_pairplot.pdf"
-            )
 
-        logger.info("PCA plots saved.")
+        logger.info("Finished PCA plots")
 
 
 if __name__ == "__main__":
