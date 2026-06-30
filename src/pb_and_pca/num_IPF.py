@@ -1,12 +1,15 @@
 """Calculate PCA for pseudobulk data."""
 
 import sys
+from itertools import combinations
 from pathlib import Path
 
 import matplotlib.pyplot as plt
+import numpy as np
 import pandas as pd
 import scanpy as sc
 import seaborn as sns
+from scipy.stats import mannwhitneyu
 
 sys.path.append(str(Path(__file__).resolve().parents[2]))
 from utils.airspace_colors import (
@@ -48,8 +51,40 @@ def load_celltype_results(input_dir: Path):
     return results
 
 
-def plot_metric(df, x, y, cell_type, palette):
-    """Plot a metric (y) by a grouping variable (x) for a given cell type."""
+def run_pairwise_mannwhitney(df, x, y, alpha_level=0.05):
+    """Run Mann-Whitney U test for every pair of groups in column x, on values in column y.
+
+    Returns a list of (group_1, group_2, stat, p_value) tuples, restricted to
+    pairs with p_value < alpha_level if you want to filter later; here we
+    return all comparisons and let the caller decide what to annotate.
+    """
+    plot_df = df[[x, y]].dropna().copy()
+    plot_df[x] = plot_df[x].astype(str)
+
+    groups = list(pd.unique(plot_df[x]))
+    test_results = []
+
+    for group_1, group_2 in combinations(groups, 2):
+        group_1_data = plot_df.loc[plot_df[x] == group_1, y].to_numpy().astype(float)
+        group_2_data = plot_df.loc[plot_df[x] == group_2, y].to_numpy().astype(float)
+
+        group_1_data = group_1_data[~np.isnan(group_1_data)]
+        group_2_data = group_2_data[~np.isnan(group_2_data)]
+
+        if len(group_1_data) < 1 or len(group_2_data) < 1:
+            continue
+
+        stat, p_value = mannwhitneyu(group_1_data, group_2_data)
+        test_results.append((group_1, group_2, stat, p_value))
+
+    return test_results
+
+
+def plot_metric(df, x, y, cell_type, palette, alpha_level=0.05):
+    """Plot a metric (y) by a grouping variable (x) for a given cell type,
+    with Mann-Whitney U test results shown in the title and significance
+    brackets drawn between groups.
+    """
     plot_df = df[[x, y]].dropna().copy()
     plot_df[x] = plot_df[x].astype(str)
 
@@ -84,10 +119,62 @@ def plot_metric(df, x, y, cell_type, palette):
 
     ax.set_xlabel(x)
     ax.set_ylabel(y)
-    ax.set_title(f"{cell_type}: {y} by {x}")
-    plt.tight_layout()
 
-    return fig
+    # Run pairwise Mann-Whitney U tests
+    test_results = run_pairwise_mannwhitney(df, x, y, alpha_level=alpha_level)
+
+    # Build a title that includes the test stat/p-value for each pair
+    title_lines = [f"{cell_type}: {y} by {x}"]
+    for group_1, group_2, stat, p_value in test_results:
+        title_lines.append(f"{group_1} vs {group_2}: p={p_value:.3g}")
+    ax.set_title("\n".join(title_lines), fontsize=9)
+
+    # --- Make room above the data for brackets/asterisks ---
+    n_sig = sum(p_value < alpha_level for *_, p_value in test_results)
+    if n_sig > 0:
+        y_min, y_max = ax.get_ylim()
+        data_range = y_max - y_min
+        # Reserve ~15% of the current range per significant bracket,
+        # plus a base 10% buffer above the highest data point.
+        headroom = data_range * (0.15 + 0.15 * n_sig)
+        ax.set_ylim(y_min, y_max + headroom)
+
+    # Add significance brackets between groups, stacked if more than one pair
+    n_groups = len(group_order)
+    base_y = 0.95
+    step = 0.08
+    sig_idx = 0
+    for group_1, group_2, stat, p_value in test_results:
+        if p_value < alpha_level:
+            x1 = group_order.index(group_1)
+            x2 = group_order.index(group_2)
+
+            xy_left = ((x1 + 0.5) / n_groups, base_y - sig_idx * step)
+            xy_right = ((x2 + 0.5) / n_groups, base_y - sig_idx * step)
+
+            ax.annotate(
+                "",
+                xy=xy_left,
+                xycoords="axes fraction",
+                xytext=xy_right,
+                textcoords="axes fraction",
+                arrowprops=dict(arrowstyle="-", color="k", lw=1),
+            )
+            ax.text(
+                (xy_left[0] + xy_right[0]) / 2,
+                base_y - sig_idx * step - 0.001,
+                "*",
+                ha="center",
+                va="bottom",
+                transform=ax.transAxes,
+                color="k",
+            )
+            sig_idx += 1
+
+    # Leave extra room at the top for the multi-line title too
+    fig.subplots_adjust(top=0.80 if len(title_lines) > 1 else 0.88)
+
+    return fig, test_results
 
 
 def main():
@@ -99,7 +186,7 @@ def main():
 
     # Set directories
     input_dir = path / "output" / "pb" / "pb_data_celltype"
-    out_dir = path / "output" / "pb" / "num_cells_IPF_noCRD"
+    out_dir = path / "output" / "pb" / "num_cells_IPF_noCRD_TEST"
     out_dir.mkdir(parents=True, exist_ok=True)
 
     # set fig dir for plots to save to
@@ -128,6 +215,7 @@ def main():
         "condition": condition_palette,
         "diagnosis": diagnosis_palette,
     }
+    alpha_level = 0.05
 
     # Remove COPD and MICAIII donors from the results list
     logger.info("Removing COPD and MICAIII donors from the results list...")
@@ -162,6 +250,7 @@ def main():
     ]
 
     logger.info("Plot absolute numbers of cells per sample.")
+    stats_records = []
     for cell_type, cell_type_dir, pb_sample, meta_df in results:
         logger.info(f"Plotting cell type: {cell_type}...")
 
@@ -181,14 +270,40 @@ def main():
                     logger.warning(f"{y} not in columns for {cell_type}. Skipping.")
                     continue
 
-                fig = plot_metric(
-                    df=meta_df, x=x, y=y, cell_type=cell_type, palette=palette
+                fig, test_results = plot_metric(
+                    df=meta_df,
+                    x=x,
+                    y=y,
+                    cell_type=cell_type,
+                    palette=palette,
+                    alpha_level=alpha_level,
                 )
                 fig.savefig(
                     cell_out_dir / f"{safe_name(cell_type)}_{y}_by_{x}.pdf",
                     bbox_inches="tight",
                 )
                 plt.close(fig)
+
+                for group_1, group_2, stat, p_value in test_results:
+                    stats_records.append(
+                        {
+                            "cell_type": cell_type,
+                            "group_col": x,
+                            "metric": y,
+                            "group_1": group_1,
+                            "group_2": group_2,
+                            "statistic": stat,
+                            "p_value": p_value,
+                            "significant": p_value < alpha_level,
+                        }
+                    )
+
+    # Save all Mann-Whitney results to a single CSV for review
+    stats_df = pd.DataFrame(stats_records)
+    stats_df.to_csv(out_dir / "mannwhitney_results.csv", index=False)
+    logger.info(
+        f"Saved Mann-Whitney U test results to {out_dir / 'mannwhitney_results.csv'}"
+    )
 
 
 if __name__ == "__main__":
