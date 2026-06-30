@@ -192,7 +192,7 @@ def main():
     # Update color if needed
     # Set color for interstitial macrophages
     domain.update_colors(
-        {"T cells": "#5C456F"},
+        {"T cells": "#C8A7E3"},
         colors_to_update="labels",
         label_name="Cell Type",
     )
