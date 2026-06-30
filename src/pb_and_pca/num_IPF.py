@@ -99,7 +99,7 @@ def main():
 
     # Set directories
     input_dir = path / "output" / "pb" / "pb_data_celltype"
-    out_dir = path / "output" / "pb" / "num_cells_IPF"
+    out_dir = path / "output" / "pb" / "num_cells_IPF_noCRD"
     out_dir.mkdir(parents=True, exist_ok=True)
 
     # set fig dir for plots to save to
@@ -135,8 +135,10 @@ def main():
         (
             cell_type,
             cell_type_dir,
-            pb_sample[meta_df.index[~meta_df["diagnosis"].isin(["COPD", "HEALTHY"])]],
-            meta_df[~meta_df["diagnosis"].isin(["COPD", "HEALTHY"])],
+            pb_sample[
+                meta_df.index[~meta_df["diagnosis"].isin(["COPD", "HEALTHY", "NO_CRD"])]
+            ],
+            meta_df[~meta_df["diagnosis"].isin(["COPD", "HEALTHY", "NO_CRD"])],
         )
         for cell_type, cell_type_dir, pb_sample, meta_df in results
     ]
