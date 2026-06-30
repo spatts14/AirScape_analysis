@@ -106,6 +106,8 @@ def main():
     cmap = sns.color_palette("ch:start=.2,rot=-.3", as_cmap=True)
     cat_palette = sns.color_palette("Set2")
 
+    subset_diagnosis = ["IPF", "LUNG_CANCER"]  # Diagnosis column
+    subset_diagnosis_safe = "v".join(subset_diagnosis).replace(" ", "_")
     y_metrics = ["n_cells", "total_counts", "mean_transcripts"]
     group_cols = ["condition", "timepoint_label", "treatment_arm"]
     col_list = [
@@ -168,6 +170,14 @@ def main():
             pca_result, columns=["PC1", "PC2", "PC3", "PC4"], index=X.index
         )
         pca_df = pca_df.join(meta_df)
+
+        # Subset only on samples of interest
+        if subset_diagnosis:
+            pca_df = pca_df[pca_df["diagnosis"].isin(subset_diagnosis)]
+
+            # Create new dir
+            out_dir = out_dir / subset_diagnosis_safe
+            out_dir.mkdir(parents=True, exist_ok=True)
 
         for col in col_list:
             if col not in meta_df.columns:
