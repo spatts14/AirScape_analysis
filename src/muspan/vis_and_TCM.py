@@ -138,7 +138,7 @@ def main():
 
     # Choose two cell types of interest for analysis
     cell1 = "Interstitial macrophages"
-    cell2 = "B cells"
+    cell2 = "Mast cells"
 
     vmax = 30  # Set the maximum value for the color scale, will do + and - integer
 
@@ -231,7 +231,7 @@ def main():
             "size_vertical": 2,
         },
     )
-    plt.title(f"Cell Types: {cell1} and {cell2}")
+    # plt.title(f"Cell Types: {cell1} and {cell2}")
     plt.tight_layout()
     plt.savefig(
         clusters_of_interest_dir / f"{domain_name}.png",
@@ -286,7 +286,7 @@ def main():
         tcm_cmap="RdBu_r",
         colorbar_label="TCM",
     )
-    plt.title(f"Cell Types: {cell1} and {cell2}")
+    # plt.title(f"Cell Types: {cell1} and {cell2}")
     plt.tight_layout()
     plt.savefig(
         clusters_of_interest_dir / f"{domain_name}_TCM.png",
