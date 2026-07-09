@@ -23,6 +23,7 @@ def main():
 
     fig_dir = dir / "PC_plots_cells"
     fig_dir.mkdir(parents=True, exist_ok=True)
+    print(f"Created {fig_dir}")
 
     sc.settings.figdir = fig_dir
     print(f"Saving figures to {sc.settings.figdir}")
