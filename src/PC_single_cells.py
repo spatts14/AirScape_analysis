@@ -45,6 +45,7 @@ def main():
                 size=2,
                 alpha=0.5,
                 show=False,
+                frameon=False,
                 save=f"_{_obs_field}_PC1_PC2.png",
             )
         for _obs_field in obs_vis_list:
@@ -56,6 +57,7 @@ def main():
                 size=2,
                 alpha=0.5,
                 show=False,
+                frameon=False,
                 save=f"_{_obs_field}_PC3_PC4.png",
             )
     else:
