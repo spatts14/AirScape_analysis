@@ -62,3 +62,7 @@ def main():
         print("Skipping PC observation fields plot (obs_vis_list not configured)")
 
     print("PC plotting completed.")
+
+
+if __name__ == "__main__":
+    main()
