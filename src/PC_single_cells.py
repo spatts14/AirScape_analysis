@@ -1,4 +1,4 @@
-"""Plot PCA of single cells."""
+"""Plot PC of single cells."""
 
 import warnings
 from logging import getLogger
@@ -14,14 +14,14 @@ logger = getLogger(__name__)
 
 
 def main():
-    """Plot PCA of the data."""
+    """Plot PC of the data."""
     # Setup directories
     path = Path(
         "/rds/general/user/sep22/projects/phenotypingsputumasthmaticsaurorawellcomea1/live/Sara_Patti/009_ST_Xenium"
     )
     dir = path / "output/AIRSCAPE/"
 
-    fig_dir = dir / "PCA_plots_cells"
+    fig_dir = dir / "PC_plots_cells"
     fig_dir.mkdir(parents=True, exist_ok=True)
 
     sc.settings.figdir = fig_dir
@@ -29,10 +29,10 @@ def main():
     # Load data
     adata = ad.read_zarr(dir / "adata_final_object/adata_with_metadata.zarr")
 
-    # Plot PCA with observation fields if available
+    # Plot PC with observation fields if available
     obs_vis_list = ["level_1", "level_2", "level_3"]
     if obs_vis_list:
-        logger.info("Plotting PCA with observation fields...")
+        logger.info("Plotting PC with observation fields...")
         for _obs_field in obs_vis_list:
             sc.pl.pca(
                 adata,
@@ -56,6 +56,4 @@ def main():
                 save=f"_{_obs_field}_PC3_PC4.png",
             )
     else:
-        logger.info(
-            "Skipping PCA observation fields plot (obs_vis_list not configured)"
-        )
+        logger.info("Skipping PC observation fields plot (obs_vis_list not configured)")
