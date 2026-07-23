@@ -21,6 +21,14 @@ diagnosis_palette = {
     "NO_CRD":       "#A67B8A",  # muted rose
 }
 
+diagnosis_thesis_colors = {
+    "IPF":          "#6A7FB5",  # slate blue
+    "Distal Control":  "#B07D4A",  # warm tan
+    "COPD":         "#7EB0B8",  # dusty teal
+    "Proximal Control":      "#8EA882",  # sage
+    "NO_CRD":       "#A67B8A",  # muted rose
+}
+
 study_palette = {
     "RBH":        "#6A7FB5",  # slate blue
     "PM08":       "#B07D4A",  # warm tan
