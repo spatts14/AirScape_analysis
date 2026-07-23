@@ -43,8 +43,9 @@ def setup_logger(log_dir: Path, log_name: str) -> logging.Logger:
 
 # Set directory
 path = Path(
-    "/Volumes/phenotypingsputumasthmaticsaurorawellcomea1/live/Sara_Patti/009_ST_Xenium/r"
+    "rds/general/user/sep22/projects/phenotypingsputumasthmaticsaurorawellcomea1/live/Sara_Patti/009_ST_Xenium/r"
 )
+
 output_dir = path / "output/AIRSCAPE/"
 output_dir.mkdir(parents=True, exist_ok=True)
 
