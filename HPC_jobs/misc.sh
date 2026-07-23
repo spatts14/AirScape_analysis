@@ -22,7 +22,8 @@ source muspan/bin/activate
 # Run with error logging
 echo "Starting at $(date)"
 
-python src/PC_single_cells.py
+python src/view_meta.py
+#python src/PC_single_cells.py
 # python src/umap.py
 # python src/composition_level.py
 # python src/composition.py
