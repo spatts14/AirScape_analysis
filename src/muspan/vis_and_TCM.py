@@ -137,8 +137,8 @@ def main():
     logger = setup_logger(log_dir=logs_dir, log_name="vis_TCM")
 
     # Choose two cell types of interest for analysis
-    cell1 = "Interstitial macrophages"
-    cell2 = "Mast cells"
+    cell1 = "Airway/Alveolar macrophages"
+    cell2 = "Airway/Alveolar macrophages"
 
     vmax = 30  # Set the maximum value for the color scale, will do + and - integer
 
