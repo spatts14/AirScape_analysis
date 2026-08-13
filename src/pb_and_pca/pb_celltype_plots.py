@@ -107,7 +107,9 @@ def main():
     cat_palette = sns.color_palette("Set2")
 
     subset_diagnosis = ["IPF", "LUNG_CANCER"]  # Diagnosis column
-    subset_diagnosis_safe = "v".join(subset_diagnosis).replace(" ", "_")
+    subset_diagnosis_safe = ["IPFvLUNG_CANCER_NOCRD"]  # Safe names for file paths
+    # subset_diagnosis_safe = "v".join(subset_diagnosis).replace(" ", "_")
+
     y_metrics = ["n_cells", "total_counts", "mean_transcripts"]
     group_cols = ["condition", "timepoint_label", "treatment_arm"]
     col_list = [
@@ -130,6 +132,18 @@ def main():
     logger.info("Loading saved pseudobulk outputs...")
     results = load_celltype_results(input_dir)
     logger.info(f"Found {len(results)} cell type folders with saved outputs.")
+
+    donors_to_remove = ["PM08_159"]
+    logger.info(f"Removing donors {donors_to_remove} from the results list...")
+    results = [
+        (
+            cell_type,
+            cell_type_dir,
+            pb_sample[[s for s in pb_sample.columns if s not in donors_to_remove]],
+            meta_df[~meta_df.index.isin(donors_to_remove)],
+        )
+        for cell_type, cell_type_dir, pb_sample, meta_df in results
+    ]
 
     for cell_type, cell_type_dir, pb_sample, meta_df in results:
         logger.info(f"Plotting cell type: {cell_type}...")
