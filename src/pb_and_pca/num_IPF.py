@@ -85,7 +85,7 @@ def plot_metric(df, x, y, cell_type, palette, alpha_level=0.05):
     plot_df = df[[x, y]].dropna().copy()
     plot_df[x] = plot_df[x].astype(str)
 
-    fig, ax = plt.subplots(figsize=(6, 4))
+    fig, ax = plt.subplots(figsize=(4, 4))
     group_order = list(pd.unique(plot_df[x]))
     # Use the provided palette dict; fall back to a grey for unknown categories
     palette_to_use = [palette.get(g, "#888888") for g in group_order]
@@ -174,6 +174,122 @@ def plot_metric(df, x, y, cell_type, palette, alpha_level=0.05):
     return fig, test_results
 
 
+def plot_metric_multi_celltype(
+    results, cell_types, y, hue, palette, alpha_level=0.05, hue_order=None, figsize=None
+):
+    """Plot a metric for several cell types in one figure: x=cell_type, hue=hue column."""
+    combined = []
+    for cell_type, cell_type_dir, pb_sample, meta_df in results:
+        if cell_type not in cell_types:
+            continue
+        if y not in meta_df.columns or hue not in meta_df.columns:
+            continue
+        sub = meta_df[[hue, y]].dropna().copy()
+        sub["cell_type"] = cell_type
+        combined.append(sub)
+
+    if not combined:
+        raise ValueError(
+            "None of the requested cell types were found with the required columns."
+        )
+
+    plot_df = pd.concat(combined, ignore_index=True)
+    plot_df[hue] = plot_df[hue].astype(str)
+
+    cell_type_order = [ct for ct in cell_types if ct in plot_df["cell_type"].unique()]
+
+    # Use caller-supplied order if given, restricted to levels actually present;
+    # otherwise fall back to data order.
+    if hue_order is not None:
+        present = set(plot_df[hue].unique())
+        hue_order = [h for h in hue_order if h in present]
+    else:
+        hue_order = list(pd.unique(plot_df[hue]))
+
+    palette_to_use = [palette.get(h, "#888888") for h in hue_order]
+
+    if figsize is None:
+        figsize = (1.4 * len(cell_type_order) + 2, 6)
+    fig, ax = plt.subplots(figsize=figsize)
+
+    sns.boxplot(
+        data=plot_df,
+        x="cell_type",
+        y=y,
+        order=cell_type_order,
+        hue=hue,
+        hue_order=hue_order,
+        palette=palette_to_use,
+        saturation=0.25,
+        ax=ax,
+    )
+    sns.stripplot(
+        data=plot_df,
+        x="cell_type",
+        y=y,
+        order=cell_type_order,
+        hue=hue,
+        hue_order=hue_order,
+        palette=palette_to_use,
+        dodge=True,
+        size=4,
+        jitter=True,
+        ax=ax,
+        legend=False,
+    )
+
+    ax.set_xlabel("Cell type")
+    ax.set_ylabel(y)
+    ax.set_title(f"{y} by cell type, split by {hue}", fontsize=10)
+    ax.tick_params(axis="x", rotation=30)
+
+    handles, labels = ax.get_legend_handles_labels()
+    n_hue = len(hue_order)
+    ax.legend(
+        handles[:n_hue],
+        labels[:n_hue],
+        title=hue,
+        bbox_to_anchor=(1.02, 1),
+        loc="upper left",
+    )
+
+    # Pairwise Mann-Whitney within each cell type, between hue (condition) levels
+    stats_records = []
+    for i, cell_type in enumerate(cell_type_order):
+        sub = plot_df[plot_df["cell_type"] == cell_type]
+        test_results = run_pairwise_mannwhitney(sub, hue, y, alpha_level=alpha_level)
+
+        for group_1, group_2, stat, p_value in test_results:
+            stats_records.append(
+                {
+                    "cell_type": cell_type,
+                    "group_col": hue,
+                    "metric": y,
+                    "group_1": group_1,
+                    "group_2": group_2,
+                    "statistic": stat,
+                    "p_value": p_value,
+                    "significant": p_value < alpha_level,
+                }
+            )
+
+        sig_pairs = [t for t in test_results if t[3] < alpha_level]
+        if sig_pairs:
+            y_max = sub[y].max()
+            y_range = plot_df[y].max() - plot_df[y].min()
+            ax.text(
+                i,
+                y_max + 0.05 * y_range,
+                "*" * min(len(sig_pairs), 3),
+                ha="center",
+                va="bottom",
+                fontsize=12,
+            )
+
+    fig.tight_layout()
+    return fig, pd.DataFrame(stats_records)
+
+
 def main():
     """Visualize number of cells per sample."""
     # Set directory
@@ -216,6 +332,7 @@ def main():
 
     # Remove COPD and MICAIII donors from the results list
     logger.info("Removing COPD and MICAIII donors from the results list...")
+    logger.info("Removing NO_CRD donors from the results list...")
     results = [
         (
             cell_type,
@@ -245,6 +362,32 @@ def main():
         )
         for cell_type, cell_type_dir, pb_sample, meta_df in results
     ]
+
+    logger.info("Plot normalized number of cells per sample, by cell type.")
+    # Need to use directory name to get the data
+    celltypes_to_combine = [
+        "Interstitial_macrophages",
+        "Airway_Alveolar_macrophages",
+        "Lipid-associated_macrophages",
+    ]
+    fig, combined_stats = plot_metric_multi_celltype(
+        results=results,
+        cell_types=celltypes_to_combine,
+        y="normalized_num",
+        hue="condition",
+        palette=condition_palette,
+        alpha_level=alpha_level,
+        hue_order=["PM08", "IPF"],
+    )
+    fig.savefig(
+        out_dir
+        / f"normalized_num_by_celltype_{'_'.join(safe_name(c) for c in celltypes_to_combine)}.pdf",
+        bbox_inches="tight",
+    )
+    plt.close(fig)
+    combined_stats.to_csv(
+        out_dir / "combined_celltype_mannwhitney_results.csv", index=False
+    )
 
     logger.info("Plot absolute numbers of cells per sample.")
     stats_records = []
