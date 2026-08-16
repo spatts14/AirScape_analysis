@@ -110,21 +110,26 @@ def main():
     # Define a color palette for the neighbourhood labels
     cmap = sns.color_palette("coolwarm", as_cmap=True)
     nb_colors = [
-        "#5B8FA8",
-        "#4E7D5B",
-        "#8B7CB3",
-        "#A05A4A",
-        "#E8B4A0",
-        "#7E9E6E",
-        "#B5C99A",
-        "#5A7A9A",
-        "#B8A06E",
-        "#783129",
-        "#E99547",
-        "#9E9E8A",
-        "#7A9E9A",
-        "#C4956A",
-        "#A0A0A0",
+        "#5B8FA8",  # dusty blue
+        "#4E7D5B",  # muted forest green
+        "#8B7CB3",  # dusty lavender
+        "#A05A4A",  # muted brick red
+        "#E8B4A0",  # dusty peach
+        "#7E9E6E",  # sage green
+        "#B5C99A",  # soft moss
+        "#5A7A9A",  # slate blue
+        "#B8A06E",  # muted gold
+        "#783129",  # deep rust
+        "#E99547",  # warm amber
+        "#7A9E9A",  # dusty teal
+        "#C4956A",  # muted terracotta
+        "#6B5B95",  # dusty plum
+        "#C97B63",  # clay orange
+        "#4A7C6F",  # deep teal green
+        "#D4A5A5",  # dusty rose
+        "#8A9B6E",  # olive green
+        "#B06C8F",  # muted magenta
+        "#5D8A66",  # muted emerald
     ]
 
     # If subset is specified, create a subdirectory for plots
