@@ -26,7 +26,9 @@ def remove_cell_types(domain, cell_types_to_remove, label_name="Cell Type"):
     if not cell_types_to_remove:
         return domain
 
-    query_result = ms.query.query(domain, (label_name,), "in", cell_types_to_remove)
+    query_result = ms.query.query(
+        domain, ("label", label_name), "in", cell_types_to_remove
+    )
     domain.delete_objects(query_result)
     return domain
 
