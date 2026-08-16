@@ -16,6 +16,21 @@ sys.path.append(str(Path(__file__).resolve().parents[2]))
 from utils.setup_logger import setup_logger
 
 
+def remove_cell_types(domain, cell_types_to_remove, label_name="Cell Type"):
+    """Remove all objects of the given cell type(s) from a domain, in place.
+
+    Uses muspan's query interface to find objects matching the label(s),
+    then deletes them from the domain so downstream network construction
+    (e.g. cluster_neighbourhoods) only sees the remaining cells.
+    """
+    if not cell_types_to_remove:
+        return domain
+
+    query_result = ms.query.query(domain, (label_name,), "in", cell_types_to_remove)
+    domain.delete_objects(query_result)
+    return domain
+
+
 def parse_args(args):
     """Parse command line arguments for the script.
 
@@ -142,6 +157,22 @@ def main():
         domain for domain in domain_list if "IPF_RBH_159" not in str(domain.name)
     ]
     logger.info(f"After filtering, {len(domain_list)} domains remain for processing.")
+
+    # Remove specified cell type(s) from every domain before building the network
+    cell_types_to_remove = [
+        "Alveolar fibroblasts (collagen high)"
+    ]  # Set cell types to remove here
+    if cell_types_to_remove:
+        logger.info(f"Removing cell types {cell_types_to_remove} from all domains...")
+        for domain in domain_list:
+            n_before = domain.n_objects if hasattr(domain, "n_objects") else None
+            remove_cell_types(domain, cell_types_to_remove, label_name="Cell Type")
+            n_after = domain.n_objects if hasattr(domain, "n_objects") else None
+            if n_before is not None and n_after is not None:
+                logger.info(
+                    f"{domain.name}: removed {n_before - n_after} cells "
+                    f"({n_before} -> {n_after})"
+                )
 
     # Make cluster number of clusters
     plots_dir_cluster = plots_dir / f"{number_of_clusters}_clusters"
