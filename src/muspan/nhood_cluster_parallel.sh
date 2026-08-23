@@ -1,6 +1,7 @@
 #!/bin/bash
-#PBS -l walltime=48:0:0
-#PBS -l select=1:ncpus=12:mem=192gb
+#PBS -J 0-7
+#PBS -l select=1:ncpus=2:mem=64gb
+#PBS -l walltime=8:00:0
 #PBS -N nhood_cluster
 #PBS -j oe
 
@@ -16,10 +17,13 @@ cd /rds/general/user/sep22/home/Projects/AirScape_analysis
 # Activate virtual environment
 source muspan/bin/activate
 
-# Run with error logging
+# Print start time
 echo "Starting at $(date)"
 
-python src/muspan/nhood_cluster_parallel.py
+# Iterate over the number of clusters to use for clustering
+CLUSTER_LIST=(8 10 12 14 16 18 20 22)
+NUMBER_OF_CLUSTERS=${CLUSTER_LIST[$PBS_ARRAY_INDEX]}
 
-
+echo "Starting cluster count $NUMBER_OF_CLUSTERS at $(date) (array index $PBS_ARRAY_INDEX)"
+python src/muspan/nhood_cluster.py --number_of_clusters "$NUMBER_OF_CLUSTERS"
 echo "Completed at $(date)"
