@@ -365,11 +365,12 @@ def main():
 
     logger.info("Plot normalized number of cells per sample, by cell type.")
     # Need to use directory name to get the data
-    celltypes_to_combine = [
-        "Interstitial_macrophages",
-        "Airway_Alveolar_macrophages",
-        "Lipid-associated_macrophages",
-    ]
+    # celltypes_to_combine = [
+    #     "Interstitial_macrophages",
+    #     "Airway_Alveolar_macrophages",
+    #     "Lipid-associated_macrophages",
+    # ]
+    celltypes_to_combine = ["CTHRC1_fibroblasts"]
     fig, combined_stats = plot_metric_multi_celltype(
         results=results,
         cell_types=celltypes_to_combine,
