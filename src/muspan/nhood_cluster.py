@@ -64,7 +64,7 @@ def main():
     number_of_clusters = parse_args(sys.argv[1:])
 
     # Define variables
-    khop = 2  # Number of hops for neighbourhood clustering
+    khop = 3  # Number of hops for neighbourhood clustering
     network_type = "Delaunay"  # 'Delaunay' or 'proximity'
     max_edge_distance = 30
     subset = ["IPF", "PM08"]  # COPD or IPF and PM08
