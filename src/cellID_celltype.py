@@ -1,7 +1,6 @@
 """Export cell ID to cell type mapping as CSV files for use in domain construction."""
 
 import sys
-import warnings
 from pathlib import Path
 
 import anndata as ad
@@ -10,7 +9,7 @@ sys.path.append(str(Path(__file__).resolve().parents[1]))
 from utils.setup_logger import setup_logger
 
 wd = "/rds/general/user/sep22/home/Projects/AirScape_analysis/HPC_jobs/general/"
-logs_dir = Path(wd) / "logs"
+logs_dir = Path(wd) / "logs" / "cellID_celltype"
 logs_dir.mkdir(parents=True, exist_ok=True)
 logger = setup_logger(log_dir=logs_dir, log_name="cellID_celltype")
 

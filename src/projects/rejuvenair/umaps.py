@@ -103,7 +103,7 @@ def plot_celltype_composition(
     Returns:
     fig, ax : matplotlib figure and axes objects
     """
-    # Make direcotry for cell type
+    # Make directory for cell type
     celltype_col_dir = fig_dir / celltype_col
     os.makedirs(celltype_col_dir, exist_ok=True)
 
@@ -384,7 +384,7 @@ seed_everything(19960915)
 
 # Set up logger
 wd = "/rds/general/user/sep22/home/Projects/AirScape_analysis/HPC_jobs/rejuvenair/"
-logs_dir = Path(wd) / "logs"
+logs_dir = Path(wd) / "logs" / "umaps"
 logs_dir.mkdir(parents=True, exist_ok=True)
 logger = setup_logger(log_dir=logs_dir, log_name="umaps")
 

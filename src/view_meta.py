@@ -49,8 +49,8 @@ path = Path(
 output_dir = path / "output/AIRSCAPE/"
 output_dir.mkdir(parents=True, exist_ok=True)
 
-logs_dir = path / "logs"
-logger = setup_logger(log_dir=logs_dir, log_name="metadata_print")
+logs_dir = path / "logs" / "metadata"
+logger = setup_logger(log_dir=logs_dir, log_name="view_metadata")
 
 
 # Load data

@@ -56,7 +56,7 @@ path = Path(
 )
 dir = path / "output/AIRSCAPE/"
 
-logs_dir = Path(path) / "logs"
+logs_dir = Path(path) / "logs" / "add_metadata"
 logger = setup_logger(log_dir=logs_dir, log_name="metadata_addition")
 
 # Set figure directory

@@ -96,7 +96,7 @@ def main():
         "/rds/general/user/sep22/projects/phenotypingsputumasthmaticsaurorawellcomea1/live/Sara_Patti/009_ST_Xenium"
     )
 
-    logs_dir = Path(path) / "logs"
+    logs_dir = Path(path) / "logs" / "pseudobulk"
     logger = setup_logger(log_dir=logs_dir, log_name="pseudobulk_celltype_PCA")
 
     input_dir = path / "output" / "pb" / "pb_data_celltype"

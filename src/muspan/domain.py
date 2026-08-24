@@ -7,14 +7,13 @@ from pathlib import Path
 
 import matplotlib.pyplot as plt
 import pandas as pd
-import numpy as np
 
 import muspan as ms
 
 sys.path.append(str(Path(__file__).resolve().parents[2]))
 
-from utils.setup_logger import setup_logger
 from utils.airspace_colors import level_1_palette, level_2_palette
+from utils.setup_logger import setup_logger
 
 warnings.filterwarnings("ignore", category=UserWarning)
 warnings.filterwarnings("ignore", category=FutureWarning)
@@ -143,7 +142,6 @@ def filter_cell_types(domain, roi, logger):
     Uses domain.delete_objects() to remove spatial objects AND their associated
     labels simultaneously, keeping the domain internally consistent.
     """
-
     CELLS_TO_REMOVE_ALL = ["Unknown", "nan"]
 
     COPD_CELLS_TO_REMOVE = [
@@ -235,9 +233,9 @@ def main():
 
     # Set up logger
     wd = "/rds/general/user/sep22/home/Projects/AirScape_analysis/HPC_jobs/"
-    logs_dir = Path(wd) / "logs"
+    logs_dir = Path(wd) / "logs" / "muspan"
     logs_dir.mkdir(parents=True, exist_ok=True)
-    logger = setup_logger(log_dir=logs_dir, log_name="muspan")
+    logger = setup_logger(log_dir=logs_dir, log_name="domain")
 
     # Set variables
     transcripts_to_load = ["KRT5", "VWF", "ACTA2", "MRC1", "CD4", "CD8A", "16S"]

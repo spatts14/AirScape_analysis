@@ -111,7 +111,7 @@ def main():
     sc.settings.figdir = out_dir
 
     # Set up logger
-    logs_dir = path / "logs"
+    logs_dir = path / "logs" / "pseudobulk"
     logs_dir.mkdir(parents=True, exist_ok=True)
     logger = setup_logger(log_dir=logs_dir, log_name="pseudobulk_data_celltype")
 
