@@ -177,7 +177,7 @@ def plot_composition_comparison(
 
     Saves two files: '{prefix}_side_by_side.pdf', '{prefix}_difference.pdf',
     and returns the underlying stats dataframe.
-    """
+    """  # noqa: D205
     if palette is None:
         palette = {}
 
@@ -198,14 +198,14 @@ def plot_composition_comparison(
         sns.heatmap(
             mat,
             ax=ax,
-            cmap="viridis",
+            cmap="RdBu_r",
             vmin=0,
             vmax=vmax,
             linewidths=0.5,
             linecolor="white",
             cbar_kws={"label": "Proportion within niche"},
         )
-        title_color = palette.get(title, "#333333")
+        title_color = palette.get(title, "#000000")
         ax.set_title(title, color=title_color, fontweight="bold")
         ax.set_xlabel("Cell type")
         ax.set_ylabel("Niche ID")
@@ -266,32 +266,12 @@ def plot_composition_comparison(
                     fontweight="bold",
                 )
 
-    color_1 = palette.get(group_1, "#333333")
-    color_2 = palette.get(group_2, "#333333")
+    color_1 = palette.get(group_1, "#000000")
+    color_2 = palette.get(group_2, "#000000")
     ax.set_title(
         f"Niche composition difference: {group_2} vs {group_1}\n(* = p < {alpha_level})"
     )
     # Color the axis labels/ticks to hint which side is which direction
-    ax.text(
-        0.0,
-        -0.08,
-        f"← more {group_1}",
-        transform=ax.transAxes,
-        color=color_1,
-        fontweight="bold",
-        ha="left",
-        fontsize=10,
-    )
-    ax.text(
-        1.0,
-        -0.08,
-        f"more {group_2} →",
-        transform=ax.transAxes,
-        color=color_2,
-        fontweight="bold",
-        ha="right",
-        fontsize=10,
-    )
     ax.set_xlabel("Cell type")
     ax.set_ylabel("Niche ID")
     ax.tick_params(axis="x", rotation=90)
@@ -309,12 +289,12 @@ def main():
     number_of_clusters = parse_args(sys.argv[1:])
 
     # Define variables
-    khop = 3  # Number of hops for neighbourhood clustering
-    network_type = "Delaunay"  # 'Delaunay' or 'proximity'
+    khop = 1  # Number of hops for neighbourhood clustering
+    network_type = "proximity"  # 'Delaunay' or 'proximity'
     max_edge_distance = 30
     subset = ["IPF", "PM08"]  # COPD or IPF and PM08
     subset_safe_name = "v".join(subset)
-    subset_safe_name = f"{subset_safe_name}_159removed_khop_{khop}_TEST"
+    subset_safe_name = f"{subset_safe_name}_159removed_plots"
 
     # Base project path
     paths = [
@@ -569,8 +549,8 @@ def main():
             objects_to_plot=qCells,
             add_scalebar=True,
             scalebar_kwargs={
-                "size": 1000,
-                "label": "1000µm",
+                "size": 500,
+                "label": "500µm",
                 "loc": "lower right",
                 "pad": 0.1,
                 "color": "black",
