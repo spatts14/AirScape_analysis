@@ -21,7 +21,7 @@ source muspan/bin/activate
 echo "Starting at $(date)"
 
 # Iterate over the number of clusters to use for clustering
-CLUSTER_LIST=(8 10 12 14 16 18 20 22)
+CLUSTER_LIST=(18)
 NUMBER_OF_CLUSTERS=${CLUSTER_LIST[$PBS_ARRAY_INDEX]}
 
 echo "Starting cluster count $NUMBER_OF_CLUSTERS at $(date) (array index $PBS_ARRAY_INDEX)"

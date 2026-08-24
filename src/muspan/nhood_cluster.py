@@ -8,11 +8,13 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import seaborn as sns
+from scipy.stats import mannwhitneyu
 
 import muspan as ms
 
 sys.path.append(str(Path(__file__).resolve().parents[2]))
 
+from utils.airspace_colors import diagnosis_palette
 from utils.setup_logger import setup_logger
 
 
@@ -58,6 +60,249 @@ def parse_args(args):
     return results.number_of_clusters
 
 
+def get_disease_group(domain_name, subset):
+    """Map a domain name to its disease group based on substring match."""
+    for group in subset:
+        if group in domain_name:
+            return group
+    return "Unknown"
+
+
+def compute_niche_celltype_composition(
+    domain_list, network_type, subset, label_name="Cell Type"
+):
+    """Per-domain cell-type composition of each niche.
+
+    For each domain, cross-tabulates niche assignment against cell type,
+    giving the fraction of cells within each niche that belong to each
+    cell type — tagged by domain and disease group so it can be split
+    or averaged by ROI or by diagnosis afterward.
+    """
+    niche_label_name = f"Neighbourhood ID {network_type}"
+    records = []
+
+    for domain in domain_list:
+        niche_labels = np.asarray(domain.labels[niche_label_name]["labels"])
+        cell_types = np.asarray(domain.labels[label_name]["labels"])
+        disease_group = get_disease_group(str(domain.name), subset)
+
+        df = pd.DataFrame({"niche_id": niche_labels, "cell_type": cell_types})
+
+        for niche_id, niche_group in df.groupby("niche_id"):
+            n_total = len(niche_group)
+            counts = niche_group["cell_type"].value_counts()
+            for cell_type, count in counts.items():
+                records.append(
+                    {
+                        "domain": str(domain.name),
+                        "disease_group": disease_group,
+                        "niche_id": str(niche_id),
+                        "cell_type": cell_type,
+                        "n_cells": count,
+                        "proportion_within_niche": count / n_total,
+                    }
+                )
+
+    return pd.DataFrame.from_records(records)
+
+
+def build_composition_matrix(comp_df, disease_group, niche_order, celltype_order):
+    """Pivot into a niche x cell_type matrix, averaged across domains, for one disease group."""
+    sub = comp_df[comp_df["disease_group"] == disease_group]
+    pivot = (
+        sub.groupby(["niche_id", "cell_type"])["proportion_within_niche"]
+        .mean()
+        .unstack(fill_value=0)
+    )
+    return pivot.reindex(index=niche_order, columns=celltype_order, fill_value=0)
+
+
+def compute_composition_diff_stats(comp_df, disease_order, alpha_level=0.05):
+    """Per niche x cell_type, run Mann-Whitney across domains between disease groups.
+
+    Returns a long dataframe with the mean proportion in each group, the
+    difference (group_2 - group_1), and the p-value, one row per (niche, cell_type).
+    """
+    group_1, group_2 = disease_order[0], disease_order[1]
+    records = []
+
+    for (niche_id, cell_type), grp in comp_df.groupby(["niche_id", "cell_type"]):
+        vals_1 = grp.loc[
+            grp["disease_group"] == group_1, "proportion_within_niche"
+        ].to_numpy()
+        vals_2 = grp.loc[
+            grp["disease_group"] == group_2, "proportion_within_niche"
+        ].to_numpy()
+
+        if len(vals_1) < 1 or len(vals_2) < 1:
+            continue
+
+        mean_1 = vals_1.mean()
+        mean_2 = vals_2.mean()
+
+        if (
+            len(vals_1) >= 1
+            and len(vals_2) >= 1
+            and (len(vals_1) > 1 or len(vals_2) > 1)
+        ):
+            try:
+                stat, p_value = mannwhitneyu(vals_1, vals_2)
+            except ValueError:
+                # e.g. all values identical
+                stat, p_value = np.nan, np.nan
+        else:
+            stat, p_value = np.nan, np.nan
+
+        records.append(
+            {
+                "niche_id": niche_id,
+                "cell_type": cell_type,
+                f"mean_{group_1}": mean_1,
+                f"mean_{group_2}": mean_2,
+                "diff": mean_2 - mean_1,
+                "statistic": stat,
+                "p_value": p_value,
+                "significant": (p_value < alpha_level) if pd.notna(p_value) else False,
+            }
+        )
+
+    return pd.DataFrame.from_records(records)
+
+
+def plot_composition_comparison(
+    comp_df, disease_order, out_path_prefix, palette=None, alpha_level=0.05
+):
+    """Plot side-by-side niche x cell-type composition heatmaps for two disease groups,
+    plus a diverging difference heatmap with significance markers.
+
+    Saves two files: '{prefix}_side_by_side.pdf', '{prefix}_difference.pdf',
+    and returns the underlying stats dataframe.
+    """
+    if palette is None:
+        palette = {}
+
+    niche_order = sorted(comp_df["niche_id"].unique())
+    celltype_order = sorted(comp_df["cell_type"].unique())
+
+    group_1, group_2 = disease_order[0], disease_order[1]
+    mat_1 = build_composition_matrix(comp_df, group_1, niche_order, celltype_order)
+    mat_2 = build_composition_matrix(comp_df, group_2, niche_order, celltype_order)
+
+    vmax = max(mat_1.values.max(), mat_2.values.max())
+
+    # --- Side-by-side heatmaps ---
+    fig, axes = plt.subplots(
+        1, 2, figsize=(0.5 * len(celltype_order) * 2 + 4, 0.5 * len(niche_order) + 3)
+    )
+    for ax, mat, title in zip(axes, [mat_1, mat_2], [group_1, group_2]):
+        sns.heatmap(
+            mat,
+            ax=ax,
+            cmap="viridis",
+            vmin=0,
+            vmax=vmax,
+            linewidths=0.5,
+            linecolor="white",
+            cbar_kws={"label": "Proportion within niche"},
+        )
+        title_color = palette.get(title, "#333333")
+        ax.set_title(title, color=title_color, fontweight="bold")
+        ax.set_xlabel("Cell type")
+        ax.set_ylabel("Niche ID")
+        ax.tick_params(axis="x", rotation=90)
+
+        # Colored border framing the panel, tying it to its disease group
+        for spine in ax.spines.values():
+            spine.set_visible(True)
+            spine.set_edgecolor(title_color)
+            spine.set_linewidth(2.5)
+
+    fig.tight_layout()
+    fig.savefig(f"{out_path_prefix}_side_by_side.pdf", bbox_inches="tight")
+    plt.close(fig)
+
+    # --- Difference heatmap with stats ---
+    stats_df = compute_composition_diff_stats(
+        comp_df, disease_order, alpha_level=alpha_level
+    )
+    diff_mat = stats_df.pivot(index="niche_id", columns="cell_type", values="diff")
+    diff_mat = diff_mat.reindex(index=niche_order, columns=celltype_order, fill_value=0)
+
+    sig_mat = stats_df.pivot(
+        index="niche_id", columns="cell_type", values="significant"
+    )
+    sig_mat = sig_mat.reindex(
+        index=niche_order, columns=celltype_order, fill_value=False
+    )
+
+    diff_abs_max = np.nanmax(np.abs(diff_mat.values)) if diff_mat.size else 1
+
+    fig, ax = plt.subplots(
+        figsize=(0.5 * len(celltype_order) + 4, 0.5 * len(niche_order) + 3)
+    )
+    sns.heatmap(
+        diff_mat,
+        ax=ax,
+        cmap="RdBu_r",
+        center=0,
+        vmin=-diff_abs_max,
+        vmax=diff_abs_max,
+        linewidths=0.5,
+        linecolor="white",
+        cbar_kws={"label": f"Δ proportion ({group_2} - {group_1})"},
+    )
+
+    for i, niche_id in enumerate(niche_order):
+        for j, cell_type in enumerate(celltype_order):
+            if sig_mat.loc[niche_id, cell_type]:
+                ax.text(
+                    j + 0.5,
+                    i + 0.5,
+                    "*",
+                    ha="center",
+                    va="center",
+                    color="black",
+                    fontsize=12,
+                    fontweight="bold",
+                )
+
+    color_1 = palette.get(group_1, "#333333")
+    color_2 = palette.get(group_2, "#333333")
+    ax.set_title(
+        f"Niche composition difference: {group_2} vs {group_1}\n(* = p < {alpha_level})"
+    )
+    # Color the axis labels/ticks to hint which side is which direction
+    ax.text(
+        0.0,
+        -0.08,
+        f"← more {group_1}",
+        transform=ax.transAxes,
+        color=color_1,
+        fontweight="bold",
+        ha="left",
+        fontsize=10,
+    )
+    ax.text(
+        1.0,
+        -0.08,
+        f"more {group_2} →",
+        transform=ax.transAxes,
+        color=color_2,
+        fontweight="bold",
+        ha="right",
+        fontsize=10,
+    )
+    ax.set_xlabel("Cell type")
+    ax.set_ylabel("Niche ID")
+    ax.tick_params(axis="x", rotation=90)
+
+    fig.tight_layout()
+    fig.savefig(f"{out_path_prefix}_difference.pdf", bbox_inches="tight")
+    plt.close(fig)
+
+    return stats_df
+
+
 def main():
     """Main function to calculate neighbourhood clusters."""
     # Parse command line arguments
@@ -69,7 +314,7 @@ def main():
     max_edge_distance = 30
     subset = ["IPF", "PM08"]  # COPD or IPF and PM08
     subset_safe_name = "v".join(subset)
-    subset_safe_name = f"{subset_safe_name}_159removed_khop_{khop}"
+    subset_safe_name = f"{subset_safe_name}_159removed_khop_{khop}_TEST"
 
     # Base project path
     paths = [
@@ -347,6 +592,34 @@ def main():
             f"Finished processing domain {domain_name} with"
             f" {number_of_clusters} clusters."
         )
+
+    # Compute per-domain, per-disease-group niche cell-type composition
+    logger.info("Computing per-domain niche cell-type composition...")
+    comp_df = compute_niche_celltype_composition(domain_list, network_type, subset)
+    comp_df.to_csv(
+        data_output_dir
+        / f"{network_type}_{number_of_clusters}_clusters_niche_celltype_composition.csv",
+        index=False,
+    )
+    logger.info("Saved niche cell-type composition (per domain, per disease group).")
+
+    # Compare niche composition between disease groups
+    logger.info(f"Comparing niche composition between {subset[0]} and {subset[1]}...")
+    comp_stats_df = plot_composition_comparison(
+        comp_df,
+        disease_order=subset,
+        out_path_prefix=str(
+            plots_dir_cluster
+            / f"{network_type}_{number_of_clusters}_clusters_niche_composition"
+        ),
+        palette=diagnosis_palette,
+    )
+    comp_stats_df.to_csv(
+        data_output_dir
+        / f"{network_type}_{number_of_clusters}_clusters_niche_composition_mannwhitney.csv",
+        index=False,
+    )
+    logger.info("Saved niche composition comparison plots and stats.")
 
 
 if __name__ == "__main__":
