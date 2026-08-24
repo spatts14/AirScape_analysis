@@ -1,5 +1,5 @@
 #!/bin/bash
-#PBS -J 0-0
+#PBS -J 0-1
 #PBS -l select=1:ncpus=4:mem=256gb
 #PBS -l walltime=8:00:0
 #PBS -N nhood_cluster
@@ -21,7 +21,7 @@ source muspan/bin/activate
 echo "Starting at $(date)"
 
 # Iterate over the number of clusters to use for clustering
-CLUSTER_LIST=(18)
+CLUSTER_LIST=(8 10)
 NUMBER_OF_CLUSTERS=${CLUSTER_LIST[$PBS_ARRAY_INDEX]}
 
 echo "Starting cluster count $NUMBER_OF_CLUSTERS at $(date) (array index $PBS_ARRAY_INDEX)"
