@@ -184,7 +184,7 @@ def plot_composition_comparison(
     niche_order = sorted(comp_df["niche_id"].unique())
     celltype_order = sorted(comp_df["cell_type"].unique())
 
-    group_1, group_2 = disease_order[0], disease_order[1]
+    group_1, group_2 = disease_order[1], disease_order[0]
     mat_1 = build_composition_matrix(comp_df, group_1, niche_order, celltype_order)
     mat_2 = build_composition_matrix(comp_df, group_2, niche_order, celltype_order)
 
