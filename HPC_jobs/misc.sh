@@ -22,14 +22,10 @@ source muspan/bin/activate
 # Run with error logging
 echo "Starting at $(date)"
 
-python src/view_meta.py
-#python src/PC_single_cells.py
+# python src/view_meta.py
+# python src/PC_single_cells.py
 # python src/umap.py
-# python src/composition_level.py
-# python src/composition.py
-#python src/manual_src/misc_plots/transcript_parquet.py
-#python src/manual_src/misc_plots/composition.py
-#python src/manual_src/misc_plots/violin_plt.py
-# python src/projects/general/spatial_plot.py
+python src/composition_level.py
+python src/composition.py
 
 echo "Completed at $(date)"
