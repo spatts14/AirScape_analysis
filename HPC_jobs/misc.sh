@@ -26,6 +26,6 @@ echo "Starting at $(date)"
 # python src/PC_single_cells.py
 # python src/umap.py
 python src/composition_level.py
-python src/composition.py
+# python src/composition.py
 
 echo "Completed at $(date)"
