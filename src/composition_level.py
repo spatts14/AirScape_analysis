@@ -23,6 +23,7 @@ def plot_celltype_composition(
     palette: str = "tab20",
     ylabel: str = "Percentage (%)",
     legend_bbox: tuple = (1.02, 1),
+    group_order: list = None,
 ):
     """Plot stacked bar chart showing cell type composition per condition.
 
@@ -43,6 +44,10 @@ def plot_celltype_composition(
             Legend position (bbox_to_anchor)
         fig_dir : Path
             Directory to save the figure
+        group_order : list, optional
+            Explicit order for the x-axis groups (e.g. ['PM08', 'IPF']). Groups
+            not listed are appended at the end in their original order. If
+            None, uses the default order from the groupby/pivot operation.
 
     Returns:
         fig, ax : matplotlib figure and axes objects
@@ -66,6 +71,12 @@ def plot_celltype_composition(
     pivot_df = counts.pivot(
         index=groupby_col, columns=celltype_col, values="percentage"
     ).fillna(0)
+
+    # Apply custom group ordering on the x-axis, if provided
+    if group_order is not None:
+        present_groups = [g for g in group_order if g in pivot_df.index]
+        remaining_groups = [g for g in pivot_df.index if g not in present_groups]
+        pivot_df = pivot_df.reindex(present_groups + remaining_groups)
 
     # Get unique cell types and colors
     cell_types = pivot_df.columns.tolist()
@@ -192,6 +203,7 @@ def plot_level2_within_level1(
     palette: str = "tab20",
     ylabel: str = "Percentage (%)",
     level1_to_level2: dict[str, list[str]] | None = None,
+    group_order: list = None,
 ):
     """Plot stacked bar charts showing level 2 composition within each level 1 group.
 
@@ -228,6 +240,10 @@ def plot_level2_within_level1(
             group's plot. Defaults to the module-level LEVEL1_TO_LEVEL2 dict.
             Pass an empty dict {} to disable filtering and plot all level 2
             labels present in the data.
+        group_order : list, optional
+            Explicit order for the x-axis groups (e.g. ['PM08', 'IPF']). Groups
+            not listed are appended at the end in their original order. If
+            None, uses the default order from the groupby/pivot operation.
 
     Returns:
         figs : dict
@@ -308,6 +324,12 @@ def plot_level2_within_level1(
         pivot_df = counts.pivot(
             index=groupby_col, columns=level2_col, values="percentage"
         ).fillna(0)
+
+        # Apply custom group ordering on the x-axis, if provided
+        if group_order is not None:
+            present_groups = [g for g in group_order if g in pivot_df.index]
+            remaining_groups = [g for g in pivot_df.index if g not in present_groups]
+            pivot_df = pivot_df.reindex(present_groups + remaining_groups)
 
         cell_types = pivot_df.columns.tolist()
 
@@ -433,13 +455,21 @@ def main():
 
     # Original level 2 composition plots
     plot_celltype_composition(
-        adata, fig_dir=fig_dir, celltype_col="level_2", groupby_col="condition"
+        adata,
+        fig_dir=fig_dir,
+        celltype_col="level_2",
+        groupby_col="condition",
+        group_order=["PM08", "IPF"],
     )
     plot_celltype_composition(
         adata, fig_dir=fig_dir, celltype_col="level_2", groupby_col="ROI"
     )
     plot_celltype_composition(
-        adata, fig_dir=fig_dir, celltype_col="level_2", groupby_col="diagnosis"
+        adata,
+        fig_dir=fig_dir,
+        celltype_col="level_2",
+        groupby_col="diagnosis",
+        group_order=["LUNG CANCER", "IPF"],
     )
 
     # New: level 2 composition within each level 1 group
@@ -450,8 +480,11 @@ def main():
         level1_col="level_1",
         level2_col="level_2",
         groupby_col="diagnosis",
+        group_order=["LUNG CANCER", "IPF"],
     )
-    plot_level2_within_level1(adata, fig_dir=fig_dir, groupby_col="condition")
+    plot_level2_within_level1(
+        adata, fig_dir=fig_dir, groupby_col="condition", group_order=["PM08", "IPF"]
+    )
     plot_level2_within_level1(adata, fig_dir=fig_dir, groupby_col="ROI")
 
     if conditions_of_interest == ["COPD", "MICA"]:
