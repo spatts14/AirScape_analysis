@@ -21,6 +21,7 @@ def plot_celltype_composition(
     palette: str = "tab20",
     ylabel: str = "Percentage (%)",
     legend_bbox: tuple = (1.02, 1),
+    group_order: list = None,
 ):
     """Plot stacked bar chart showing cell type composition per condition.
 
@@ -41,6 +42,11 @@ def plot_celltype_composition(
         Y-axis label
     legend_bbox : tuple
         Legend position (bbox_to_anchor)
+    group_order : list, optional
+        Explicit order for the x-axis groups (e.g. ['PM08', 'IPF']). Groups
+        not listed are dropped from the order list but still included at
+        the end in their original order. If None, uses the default order
+        from the groupby/pivot operation.
 
     Returns:
     fig, ax : matplotlib figure and axes objects
@@ -64,6 +70,12 @@ def plot_celltype_composition(
     pivot_df = counts.pivot(
         index=groupby_col, columns=celltype_col, values="percentage"
     ).fillna(0)
+
+    # Apply custom group ordering on the x-axis, if provided
+    if group_order is not None:
+        present_groups = [g for g in group_order if g in pivot_df.index]
+        remaining_groups = [g for g in pivot_df.index if g not in present_groups]
+        pivot_df = pivot_df.reindex(present_groups + remaining_groups)
 
     # Get unique cell types and colors
     cell_types = pivot_df.columns.tolist()
@@ -161,14 +173,27 @@ adata = ad.read_zarr(dir / "adata_final_object/adata_with_metadata.zarr")
 print("Data loaded successfully.")
 
 # Plot
-fig, ax = plot_celltype_composition(
-    adata, celltype_col="level_2", groupby_col="condition"
-)
+level_list = ["level_1", "level_2"]
 
-fig, ax = plot_celltype_composition(adata, celltype_col="level_2", groupby_col="ROI")
+for level in level_list:
+    fig, ax = plot_celltype_composition(
+        adata,
+        celltype_col=level,
+        groupby_col="condition",
+        group_order=["PM08", "IPF"],
+    )
 
-fig, ax = plot_celltype_composition(
-    adata, celltype_col="level_2", groupby_col="diagnosis"
-)
+    fig, ax = plot_celltype_composition(
+        adata,
+        celltype_col=level,
+        groupby_col="ROI",
+    )
+
+    fig, ax = plot_celltype_composition(
+        adata,
+        celltype_col=level,
+        groupby_col="diagnosis",
+        group_order=["LUNG CANCER", "IPF"],
+    )
 
 print("Composition plots generated and saved successfully.")
