@@ -73,7 +73,7 @@ def main():
     domains_out_dir.mkdir(parents=True, exist_ok=True)
 
     # Make cluster number of clusters
-    plots_dir_cluster = domains_out_dir / f"{number_of_clusters}_clusters"
+    plots_dir_cluster = domains_out_dir / "plots"
     plots_dir_cluster.mkdir(parents=True, exist_ok=True)
 
     # Set up logger
