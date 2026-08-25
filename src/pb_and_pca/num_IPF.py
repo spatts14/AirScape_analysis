@@ -370,7 +370,7 @@ def main():
     #     "Airway_Alveolar_macrophages",
     #     "Lipid-associated_macrophages",
     # ]
-    celltypes_to_combine = ["CTHRC1_fibroblasts"]
+    celltypes_to_combine = ["CD4_T_cells", "CD8_T_cells", "T_cells"]
     fig, combined_stats = plot_metric_multi_celltype(
         results=results,
         cell_types=celltypes_to_combine,
