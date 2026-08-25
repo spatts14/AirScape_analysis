@@ -19,7 +19,7 @@ def plot_celltype_composition(
     fig_dir: Path,
     celltype_col: str = "level_2",
     groupby_col: str = "condition",
-    figsize: tuple = (10, 6),
+    figsize: tuple = (20, 6),
     palette: str = "tab20",
     ylabel: str = "Percentage (%)",
     legend_bbox: tuple = (1.02, 1),
@@ -199,7 +199,7 @@ def plot_level2_within_level1(
     level1_col: str = "level_1",
     level2_col: str = "level_2",
     groupby_col: str = "diagnosis",
-    figsize: tuple = (10, 6),
+    figsize: tuple = (20, 6),
     palette: str = "tab20",
     ylabel: str = "Percentage (%)",
     level1_to_level2: dict[str, list[str]] | None = None,
@@ -453,6 +453,23 @@ def main():
         fig_dir = fig_dir / "all"
         fig_dir.mkdir(parents=True, exist_ok=True)
 
+    # Level 1 composition plots
+    plot_celltype_composition(
+        adata,
+        fig_dir=fig_dir,
+        celltype_col="level_1",
+        groupby_col="condition",
+        group_order=["PM08", "IPF"],
+    )
+
+    plot_celltype_composition(
+        adata,
+        fig_dir=fig_dir,
+        celltype_col="level_1",
+        groupby_col="diagnosis",
+        group_order=["LUNG_CANCER", "IPF"],
+    )
+
     # Original level 2 composition plots
     plot_celltype_composition(
         adata,
@@ -469,7 +486,7 @@ def main():
         fig_dir=fig_dir,
         celltype_col="level_2",
         groupby_col="diagnosis",
-        group_order=["LUNG CANCER", "IPF"],
+        group_order=["LUNG_CANCER", "IPF"],
     )
 
     # New: level 2 composition within each level 1 group
@@ -480,7 +497,7 @@ def main():
         level1_col="level_1",
         level2_col="level_2",
         groupby_col="diagnosis",
-        group_order=["LUNG CANCER", "IPF"],
+        group_order=["LUNG_CANCER", "IPF"],
     )
     plot_level2_within_level1(
         adata, fig_dir=fig_dir, groupby_col="condition", group_order=["PM08", "IPF"]
