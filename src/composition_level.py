@@ -168,7 +168,7 @@ LEVEL1_TO_LEVEL2 = {
     "Immune cells": [
         "Mast cells",
         "Plasma cells",
-        "Unknown",
+        # "Unknown",
         "T cells",
         "CD4+ T cells",
         "CD8+ T cells",
@@ -183,11 +183,11 @@ LEVEL1_TO_LEVEL2 = {
     ],
     "Stromal cells": [
         "Pericytes",
-        "SMC",
+        "Smooth muscle cells",
         "CTHRC1+ fibroblasts",
         "Adventitial fibroblasts",
         "Alveolar fibroblasts",
-        "Alveolar fibroblasts - collagen hi",
+        # "Alveolar fibroblasts - collagen hi",
         # "Unknown",
     ],
 }
