@@ -1,4 +1,4 @@
-"""Calculate neighbourhood clusters (fixed at 18) and save the annotated domains to disk."""
+"""Calculate neighbourhood clusters and save the annotated domains to disk."""
 
 import sys
 from pathlib import Path
@@ -31,7 +31,7 @@ def remove_cell_types(domain, cell_types_to_remove, label_name="Cell Type"):
 
 
 def main():
-    """Compute neighbourhood clustering at a fixed cluster count and save the domains."""
+    """Compute neighbourhood clustering and save the domains."""
     # Define variables
     number_of_clusters = 18
     khop = 1  # Number of hops for neighbourhood clustering
@@ -162,7 +162,7 @@ def main():
             min_edge_distance=0,
         ),  # The network parameters
         k_hops=khop,  # The number of hops to consider for the neighbourhood
-        neighbourhood_label_name=f"Neighbourhood ID {network_type}",  # Name for the neighbourhood label
+        neighbourhood_label_name=f"Neighbourhood ID {network_type}",
         cluster_method="minibatchkmeans",  # Clustering method
         cluster_parameters={
             "n_clusters": number_of_clusters,
@@ -172,7 +172,7 @@ def main():
     )
     logger.info("Clustering complete. Niche labels have been added to each domain.")
 
-    # Update the colors of the neighbourhood labels in each domain based on the unique labels
+    # Update the colors of the neighbourhood labels in each domain
     for domain in domain_list:
         # Get unique labels for the neighbourhood label
         unique_labels = np.unique(
@@ -217,18 +217,17 @@ def main():
         )
         plt.savefig(
             plots_dir_cluster
-            / f"{network_type}_{domain_name}_{number_of_clusters}_neighbourhood_labels.pdf",
+            / f"{network_type}_{domain_name}_{number_of_clusters}.pdf",
             bbox_inches="tight",
         )
         plt.close()
 
-    # Save each domain, now annotated with the neighbourhood labels, to the new folder
+    # Save each domain annotated with the neighbourhood labels
     logger.info(f"Saving annotated domains to {domains_out_dir}...")
     for domain in domain_list:
         domain_name = str(domain.name)
-        save_path = domains_out_dir / f"{domain_name}.muspan"
-        ms.io.save_domain(domain, str(save_path))
-        logger.info(f"Saved {domain_name} to {save_path}")
+        ms.io.save_domain(domain, str(domains_out_dir), domain_name)
+        logger.info(f"Saved {domain_name} to {domains_out_dir}")
 
     logger.info(f"Finished saving {len(domain_list)} annotated domains.")
 
