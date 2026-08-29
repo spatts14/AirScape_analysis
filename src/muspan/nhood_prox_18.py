@@ -226,8 +226,13 @@ def main():
     logger.info(f"Saving annotated domains to {domains_out_dir}...")
     for domain in domain_list:
         domain_name = str(domain.name)
-        ms.io.save_domain(domain, str(domains_out_dir), domain_name)
+        file_name = f"{domain_name}_{network_type}_{number_of_clusters}_muspan_domain"
+        ms.io.save_domain(
+            domain, name_of_file=file_name, path_to_save=str(domains_out_dir)
+        )
         logger.info(f"Saved {domain_name} to {domains_out_dir}")
+
+    logger.info(f"Finished saving {len(domain_list)} annotated domains.")
 
     logger.info(f"Finished saving {len(domain_list)} annotated domains.")
 
