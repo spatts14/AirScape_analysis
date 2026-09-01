@@ -18,7 +18,6 @@ from pathlib import Path
 import pandas as pd
 
 import drug2cell as d2c
-from utils.setup_logger import setup_logger
 
 # Paths
 dir = Path(
@@ -27,17 +26,7 @@ dir = Path(
 ref_dir = dir / "output/drug2cell/database/chembl_37"
 CHEMBL_DB_PATH = ref_dir / "chembl_37_sqlite/chembl_37.db"
 
-
-# Set loggers
-logs_dir = Path(dir) / "logs" / "drug2cell"
-logs_dir.mkdir(parents=True, exist_ok=True)
-logger = setup_logger(log_dir=logs_dir, log_name="parse_database")
-
-logger.info("Setting up logger for parse_database")
-logger.info(f"Logs will be saved to {logs_dir}")
-
 # Connect to ChEMBL database
-logger.info(f"Connecting to ChEMBL database at {CHEMBL_DB_PATH}")
 con = sqlite3.connect(CHEMBL_DB_PATH)
 
 # Log actual schema for the tables we depend on, so any future schema drift
@@ -54,40 +43,33 @@ for table in [
     "atc_classification",
 ]:
     cols = [row[1] for row in con.execute(f"PRAGMA table_info({table})").fetchall()]
-    logger.info(f"{table} columns: {cols}")
 
 # Load core tables
-logger.info("Loading core tables from ChEMBL database")
 activities = pd.read_sql_query("SELECT * from activities", con)
 activities.columns = [f"activities|{x}" for x in activities.columns]
 
-logger.info(f"activities: {activities.shape}")
 assays = pd.read_sql_query("SELECT * from assays", con)
 assays.columns = [f"assays|{x}" for x in assays.columns]
 
-logger.info(f"assays: {assays.shape}")
 target_dictionary = pd.read_sql_query("SELECT * from target_dictionary", con)
 target_dictionary.columns = [
     f"target_dictionary|{x}" for x in target_dictionary.columns
 ]
 
-logger.info(f"target_dictionary: {target_dictionary.shape}")
+
 target_components = pd.read_sql_query("SELECT * from target_components", con)
 target_components.columns = [
     f"target_components|{x}" for x in target_components.columns
 ]
 
-logger.info(f"target_components: {target_components.shape}")
 component_synonyms = pd.read_sql_query("SELECT * from component_synonyms", con)
 component_synonyms.columns = [
     f"component_synonyms|{x}" for x in component_synonyms.columns
 ]
 
-logger.info(f"component_synonyms: {component_synonyms.shape}")
 drug_mechanism = pd.read_sql_query("SELECT * from drug_mechanism", con)
 drug_mechanism.columns = [f"drug_mechanism|{x}" for x in drug_mechanism.columns]
 
-logger.info(f"drug_mechanism: {drug_mechanism.shape}")
 molecule_dictionary = pd.read_sql_query("SELECT * from molecule_dictionary", con)
 molecule_dictionary.columns = [
     f"molecule_dictionary|{x}" for x in molecule_dictionary.columns
@@ -134,14 +116,8 @@ desired_columns = [
 ]
 available_columns = [c for c in desired_columns if c in final_df.columns]
 missing_columns = [c for c in desired_columns if c not in final_df.columns]
-if missing_columns:
-    logger.warning(
-        f"Columns missing from this ChEMBL release, skipping: {missing_columns}"
-    )
-logger.info(f"Final columns in the merged DataFrame: {available_columns}")
 
 final_df = final_df[available_columns]
-logger.info(f"activities+assays: {final_df.shape}")
 
 # Merge with drug_mechanism
 final_df = final_df.merge(
@@ -157,7 +133,6 @@ final_df = final_df.merge(
     left_on=["activities|molregno", "assays|tid"],
     right_on=["drug_mechanism|molregno", "drug_mechanism|tid"],
 )
-logger.info(f"added drug mechanism: {final_df.shape}")
 
 # Reconcile molregno/tid columns
 ind = final_df[
@@ -227,7 +202,6 @@ final_df = final_df.merge(
     left_on="molecule_atc_classification|level5",
     right_on="atc_classification|level5",
 )
-logger.info(f"added compound info: {final_df.shape}")
 
 # Merge target info (GENE_SYMBOL only)
 targets_final = target_dictionary.merge(
@@ -262,11 +236,9 @@ final_df = final_df.merge(
     left_on="assays_drug_mechanism|tid",
     right_on="target_dictionary|tid",
 )
-logger.info(f"added targets info: {final_df.shape}")
 
 # Restrict to human targets
 final_df = final_df[final_df["target_dictionary|organism"] == "Homo sapiens"]
-logger.info(f"human-only: {final_df.shape}")
 
 # Add target class (Kinase, GPCR, Ion Channel, NHR)
 idg = pd.read_csv(ref_dir / "IDG_TargetList_Y4.csv")
@@ -301,7 +273,7 @@ final_df["target_class"] = final_df["component_synonyms|component_synonym"].copy
 final_df["target_class"] = [
     which_class(targetclass_dict, t) for t in final_df["target_class"]
 ]
-logger.info(f"Target classes: {final_df['target_class'].value_counts()}")
+
 # Filter activities and build the drugs:targets dictionary
 thresholds_dict = {
     "none": 6,  # 1 uM
@@ -321,7 +293,6 @@ filtered_df = d2c.chembl.filter_activities(
     pchembl_target_column="target_class",
     pchembl_threshold=thresholds_dict,
 )
-logger.info(f"Filtered shape: {filtered_df.shape}")
 
 chembldict = d2c.chembl.create_drug_dictionary(
     filtered_df,
@@ -332,9 +303,3 @@ chembldict = d2c.chembl.create_drug_dictionary(
 final_df.to_pickle(ref_dir / "chembl_37_merged_genesymbols_humans.pkl")
 with open(ref_dir / "chembl_37_drug_dictionary.pkl", "wb") as f:
     pickle.dump(chembldict, f)
-
-logger.info(f"Saved dictionary with {len(chembldict)} ATC-level categories.")
-logger.info(
-    f"Done!"
-    f"Load with: pickle.load(open('{ref_dir / 'chembl_37_drug_dictionary.pkl'}', 'rb'))"
-)
