@@ -150,64 +150,60 @@ d2c_adata = adata.uns["drug2cell"]
 del adata
 gc.collect()
 
+# Subset to respiratory drugs
+plot_args = d2c.util.prepare_plot_args(d2c_adata, categories=["R"])
+
 # Export drug2cell scores to Excel
 drugs_present = d2c_adata.var
 drugs_present.reset_index().to_excel(output / "drug2cell_scores.xlsx", index=True)
 
+level_cols = ["level_1", "level_2", "level_3"]
 
-# Calculate differentially expressed drug2cell scores for each cell type
-sc.tl.rank_genes_groups(
-    d2c_adata,
-    method="wilcoxon",
-    groupby="level_2",
-    key_added="d2c_rank_genes_groups_level_2",
-)
+for level in level_cols:
+    # Make directory for each level
+    level_dir = output / level
+    level_dir.mkdir(exist_ok=True, parents=True)
 
-sc.tl.rank_genes_groups(
-    d2c_adata,
-    method="wilcoxon",
-    groupby="level_3",
-    key_added="d2c_rank_genes_groups_level_3",
-)
+    # Set scanpy's figure directory to the level-specific directory
+    sc.settings.figdir = level_dir
 
-# Plot differentially expressed drug2cell scores for each cell type
-sc.pl.rank_genes_groups_dotplot(
-    d2c_adata,
-    key="d2c_rank_genes_groups_level_2",
-    swap_axes=True,
-    dendrogram=False,
-    n_genes=5,
-    cmap=cmap,
-    save="drug2cell_rank_genes_groups_dotplot_level_2.pdf",
-)
+    # Calculate differentially expressed drug2cell scores for each cell type
+    sc.tl.rank_genes_groups(
+        d2c_adata,
+        method="wilcoxon",
+        groupby=level,
+        key_added=f"d2c_rank_genes_groups_{level}",
+    )
 
-sc.pl.rank_genes_groups_dotplot(
-    d2c_adata,
-    key="d2c_rank_genes_groups_level_3",
-    swap_axes=True,
-    dendrogram=False,
-    n_genes=5,
-    cmap=cmap,
-    save="drug2cell_rank_genes_groups_dotplot_level_3.pdf",
-)
+    # Plot differentially expressed drug2cell scores for each cell type
+    sc.pl.rank_genes_groups_dotplot(
+        d2c_adata,
+        key=f"d2c_rank_genes_groups_{level}",
+        swap_axes=True,
+        dendrogram=False,
+        n_genes=5,
+        cmap=cmap,
+        save=f"drug2cell_rank_genes_groups_dotplot_{level}.pdf",
+    )
 
-# Dotplot for each cell type
-top_drugs_by_celltype_l2 = plot_top_drugs_by_condition_for_all_celltypes(
-    d2c_adata,
-    level_col="level_2",
-    rank_key="d2c_rank_genes_groups_level_2",
-    output_dir=output,
-    group_order=["PM08", "IPF"],
-)
+    # Dotplot for each cell type
+    top_drugs_by_celltype_level = plot_top_drugs_by_condition_for_all_celltypes(
+        d2c_adata,
+        level_col=level,
+        rank_key=f"d2c_rank_genes_groups_{level}",
+        output_dir=output,
+        group_order=["PM08", "IPF"],
+    )
 
-top_drugs_by_celltype_l3 = plot_top_drugs_by_condition_for_all_celltypes(
-    d2c_adata,
-    level_col="level_3",
-    rank_key="d2c_rank_genes_groups_level_3",
-    output_dir=output,
-    group_order=["PM08", "IPF"],
-)
-
+    # Respiratory drugs of interest
+    sc.pl.dotplot(
+        d2c_adata,
+        groupby=level,
+        swap_axes=True,
+        **plot_args,
+        cmap=cmap,
+        save=f"dotplot_{level}_respiratory.pdf",
+    )
 
 # Iterate through each drug in the drugs_of_interest list
 for drug in drugs_of_interest:
