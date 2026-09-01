@@ -53,7 +53,14 @@ def plot_top_drugs_by_condition_for_all_celltypes(
     Returns:
         dict mapping cell type -> list of top drug names plotted.
     """
-    celltypes = d2c_adata.obs[level_col].unique().tolist()
+    n_missing = d2c_adata.obs[level_col].isna().sum()
+    if n_missing > 0:
+        print(
+            f"Warning: {n_missing} cells have missing '{level_col}' and are excluded."
+        )
+
+    celltypes = d2c_adata.obs[level_col].dropna().unique().tolist()
+
     results = {}
 
     # Create a per-level subdirectory and point scanpy's figdir at it for
@@ -115,7 +122,7 @@ dir = Path(
 )
 
 # Set output dir
-output = dir / "drug2cell"
+output = dir / "drug2cell" / "output"
 output.mkdir(exist_ok=True, parents=True)
 sc.settings.figdir = output  # set figure directory
 
