@@ -130,7 +130,11 @@ sc.settings.figdir = output  # set figure directory
 cmap = sns.color_palette("ch:start=.2,rot=-.3", as_cmap=True)
 
 # Variables
-drugs_of_interest = ["CHEMBL1256391|PIRFENIDONE", "CHEMBL3039504|NINTEDANIB ESYLATE"]
+drugs_of_interest = [
+    "CHEMBL1256391|PIRFENIDONE",
+    "CHEMBL3039504|NINTEDANIB ESYLATE",
+    "CHEMBL93|ZILEUTON",
+]
 
 # Load adata
 adata = ad.read_zarr(dir / "AIRSCAPE/adata_final_object/adata_with_metadata.zarr")
@@ -204,49 +208,69 @@ top_drugs_by_celltype_l3 = plot_top_drugs_by_condition_for_all_celltypes(
     group_order=["PM08", "IPF"],
 )
 
-# Plot list of specified drugs of interest across data
-# UMAP
-sc.pl.umap(
-    d2c_adata,
-    color=[*drugs_of_interest, "level_2"],
-    color_map=cmap,
-    dpi=600,
-    save="drug2cell_umap_drugs_of_interest.png",
-)
 
-# Spatial plots
-# Subset from the drug2cell-scored object (d2c_adata), not the original adata,
-# since drug identifiers only exist as var_names on d2c_adata, and its .obs/.obsm
-# carry ROI, condition, and spatial coordinates through from the original adata.
-assert "ROI" in d2c_adata.obs.columns, "ROI column missing from drug2cell adata.obs"
-assert "spatial" in d2c_adata.obsm, (
-    "spatial coordinates missing from drug2cell adata.obsm"
-)
+# Iterate through each drug in the drugs_of_interest list
+for drug in drugs_of_interest:
+    # Check if the drug is present in the d2c_adata.var_names
+    if drug not in d2c_adata.var_names:
+        print(f"Warning: {drug} not found in d2c_adata.var_names. Skipping.")
+        continue
 
-rois = d2c_adata.obs["ROI"].unique().tolist()
+    # make directory for each drug
+    drug_dir = output / drug.replace("|", "_")
+    drug_dir.mkdir(exist_ok=True, parents=True)
 
-for roi in rois:
-    print(f"Plotting ROI: {roi}")
-    # Using a view (no .copy()) since we only read from roi_adata here;
-    # switch to .copy() if squidpy throws a SettingWithCopyWarning/error.
-    roi_adata = d2c_adata[d2c_adata.obs["ROI"] == roi]
-    safe_roi_name = str(roi).replace(" ", "_").replace("/", "-")
+    # save plots to the drug-specific directory
+    sc.settings.figdir = drug_dir
 
-    sq.pl.spatial_scatter(
-        roi_adata,
-        shape=None,  # no image/library background, just plot coordinates
-        color=drugs_of_interest,
-        wspace=0.4,
-        size=1,
-        figsize=(6, 6),
-        ncols=3,
-        cmap=cmap,
-        save=f"drug2cell_spatial_scatter_{safe_roi_name}.pdf",
+    # Plot UMAP for the drug across all cell types
+    sc.pl.umap(
+        d2c_adata,
+        color=[drug],
+        color_map=cmap,
+        save="drug2cell_umap.png",
     )
 
-    # Close all open figures to release matplotlib's memory
-    plt.close("all")
+    # Create a dotplot for the drug across all cell types, split by condition
+    sc.pl.dotplot(
+        d2c_adata,
+        var_names=[drug],
+        groupby="level_3",
+        color_map=cmap,
+        save="drug2cell_dotplot.pdf",
+    )
 
-    # Delete the subset and force garbage collection
-    del roi_adata
-    gc.collect()
+    # Spatial plots
+    assert "ROI" in d2c_adata.obs.columns, "ROI column missing from drug2cell adata.obs"
+    assert "spatial" in d2c_adata.obsm, (
+        "spatial coordinates missing from drug2cell adata.obsm"
+    )
+
+    rois = d2c_adata.obs["ROI"].unique().tolist()
+
+    for roi in rois:
+        print(f"Plotting ROI: {roi}")
+        # Using a view (no .copy()) since we only read from roi_adata here;
+        # switch to .copy() if squidpy throws a SettingWithCopyWarning/error.
+        roi_adata = d2c_adata[d2c_adata.obs["ROI"] == roi]
+        safe_roi_name = str(roi).replace(" ", "_").replace("/", "-")
+
+        # Plot spatial scatter for the current drug in the current ROI
+        sq.pl.spatial_scatter(
+            roi_adata,
+            shape=None,  # no image/library background, just plot coordinates
+            color=[drug],
+            wspace=0.4,
+            size=1,
+            figsize=(6, 6),
+            ncols=3,
+            cmap=cmap,
+            save=f"{safe_roi_name}_drug2cell_spatial_scatter.pdf",
+        )
+
+        # Close all open figures to release matplotlib's memory
+        plt.close("all")
+
+        # Delete the subset and force garbage collection
+        del roi_adata
+        gc.collect()
