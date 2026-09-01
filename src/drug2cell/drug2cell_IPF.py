@@ -18,6 +18,7 @@ def plot_top_drugs_by_condition_for_all_celltypes(
     d2c_adata,
     level_col,
     rank_key,
+    output_dir,
     groupby="condition",
     n_top=10,
     cmap=sns.color_palette("Blues", as_cmap=True),
@@ -36,6 +37,8 @@ def plot_top_drugs_by_condition_for_all_celltypes(
         rank_key : str
             The .uns key under which rank_genes_groups results (grouped by
             level_col) were stored, e.g. "d2c_rank_genes_groups_level_3".
+        output_dir : Path
+            Base output directory; a level_col subfolder is created inside it.
         groupby : str
             Column to split the dotplot by within each cell type, default "condition".
         n_top : int
@@ -49,39 +52,42 @@ def plot_top_drugs_by_condition_for_all_celltypes(
     celltypes = d2c_adata.obs[level_col].unique().tolist()
     results = {}
 
-    # Create directory
-    output_dir_level = output / level_col
+    # Create a per-level subdirectory and point scanpy's figdir at it for
+    output_dir_level = output_dir / level_col
     output_dir_level.mkdir(exist_ok=True, parents=True)
-    sc.settings.figdir = output_dir_level  # set figure directory
+    original_figdir = sc.settings.figdir
+    sc.settings.figdir = output_dir_level
 
-    # Loop over cell types and plot top drugs
-    for celltype in celltypes:
-        print(f"Plotting top {n_top} drugs for '{celltype}'...")
+    try:
+        for celltype in celltypes:
+            print(f"Plotting top {n_top} drugs for '{celltype}'...")
 
-        top_drugs = (
-            sc.get.rank_genes_groups_df(d2c_adata, group=celltype, key=rank_key)
-            .head(n_top)["names"]
-            .tolist()
-        )
+            top_drugs = (
+                sc.get.rank_genes_groups_df(d2c_adata, group=celltype, key=rank_key)
+                .head(n_top)["names"]
+                .tolist()
+            )
 
-        if not top_drugs:
-            print(f"  Skipping '{celltype}': no ranked drugs found.")
-            continue
+            if not top_drugs:
+                print(f"Skipping '{celltype}': no ranked drugs found.")
+                continue
 
-        mask = d2c_adata.obs[level_col] == celltype
-        subset = d2c_adata[mask]
+            mask = d2c_adata.obs[level_col] == celltype
+            subset = d2c_adata[mask]
 
-        safe_name = str(celltype).replace(" ", "_").replace("/", "-")
+            safe_name = str(celltype).replace(" ", "_").replace("/", "-")
 
-        sc.pl.dotplot(
-            subset,
-            var_names=top_drugs,
-            groupby=groupby,
-            cmap=cmap,
-            save=f"{safe_name}_d2c_top_drugs_by_{groupby}.pdf",
-        )
+            sc.pl.dotplot(
+                subset,
+                var_names=top_drugs,
+                groupby=groupby,
+                cmap=cmap,
+                save=f"{safe_name}_d2c_top_drugs_by_{groupby}.pdf",
+            )
 
-        results[celltype] = top_drugs
+            results[celltype] = top_drugs
+    finally:
+        sc.settings.figdir = original_figdir
 
     return results
 
@@ -104,7 +110,6 @@ drugs_of_interest = [
     "CHEMBL1256391|PIRFENIDONE",
 ]
 
-
 # Load adata
 adata = ad.read_zarr(dir / "AIRSCAPE/adata_final_object/adata_with_metadata.zarr")
 
@@ -114,21 +119,26 @@ adata = adata[adata.obs["condition"].isin(["IPF", "PM08"])]
 # Calculate drug2cell scores
 d2c.score(adata, use_raw=True)
 
+# Save drug2cell-scored object to adata.uns
+d2c_adata = adata.uns["drug2cell"]
+del adata
+gc.collect()
+
 # Export drug2cell scores to Excel
-drugs_present = adata.uns["drug2cell"].var
-drugs_present.to_excel(output / "drug2cell_scores.xlsx", index=False)
+drugs_present = d2c_adata.var
+drugs_present.reset_index().to_excel(output / "drug2cell_scores.xlsx", index=False)
 
 
 # Calculate differentially expressed drug2cell scores for each cell type
 sc.tl.rank_genes_groups(
-    adata.uns["drug2cell"],
+    d2c_adata,
     method="wilcoxon",
     groupby="level_2",
     key_added="d2c_rank_genes_groups_level_2",
 )
 
 sc.tl.rank_genes_groups(
-    adata.uns["drug2cell"],
+    d2c_adata,
     method="wilcoxon",
     groupby="level_3",
     key_added="d2c_rank_genes_groups_level_3",
@@ -136,7 +146,7 @@ sc.tl.rank_genes_groups(
 
 # Plot differentially expressed drug2cell scores for each cell type
 sc.pl.rank_genes_groups_dotplot(
-    adata.uns["drug2cell"],
+    d2c_adata,
     key="d2c_rank_genes_groups_level_2",
     swap_axes=True,
     dendrogram=False,
@@ -146,7 +156,7 @@ sc.pl.rank_genes_groups_dotplot(
 )
 
 sc.pl.rank_genes_groups_dotplot(
-    adata.uns["drug2cell"],
+    d2c_adata,
     key="d2c_rank_genes_groups_level_3",
     swap_axes=True,
     dendrogram=False,
@@ -157,37 +167,47 @@ sc.pl.rank_genes_groups_dotplot(
 
 # Dotplot for each cell type
 # Level 3
-top_drugs_by_celltype = plot_top_drugs_by_condition_for_all_celltypes(
-    adata.uns["drug2cell"],
+top_drugs_by_celltype_l3 = plot_top_drugs_by_condition_for_all_celltypes(
+    d2c_adata,
     level_col="level_3",
     rank_key="d2c_rank_genes_groups_level_3",
+    output_dir=output,
 )
 
 # Level 2
-top_drugs_by_celltype = plot_top_drugs_by_condition_for_all_celltypes(
-    adata.uns["drug2cell"],
+top_drugs_by_celltype_l2 = plot_top_drugs_by_condition_for_all_celltypes(
+    d2c_adata,
     level_col="level_2",
     rank_key="d2c_rank_genes_groups_level_2",
+    output_dir=output,
 )
 
 
 # Plot list of specified drugs of interest across data
 # UMAP
 sc.pl.umap(
-    adata.uns["drug2cell"],
-    color=drugs_of_interest + ["level_2"],
+    d2c_adata,
+    color=[*drugs_of_interest, "level_2"],
     color_map=cmap,
+    save="drug2cell_umap_drugs_of_interest.pdf",
 )
 
 # Spatial plots
-assert "ROI" in adata.obs.columns, "ROI column missing from drug2cell_adata.obs"
-assert "spatial" in adata.obsm, "spatial coordinates missing from drug2cell_adata.obsm"
+# Subset from the drug2cell-scored object (d2c_adata), not the original adata,
+# since drug identifiers only exist as var_names on d2c_adata, and its .obs/.obsm
+# carry ROI, condition, and spatial coordinates through from the original adata.
+assert "ROI" in d2c_adata.obs.columns, "ROI column missing from drug2cell adata.obs"
+assert "spatial" in d2c_adata.obsm, (
+    "spatial coordinates missing from drug2cell adata.obsm"
+)
 
-rois = adata.obs["ROI"].unique().tolist()
+rois = d2c_adata.obs["ROI"].unique().tolist()
 
 for roi in rois:
     print(f"Plotting ROI: {roi}")
-    roi_adata = adata[adata.obs["ROI"] == roi].copy()
+    # Using a view (no .copy()) since we only read from roi_adata here;
+    # switch to .copy() if squidpy throws a SettingWithCopyWarning/error.
+    roi_adata = d2c_adata[d2c_adata.obs["ROI"] == roi]
     safe_roi_name = str(roi).replace(" ", "_").replace("/", "-")
 
     sq.pl.spatial_scatter(
