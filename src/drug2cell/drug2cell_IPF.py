@@ -227,14 +227,24 @@ for drug in drugs_of_interest:
         save="drug2cell_umap.png",
     )
 
-    # Create a dotplot for the drug across all cell types, split by condition
-    sc.pl.dotplot(
-        d2c_adata,
-        var_names=[drug],
-        groupby="level_3",
-        color_map=cmap,
-        save="drug2cell_dotplot.pdf",
-    )
+    for level in level_cols:
+        # Create a dotplot for the drug across all cell types, split by condition
+        sc.pl.dotplot(
+            d2c_adata,
+            var_names=[drug],
+            groupby=level,
+            color_map=cmap,
+            save=f"_{level}.pdf",
+        )
+
+        sc.pl.dotplot(
+            d2c_adata,
+            var_names=[drug],
+            groupby=[level, "condition"],
+            standard_scale="var",
+            cmap=cmap,
+            save=f"_{level}_condition.pdf",
+        )
 
     # Spatial plots
     assert "ROI" in d2c_adata.obs.columns, "ROI column missing from drug2cell adata.obs"
