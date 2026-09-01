@@ -130,9 +130,7 @@ sc.settings.figdir = output  # set figure directory
 cmap = sns.color_palette("ch:start=.2,rot=-.3", as_cmap=True)
 
 # Variables
-drugs_of_interest = [
-    "CHEMBL1256391|PIRFENIDONE",
-]
+drugs_of_interest = ["CHEMBL1256391|PIRFENIDONE", "CHEMBL3039504|NINTEDANIB ESYLATE"]
 
 # Load adata
 adata = ad.read_zarr(dir / "AIRSCAPE/adata_final_object/adata_with_metadata.zarr")
@@ -212,7 +210,8 @@ sc.pl.umap(
     d2c_adata,
     color=[*drugs_of_interest, "level_2"],
     color_map=cmap,
-    save="drug2cell_umap_drugs_of_interest.pdf",
+    dpi=600,
+    save="drug2cell_umap_drugs_of_interest.png",
 )
 
 # Spatial plots
