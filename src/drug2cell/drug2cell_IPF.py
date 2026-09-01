@@ -127,7 +127,7 @@ output.mkdir(exist_ok=True, parents=True)
 sc.settings.figdir = output  # set figure directory
 
 # Set colors
-cmap = sns.color_palette("Blues", as_cmap=True)
+cmap = sns.color_palette("ch:start=.2,rot=-.3", as_cmap=True)
 
 # Variables
 drugs_of_interest = [
@@ -150,7 +150,7 @@ gc.collect()
 
 # Export drug2cell scores to Excel
 drugs_present = d2c_adata.var
-drugs_present.reset_index().to_excel(output / "drug2cell_scores.xlsx", index=False)
+drugs_present.reset_index().to_excel(output / "drug2cell_scores.xlsx", index=True)
 
 
 # Calculate differentially expressed drug2cell scores for each cell type
