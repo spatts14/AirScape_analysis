@@ -50,8 +50,9 @@ def plot_top_drugs_by_condition_for_all_celltypes(
     results = {}
 
     # Create directory
-    output_dir = Path(sc.settings.figdir) / level_col
-    output_dir.mkdir(exist_ok=True, parents=True)
+    output_dir_level = output / level_col
+    output_dir_level.mkdir(exist_ok=True, parents=True)
+    sc.settings.figdir = output_dir_level  # set figure directory
 
     # Loop over cell types and plot top drugs
     for celltype in celltypes:
@@ -154,11 +155,31 @@ sc.pl.rank_genes_groups_dotplot(
     save="drug2cell_rank_genes_groups_dotplot_level_3.pdf",
 )
 
+# Dotplot for each cell type
+# Level 3
+top_drugs_by_celltype = plot_top_drugs_by_condition_for_all_celltypes(
+    adata.uns["drug2cell"],
+    level_col="level_3",
+    rank_key="d2c_rank_genes_groups_level_3",
+)
+
+# Level 2
+top_drugs_by_celltype = plot_top_drugs_by_condition_for_all_celltypes(
+    adata.uns["drug2cell"],
+    level_col="level_2",
+    rank_key="d2c_rank_genes_groups_level_2",
+)
+
+
+# Plot list of specified drugs of interest across data
 # UMAP
-sc.pl.umap(adata.uns["drug2cell"], color=[drugs_of_interest, "level_2"], color_map=cmap)
+sc.pl.umap(
+    adata.uns["drug2cell"],
+    color=drugs_of_interest + ["level_2"],
+    color_map=cmap,
+)
 
 # Spatial plots
-# Confirm the ROI column and spatial coordinates carried over into the drug2cell AnnData
 assert "ROI" in adata.obs.columns, "ROI column missing from drug2cell_adata.obs"
 assert "spatial" in adata.obsm, "spatial coordinates missing from drug2cell_adata.obsm"
 
