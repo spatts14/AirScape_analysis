@@ -20,6 +20,7 @@ def plot_top_drugs_by_condition_for_all_celltypes(
     rank_key,
     output_dir,
     groupby="condition",
+    group_order=None,
     n_top=10,
     cmap=sns.color_palette("Blues", as_cmap=True),
 ):
@@ -41,6 +42,9 @@ def plot_top_drugs_by_condition_for_all_celltypes(
             Base output directory; a level_col subfolder is created inside it.
         groupby : str
             Column to split the dotplot by within each cell type, default "condition".
+        group_order : list, optional
+            Explicit category order for groupby (e.g. ["PM08", "IPF"]). If None,
+            uses whatever order is already set on the column.
         n_top : int
             Number of top drugs to show per cell type.
         cmap : colormap
@@ -73,7 +77,20 @@ def plot_top_drugs_by_condition_for_all_celltypes(
                 continue
 
             mask = d2c_adata.obs[level_col] == celltype
-            subset = d2c_adata[mask]
+            subset = d2c_adata[mask].copy()
+
+            # Apply the requested category order to the groupby column
+            if group_order is not None:
+                subset.obs[groupby] = subset.obs[groupby].astype("category")
+                present = [
+                    g for g in group_order if g in subset.obs[groupby].cat.categories
+                ]
+                remaining = [
+                    g for g in subset.obs[groupby].cat.categories if g not in present
+                ]
+                subset.obs[groupby] = subset.obs[groupby].cat.reorder_categories(
+                    present + remaining
+                )
 
             safe_name = str(celltype).replace(" ", "_").replace("/", "-")
 
@@ -166,22 +183,21 @@ sc.pl.rank_genes_groups_dotplot(
 )
 
 # Dotplot for each cell type
-# Level 3
-top_drugs_by_celltype_l3 = plot_top_drugs_by_condition_for_all_celltypes(
-    d2c_adata,
-    level_col="level_3",
-    rank_key="d2c_rank_genes_groups_level_3",
-    output_dir=output,
-)
-
-# Level 2
 top_drugs_by_celltype_l2 = plot_top_drugs_by_condition_for_all_celltypes(
     d2c_adata,
     level_col="level_2",
     rank_key="d2c_rank_genes_groups_level_2",
     output_dir=output,
+    group_order=["PM08", "IPF"],
 )
 
+top_drugs_by_celltype_l3 = plot_top_drugs_by_condition_for_all_celltypes(
+    d2c_adata,
+    level_col="level_3",
+    rank_key="d2c_rank_genes_groups_level_3",
+    output_dir=output,
+    group_order=["PM08", "IPF"],
+)
 
 # Plot list of specified drugs of interest across data
 # UMAP
