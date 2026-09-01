@@ -1,7 +1,7 @@
 #!/bin/bash
 #PBS -l walltime=12:0:0
-#PBS -l select=1:ncpus=4:mem=256gb
-#PBS -N drug2cell
+#PBS -l select=1:ncpus=1:mem=64gb
+#PBS -N parse_database
 #PBS -j oe
 
 # Load production tools
