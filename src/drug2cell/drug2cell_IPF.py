@@ -123,7 +123,7 @@ dir = Path(
 )
 
 # Choose which database to use for drug2cell scoring
-database = "chembl_37_merged_genesymbols_humans_ALL"
+database = "chembl_37_drug_dictionary_ALL"
 
 # Set output dir
 output = dir / "drug2cell" / f"output_{database}"
