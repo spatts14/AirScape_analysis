@@ -17,7 +17,7 @@ cd /rds/general/user/sep22/home/Projects/AirScape_analysis
 source muspan/bin/activate
 
 # install required packages
-pip install drug2cell
+pip install pickle5
 
 # Run with error logging
 echo "Starting at $(date)"
