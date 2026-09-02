@@ -122,8 +122,11 @@ dir = Path(
     "/rds/general/user/sep22/projects/phenotypingsputumasthmaticsaurorawellcomea1/live/Sara_Patti/009_ST_Xenium/output"
 )
 
+# Choose which database to use for drug2cell scoring
+database = "chembl_37_merged_genesymbols_humans_ALL"
+
 # Set output dir
-output = dir / "drug2cell" / "output_chembl37"
+output = dir / "drug2cell" / f"output_{database}"
 output.mkdir(exist_ok=True, parents=True)
 sc.settings.figdir = output  # set figure directory
 
@@ -138,9 +141,8 @@ drugs_of_interest = [
     "CHEMBL93|ZILEUTON",
 ]
 
-
 # Load the custom ChEMBL 37 drug-target dictionary built by parse_database.py
-chembl37_dict_path = dir / "drug2cell/database/chembl_37/chembl_37_drug_dictionary.pkl"
+chembl37_dict_path = dir / "drug2cell/database/chembl_37/{database}.pkl"
 with open(chembl37_dict_path, "rb") as f:
     chembl37_dict = pickle.load(f)
 
