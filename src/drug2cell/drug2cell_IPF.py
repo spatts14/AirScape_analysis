@@ -142,7 +142,7 @@ drugs_of_interest = [
 ]
 
 # Load the custom ChEMBL 37 drug-target dictionary built by parse_database.py
-chembl37_dict_path = dir / "drug2cell/database/chembl_37/{database}.pkl"
+chembl37_dict_path = dir / f"drug2cell/database/chembl_37/{database}.pkl"
 with open(chembl37_dict_path, "rb") as f:
     chembl37_dict = pickle.load(f)
 
