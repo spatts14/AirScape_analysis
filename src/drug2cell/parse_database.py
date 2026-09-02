@@ -285,7 +285,7 @@ thresholds_dict = {
 
 filtered_df = d2c.chembl.filter_activities(
     dataframe=final_df,
-    drug_max_phase=4,
+    drug_max_phase=1,  # look at all drugs including preclinical
     assay_type="F",
     add_drug_mechanism=True,
     remove_inactive=True,
@@ -300,6 +300,6 @@ chembldict = d2c.chembl.create_drug_dictionary(
 )
 
 # Save everything
-final_df.to_pickle(ref_dir / "chembl_37_merged_genesymbols_humans.pkl")
-with open(ref_dir / "chembl_37_drug_dictionary.pkl", "wb") as f:
+final_df.to_pickle(ref_dir / "chembl_37_merged_genesymbols_humans_ALL.pkl")
+with open(ref_dir / "chembl_37_drug_dictionary_ALL.pkl", "wb") as f:
     pickle.dump(chembldict, f)
