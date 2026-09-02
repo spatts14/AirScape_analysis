@@ -271,7 +271,8 @@ for drug in drugs_of_interest:
             figsize=(6, 6),
             ncols=3,
             cmap=cmap,
-            save=f"{safe_roi_name}_drug2cell_spatial_scatter.pdf",
+            vmax=5,
+            save=f"{safe_roi_name}_drug2cell_spatial_scatter.png",
         )
 
         # Close all open figures to release matplotlib's memory
