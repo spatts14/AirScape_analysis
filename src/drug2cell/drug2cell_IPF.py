@@ -267,7 +267,7 @@ for drug in drugs_of_interest:
             shape=None,  # no image/library background, just plot coordinates
             color=[drug],
             wspace=0.4,
-            size=1,
+            size=0.5,
             figsize=(6, 6),
             ncols=3,
             cmap=cmap,
