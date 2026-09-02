@@ -236,7 +236,6 @@ for drug in drugs_of_interest:
     )
 
     for level in level_cols:
-        # Create a dotplot for the drug across all cell types, split by condition
         sc.pl.dotplot(
             d2c_adata,
             var_names=[drug],
@@ -245,8 +244,18 @@ for drug in drugs_of_interest:
             save=f"_{level}.pdf",
         )
 
+        # Filter out cells missing either grouping column before the combined dotplot
+        mask = d2c_adata.obs[level].notna() & d2c_adata.obs["condition"].notna()
+        n_dropped = (~mask).sum()
+        if n_dropped > 0:
+            print(
+                f"Dropping {n_dropped} cells with missing '{level}' or "
+                f"'condition' before combined dotplot."
+            )
+        subset_for_combined = d2c_adata[mask]
+
         sc.pl.dotplot(
-            d2c_adata,
+            subset_for_combined,
             var_names=[drug],
             groupby=[level, "condition"],
             standard_scale="var",
