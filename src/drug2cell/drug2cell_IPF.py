@@ -2,6 +2,7 @@
 
 # Load packages
 import gc
+import pickle
 from pathlib import Path
 
 import anndata as ad
@@ -122,7 +123,7 @@ dir = Path(
 )
 
 # Set output dir
-output = dir / "drug2cell" / "output"
+output = dir / "drug2cell" / "output_chembl37"
 output.mkdir(exist_ok=True, parents=True)
 sc.settings.figdir = output  # set figure directory
 
@@ -136,6 +137,12 @@ drugs_of_interest = [
     "CHEMBL93|ZILEUTON",
 ]
 
+
+# Load the custom ChEMBL 37 drug-target dictionary built by parse_database.py
+chembl37_dict_path = dir / "drug2cell/database/chembl_37/chembl_37_drug_dictionary.pkl"
+with open(chembl37_dict_path, "rb") as f:
+    chembl37_dict = pickle.load(f)
+
 # Load adata
 adata = ad.read_zarr(dir / "AIRSCAPE/adata_final_object/adata_with_metadata.zarr")
 
@@ -143,7 +150,8 @@ adata = ad.read_zarr(dir / "AIRSCAPE/adata_final_object/adata_with_metadata.zarr
 adata = adata[adata.obs["condition"].isin(["IPF", "PM08"])]
 
 # Calculate drug2cell scores
-d2c.score(adata, use_raw=True)
+d2c.score(adata, targets=chembl37_dict, nested=True, use_raw=True)
+
 
 # Save drug2cell-scored object to adata.uns
 d2c_adata = adata.uns["drug2cell"]
