@@ -137,6 +137,7 @@ cmap = sns.color_palette("ch:start=.2,rot=-.3", as_cmap=True)
 drugs_of_interest = [
     "CHEMBL1256391|PIRFENIDONE",
     "CHEMBL3039504|NINTEDANIB ESYLATE",
+    "CHEMBL502835|NINTEDANIB",
     "CHEMBL1237119|TREPROSTINIL",
     "CHEMBL93|ZILEUTON",
 ]
