@@ -165,7 +165,7 @@ adata = ad.read_zarr(dir / "AIRSCAPE/adata_final_object/adata_with_metadata.zarr
 adata = adata[adata.obs["condition"].isin(["IPF", "PM08"])]
 
 # Exclude PM08-159
-adata = adata[adata.obs["ROI"] != "PM08-159"]
+adata = adata[adata.obs["ROI"] != "PM08_159"]
 
 # confirm that the adata object has been subsetted correctly
 print(f"ROIs present in the subsetted adata: {adata.obs['ROI'].unique().tolist()}")
