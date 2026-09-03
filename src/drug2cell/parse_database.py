@@ -285,7 +285,7 @@ thresholds_dict = {
 
 filtered_df = d2c.chembl.filter_activities(
     dataframe=final_df,
-    drug_max_phase=1,  # look at all drugs including preclinical
+    drug_max_phase=[1, 2, 3, 4],  # look at all drugs including preclinical
     assay_type="F",
     add_drug_mechanism=True,
     remove_inactive=True,
