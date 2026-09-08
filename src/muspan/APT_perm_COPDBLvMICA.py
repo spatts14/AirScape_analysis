@@ -231,8 +231,8 @@ for cell_type in cell_type_list:
         columns=[col for col in celltype_dict[cell_type].columns if "IPF" in col]
         + [col for col in celltype_dict[cell_type].columns if "PM08" in col]
         # Drop 6 weeks and 6 month timepoints - only keep BL!
-        + [col for col in celltype_dict[cell_type].columns if "6_WEEKS" in col]
-        + [col for col in celltype_dict[cell_type].columns if "6_MONTHS" in col]
+        + [col for col in celltype_dict[cell_type].columns if "V2" in col]
+        + [col for col in celltype_dict[cell_type].columns if "V3" in col]
     )
 
 # Get all cell types for plotting barplots

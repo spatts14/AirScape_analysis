@@ -19,6 +19,6 @@ source muspan/bin/activate
 # Run with error logging
 echo "Starting at $(date)"
 
-python src/muspan/APT_perm_plot_COPD.py
+python src/muspan/APT_perm_COPDBLvMICA.py
 
 echo "Completed at $(date)"
