@@ -21,8 +21,13 @@ input_dir = base_path / "output" / "muspan" / "domains"
 domain_paths = {path.stem: str(path) for path in input_dir.glob("*.muspan")}
 
 # Build commands passing the FILE PATH, not the object
+# commands = [
+#     f"python src/muspan/vis_and_TCM.py --domain_name {name} --domain {path}"
+#     for name, path in domain_paths.items()
+# ]
+
 commands = [
-    f"python src/muspan/vis_and_TCM.py --domain_name {name} --domain {path}"
+    f"python src/muspan/vis_and_TCM_pairwise.py --domain_name {name} --domain {path}"
     for name, path in domain_paths.items()
 ]
 
