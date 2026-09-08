@@ -4,9 +4,11 @@ import sys
 from pathlib import Path
 
 import matplotlib.pyplot as plt
+import numpy as np
 import pandas as pd
 import seaborn as sns
 from matplotlib.patches import Patch
+from scipy.stats import mannwhitneyu
 
 sys.path.append(str(Path(__file__).resolve().parents[2]))
 from utils.airspace_colors import diagnosis_palette
@@ -195,10 +197,29 @@ for path in [outpath, heatmap_path, barplot_path_zscore]:
 cmap = sns.color_palette("vlag", as_cmap=True)
 set_palette = diagnosis_palette
 
+# Manually made lighter for boxplot visaulization
+set_palette_boxplot = {
+    "IPF": "#6A7FB5",  # slate blue
+    "LUNG_CANCER": "#B07D4A",  # warm tan
+    "COPD": "#B5D8DD",  # dusty teal
+    "HEALTHY": "#BED2B4",  # sage
+    "NO_CRD": "#A67B8A",  # muted rose
+}
+
+# Set parameters for plotting
 meta_column = "diagnosis"
+
+# Desired diagnosis order
+meta_column_order = ["HEALTHY", "COPD"]
+condition_1 = "HEALTHY"
+condition_2 = "COPD"
 
 # Significance level for Mann-Whitney U test
 alpha_level = 0.05
+
+# Figure dir
+fig_dir = outpath / f"{condition_1}vs{condition_2}"
+fig_dir.mkdir(parents=True, exist_ok=True)
 
 # Figure dir
 fig_dir = outpath / "COPDBLvMICAIII"
@@ -212,6 +233,7 @@ meta = pd.read_csv(
 
 # Import adjacency permutation test
 ROI_APT_dict = load_adjacency_p_values(input_dir)
+# print(sorted(ROI_APT_dict.keys()))
 
 # Get list of all cell types across conditions
 cell_type_list = []
@@ -225,6 +247,7 @@ for df in ROI_APT_dict.values():
 # Combine dataframes for each cell type across conditions
 celltype_dict = make_APT_celltype_dict(ROI_APT_dict, cell_type_list)
 
+
 # Remove ROIs individually or as a group samples to focus on comparison of interest
 for cell_type in cell_type_list:
     celltype_dict[cell_type] = celltype_dict[cell_type].drop(
@@ -233,15 +256,42 @@ for cell_type in cell_type_list:
         # Drop 6 weeks and 6 month timepoints - only keep BL!
         + [col for col in celltype_dict[cell_type].columns if "V2" in col]
         + [col for col in celltype_dict[cell_type].columns if "V3" in col]
+        # Remove MICA III with multiple domains
+        + [
+            col
+            for col in celltype_dict[cell_type].columns
+            if "MICA_III_319_315_311" in col
+        ]
+        + [
+            col
+            for col in celltype_dict[cell_type].columns
+            if "MICA_III_325_337_379" in col
+        ]
     )
 
 # Get all cell types for plotting barplots
 all_cell_types_list = list(celltype_dict.keys())
 
+# Remove cell types not in proximal lung
+remove_cell_types = [
+    "Alveolar fibroblasts",
+    "Alveolar fibroblasts (collagen high)",
+    "AT1 cells",
+    "AT2 cells",
+    "Lipid-associated macrophages",
+    "Airway/Alveolar macrophages",
+]
+all_cell_types_list = [
+    cell_type for cell_type in all_cell_types_list if cell_type not in remove_cell_types
+]
+
 # Plot heatmaps and barplots for each cell type
 for celltype_1 in all_cell_types_list:
     # Sanitize cell type name for file paths
     safe_cell_type_1 = celltype_1.replace("/", "_").replace(" ", "_")
+
+    # Logging
+    print(f"Processing cell type: {safe_cell_type_1}")
 
     # HEATMAP OF APT Z-SCORES FOR ALL NEIGHBORING CELL TYPES
     # Heatmap data
@@ -257,10 +307,25 @@ for celltype_1 in all_cell_types_list:
     ]
     meta_subset.index = heatmap_df.columns
 
+    # Order samples by diagnosis
+    ordered_columns = (
+        meta_subset.map(
+            lambda x: meta_column_order.index(x)
+            if x in meta_column_order
+            else len(meta_column_order)
+        )
+        .sort_values()
+        .index
+    )
+
+    heatmap_df = heatmap_df[ordered_columns]
+    meta_subset = meta_subset.loc[ordered_columns]
+
     # Column annotation colors
     col_colors = meta_subset.map(set_palette)
 
     # Plot
+    print(f"Plotting heatmap for {safe_cell_type_1}...")
     g = sns.clustermap(
         heatmap_df,
         cmap=cmap,
@@ -271,7 +336,6 @@ for celltype_1 in all_cell_types_list:
         xticklabels=True,
         yticklabels=True,
         col_cluster=False,
-        vmax=75,  # set max for color scale to see what is interesting
     )
 
     g.figure.suptitle(f"{celltype_1} - APT SES (p-val nonfiltered)", y=0.85)
@@ -280,8 +344,183 @@ for celltype_1 in all_cell_types_list:
     g.ax_cbar.set_position([-0.07, 0.2, 0.02, 0.6])  # [left, bottom, width, height]
     g.ax_cbar.set_ylabel("SES (p-val nonfiltered)", rotation=90, labelpad=-60)
 
+    # Legend
+    legend_handles = [
+        Patch(facecolor=set_palette[diag], label=diag)
+        for diag in meta_column_order
+        if diag in set_palette
+    ]
+
+    g.ax_heatmap.legend(
+        handles=legend_handles,
+        title=meta_column,
+        bbox_to_anchor=(1.5, 1),
+        loc="upper left",
+        frameon=False,
+    )
+
     plt.savefig(
         fig_dir / f"{safe_cell_type_1}_APT_SES_p_val_nonfiltered_heatmap.pdf",
         bbox_inches="tight",
     )
     plt.close()
+
+    # BOX PLOTS OF APT Z-SCORES FOR EACH NEIGHBORING CELL TYPE, FACETTED BY DIAGNOSIS
+    for cell_type_2 in all_cell_types_list:
+        # Make cell_type_2_of_interest safe for file paths
+        safe_cell_type_2 = cell_type_2.replace("/", "_").replace(" ", "_")
+
+        print(f"Plotting barplot for {safe_cell_type_1} vs {safe_cell_type_2}...")
+
+        if meta_column not in meta.columns:
+            raise ValueError(
+                f"Metadata column '{meta_column}' not found in meta dataframe"
+            )
+
+        # make directory for this cell type if it doesn't exist
+        celltype_dir = fig_dir / safe_cell_type_1
+        celltype_dir.mkdir(parents=True, exist_ok=True)
+
+        # Extract the dataframe for this cell type across conditions
+        celltype_df = pd.DataFrame(celltype_dict[celltype_1])
+
+        # SUBSET ON CELL TYPE 2 OF INTEREST
+        celltype_df = celltype_df.loc[[cell_type_2]]
+
+        # Make into dataframe
+        df_groups = pd.DataFrame(celltype_df)
+
+        # Get both groups of data for Mann-Whitney U test
+        # Get both groups of data for Mann-Whitney U test
+        condition_1_cols = meta_subset[meta_subset == condition_1].index
+        condition_2_cols = meta_subset[meta_subset == condition_2].index
+
+        print(f"  meta_subset unique values: {meta_subset.unique().tolist()}")
+        print(
+            f"  condition_1 ('{condition_1}') matched columns: {list(condition_1_cols)}"
+        )
+        print(
+            f"  condition_2 ('{condition_2}') matched columns: {list(condition_2_cols)}"
+        )
+
+        group_1_cols = df_groups.columns.intersection(condition_1_cols)
+        group_2_cols = df_groups.columns.intersection(condition_2_cols)
+
+        print(f"  df_groups.columns: {list(df_groups.columns)}")
+        print(
+            f"  group_1_cols (after intersecting with df_groups): {list(group_1_cols)}"
+        )
+        print(
+            f"  group_2_cols (after intersecting with df_groups): {list(group_2_cols)}"
+        )
+
+        group_1_data = df_groups.loc[:, group_1_cols].to_numpy().ravel()
+        group_2_data = df_groups.loc[:, group_2_cols].to_numpy().ravel()
+
+        group_1_data = group_1_data.astype(float)
+        group_2_data = group_2_data.astype(float)
+
+        group_1_data = group_1_data[~np.isnan(group_1_data)]
+        group_2_data = group_2_data[~np.isnan(group_2_data)]
+
+        print(f"  group_1_data (n={len(group_1_data)}): {group_1_data}")
+        print(f"  group_2_data (n={len(group_2_data)}): {group_2_data}")
+
+        # Calculate statistics
+        stat, p_value = mannwhitneyu(group_1_data, group_2_data)
+
+        # Transpose and melt the dataframe for plotting
+        plot_df = celltype_df.transpose().reset_index().rename(columns={"index": "ROI"})
+
+        plot_df = plot_df.melt(
+            id_vars="ROI",
+            var_name="Neighbor Cell Type",
+            value_name="SES (p-val nonfiltered)",
+        )
+
+        plot_df["ROI_meta_key"] = plot_df["ROI"].map(corrected_roi_for_meta)
+
+        # # Add condition column by extracting from ROI name
+        plot_df = plot_df.merge(meta, left_on="ROI_meta_key", right_index=True)
+        plot_df = plot_df.drop(columns=["ROI_meta_key"])
+
+        # Drop NaN values before plotting
+        plot_df = plot_df.dropna(subset=["SES (p-val nonfiltered)"])
+
+        # Set order of conditions for plotting if diagnosis column is present
+        if meta_column in plot_df.columns:
+            plot_df[meta_column] = pd.Categorical(
+                plot_df[meta_column],
+                categories=meta_column_order,
+                ordered=True,
+            )
+
+        sns.set_style("white")
+        fig, ax = plt.subplots(figsize=(5, 6))
+
+        sns.stripplot(
+            data=plot_df,
+            x="Neighbor Cell Type",
+            y="SES (p-val nonfiltered)",
+            hue=meta_column,
+            dodge=True,
+            palette=set_palette,
+            ax=ax,
+        )
+
+        sns.boxplot(
+            data=plot_df,
+            x="Neighbor Cell Type",
+            y="SES (p-val nonfiltered)",
+            hue=meta_column,
+            dodge=True,
+            saturation=0.50,
+            palette=set_palette_boxplot,
+            ax=ax,
+        )
+
+        # Remove duplicate legends
+        handles, labels = ax.get_legend_handles_labels()
+        n = len(plot_df[meta_column].unique())
+
+        ax.legend(
+            handles[:n],
+            labels[:n],
+            title=meta_column,
+            bbox_to_anchor=(1.02, 1),
+            loc="upper left",
+            borderaxespad=0,
+        )
+
+        ax.set_title(f"{celltype_1}\nstat={stat}, p={p_value:.3f}", fontsize=14)
+        ax.set_xticklabels([""])
+        ax.set_xlabel(cell_type_2, fontsize=14)
+        ax.set_ylabel("SES (p-val nonfiltered)", fontsize=14)
+
+        # Add significance annotation if p-value is below alpha level
+        if p_value < alpha_level:
+            # add significance annotation
+            ax.annotate(
+                "",
+                xy=(0.25, 0.97),
+                xycoords="axes fraction",
+                xytext=(0.75, 0.97),
+                textcoords="axes fraction",
+                arrowprops=dict(arrowstyle="-", color="k", lw=1),
+            )
+            ax.text(
+                0.5,
+                0.96,
+                "*",
+                ha="center",
+                va="bottom",
+                transform=ax.transAxes,
+                color="k",
+            )
+
+        plt.tight_layout()
+        plt.savefig(
+            celltype_dir
+            / f"{safe_cell_type_1}_{safe_cell_type_2}_{meta_column}_SES_p_val_filt.pdf"
+        )
+        plt.close()
