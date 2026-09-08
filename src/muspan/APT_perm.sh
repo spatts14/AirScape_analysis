@@ -1,7 +1,7 @@
 #!/bin/bash
 #PBS -l walltime=12:0:0
 #PBS -l select=1:ncpus=16:mem=128gb
-#PBS -N cross_PCF_parallel
+#PBS -N APT_perm
 #PBS -j oe
 
 # Load production tools
