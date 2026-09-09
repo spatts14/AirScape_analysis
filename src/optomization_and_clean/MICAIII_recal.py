@@ -15,7 +15,7 @@ warnings.filterwarnings("ignore", category=FutureWarning)
 def main():
     """Load MICA III domains and recalculate cell types, networks, and APT."""
     base_dir = Path(
-        "/Volumes/phenotypingsputumasthmaticsaurorawellcomea1/live/Sara_Patti/009_ST_Xenium"
+        "/rds/general/user/sep22/projects/phenotypingsputumasthmaticsaurorawellcomea1/live/Sara_Patti/009_ST_Xenium/"
     )
 
     out_dir = base_dir / "output" / "muspan"
