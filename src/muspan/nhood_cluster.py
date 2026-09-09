@@ -48,7 +48,7 @@ def parse_args(args):
 
     parser.add_argument(  # class for parameters
         "-c",  # shortcut
-        "--number_of_clusters",  # need to be the same as parameter in the domain_parallel.py file
+        "--number_of_clusters",  # need to be same as parameter in domain_parallel.py
         help="Number of clusters to pass [required]",
         type=int,
         dest="number_of_clusters",  # how you will call this variable in the code
@@ -107,7 +107,7 @@ def compute_niche_celltype_composition(
 
 
 def build_composition_matrix(comp_df, disease_group, niche_order, celltype_order):
-    """Pivot into a niche x cell_type matrix, averaged across domains, for one disease group."""
+    """Pivot into a niche x cell_type matrix averaged across domains for one disease."""
     sub = comp_df[comp_df["disease_group"] == disease_group]
     pivot = (
         sub.groupby(["niche_id", "cell_type"])["proportion_within_niche"]
@@ -429,13 +429,13 @@ def main():
                 min_edge_distance=0,
             ),  # The network parameters
             k_hops=khop,  # The number of hops to consider for the neighbourhood
-            neighbourhood_label_name=f"Neighbourhood ID {network_type}",  # Name for the neighbourhood label
+            neighbourhood_label_name=f"Neighbourhood ID {network_type}",
             cluster_method="minibatchkmeans",  # Clustering method
             cluster_parameters={
                 "n_clusters": number_of_clusters,
                 "random_state": 0,
             },  # Parameters for the clustering method
-            neighbourhood_enrichment_as="log-fold",  # Neighbourhood enrichment as log-fold
+            neighbourhood_enrichment_as="log-fold",  # Neighbourhood enrichment as LF
         )
     )
 
@@ -563,7 +563,7 @@ def main():
         )
         plt.savefig(
             plots_dir_cluster
-            / f"{network_type}_{domain_name}_{number_of_clusters}_neighbourhood_labels.pdf",
+            / f"{network_type}_{domain_name}_{number_of_clusters}.pdf",
             bbox_inches="tight",
         )
         plt.close()

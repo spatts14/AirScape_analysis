@@ -124,7 +124,7 @@ def level_2_vis(domain, domain_output_dir, boundCells, logger):
 def process_pair(
     domain, cell1, cell2, output_dir, domain_name, boundCells, vmax, logger
 ):
-    """Compute and visualize the TCM between one pair of cell types (may be cell1 == cell2).
+    """Compute and visualize the TCM between one pair of cell types.
 
     Args:
         domain: The muspan domain object (already loaded, colors already updated).
@@ -277,7 +277,7 @@ def main():
     # Set to a cell type name (e.g. "CD4+ T cells") to only compute that cell type against
     # every other cell type (including itself). Set to None to compute the full pairwise
     # sweep across all cell types instead.
-    FIXED_CELL_TYPE_OF_INTEREST = "CD4+ T cells"
+    FIXED_CELL_TYPE_OF_INTEREST = "CD8+ T cells"
 
     # Make list of all domains to process
     domain_name, domain_path = parse_args(sys.argv[1:])
