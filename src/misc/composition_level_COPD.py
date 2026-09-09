@@ -22,7 +22,7 @@ def plot_celltype_composition(
     palette: str = "tab20",
     ylabel: str = "Percentage (%)",
     legend_bbox: tuple = (1.02, 1),
-    group_order: list = None,
+    group_order: list | None = None,
 ):
     """Plot stacked bar chart showing cell type composition per condition.
 
@@ -202,7 +202,7 @@ def plot_level2_within_level1(
     palette: str = "tab20",
     ylabel: str = "Percentage (%)",
     level1_to_level2: dict[str, list[str]] | None = None,
-    group_order: list = None,
+    group_order: list | None = None,
 ):
     """Plot stacked bar charts showing level 2 composition within each level 1 group.
 
@@ -412,10 +412,10 @@ def main():
     adata = adata[adata.obs["condition"].isin(conditions_of_interest)].copy()
 
     # Remove 6 week and 6 month timepoints for COPD vs MICA comparison
-    adata = adata[~adata.obs["timepoint"].isin(["V2", "V3"])]
+    adata = adata[~adata.obs["timepoint"].isin(["V2", "V3"])].copy()
 
     # Remove cell types not in proximal lung
-    adata = adata[~adata.obs["level_1"].isin("Alveolar epithelial cells")].copy()
+    adata = adata[~adata.obs["level_1"].isin(["Alveolar epithelial cells"])].copy()
 
     remove_cell_types = [
         "Alveolar fibroblasts",
