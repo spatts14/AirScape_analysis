@@ -22,6 +22,7 @@ pip install pickle5
 # Run with error logging
 echo "Starting at $(date)"
 
-python src/drug2cell/drug2cell_IPF.py
+# python src/drug2cell/drug2cell_IPF.py
+python src/drug2cell/drug2cell_COPD.py
 
 echo "Completed at $(date)"
