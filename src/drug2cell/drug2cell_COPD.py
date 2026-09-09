@@ -126,7 +126,7 @@ dir = Path(
 database = "chembl_37_drug_dictionary"
 
 # Set output dir
-output = dir / "drug2cell" / f"output_{database}_COPD"
+output = dir / "drug2cell" / "COPD" / f"output_{database}"
 output.mkdir(exist_ok=True, parents=True)
 sc.settings.figdir = output  # set figure directory
 
