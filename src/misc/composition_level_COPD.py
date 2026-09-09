@@ -412,7 +412,7 @@ def main():
     adata = adata[adata.obs["condition"].isin(conditions_of_interest)].copy()
 
     # Remove 6 week and 6 month timepoints for COPD vs MICA comparison
-    adata = adata[adata.obs["timepoint"] != ["V2", "V3"]].copy()
+    adata = adata[~adata.obs["timepoint"].isin(["V2", "V3"])]
 
     # Save to subset df
     if conditions_of_interest:
@@ -429,7 +429,7 @@ def main():
         fig_dir=fig_dir,
         celltype_col="level_1",
         groupby_col="condition",
-        group_order=["PM08", "IPF"],
+        group_order=["MICA", "COPD"],
     )
 
     plot_celltype_composition(
@@ -437,7 +437,7 @@ def main():
         fig_dir=fig_dir,
         celltype_col="level_1",
         groupby_col="diagnosis",
-        group_order=["LUNG_CANCER", "IPF"],
+        group_order=["HEALTHY", "COPD"],
     )
 
     # Original level 2 composition plots
@@ -446,7 +446,7 @@ def main():
         fig_dir=fig_dir,
         celltype_col="level_2",
         groupby_col="condition",
-        group_order=["PM08", "IPF"],
+        group_order=["MICA", "COPD"],
     )
     plot_celltype_composition(
         adata, fig_dir=fig_dir, celltype_col="level_2", groupby_col="ROI"
@@ -456,7 +456,7 @@ def main():
         fig_dir=fig_dir,
         celltype_col="level_2",
         groupby_col="diagnosis",
-        group_order=["LUNG_CANCER", "IPF"],
+        group_order=["HEALTHY", "COPD"],
     )
 
     # New: level 2 composition within each level 1 group
@@ -467,24 +467,12 @@ def main():
         level1_col="level_1",
         level2_col="level_2",
         groupby_col="diagnosis",
-        group_order=["LUNG_CANCER", "IPF"],
+        group_order=["HEALTHY", "COPD"],
     )
     plot_level2_within_level1(
-        adata, fig_dir=fig_dir, groupby_col="condition", group_order=["PM08", "IPF"]
+        adata, fig_dir=fig_dir, groupby_col="condition", group_order=["MICA", "COPD"]
     )
     plot_level2_within_level1(adata, fig_dir=fig_dir, groupby_col="ROI")
-
-    if conditions_of_interest == ["COPD", "MICA"]:
-        print("Generating additional composition plots for COPD vs MICA conditions...")
-        plot_celltype_composition(
-            adata,
-            fig_dir=fig_dir,
-            celltype_col="level_2",
-            groupby_col="treatment_timepoint",
-        )
-        plot_level2_within_level1(
-            adata, fig_dir=fig_dir, groupby_col="treatment_timepoint"
-        )
 
     print("Composition plots generated and saved successfully.")
 
