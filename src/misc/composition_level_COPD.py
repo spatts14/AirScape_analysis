@@ -415,6 +415,8 @@ def main():
     adata = adata[~adata.obs["timepoint"].isin(["V2", "V3"])]
 
     # Remove cell types not in proximal lung
+    adata = adata[~adata.obs["level_1"].isin("Alveolar epithelial cells")].copy()
+
     remove_cell_types = [
         "Alveolar fibroblasts",
         "Alveolar fibroblasts (collagen high)",
