@@ -9,7 +9,7 @@ import numpy as np
 import scanpy as sc
 import seaborn as sns
 
-sys.path.append(str(Path(__file__).resolve().parents[1]))
+sys.path.append(str(Path(__file__).resolve().parents[2]))
 from utils.seed_everything import seed_everything
 
 
