@@ -185,7 +185,7 @@ remove_cell_types = [
 ]
 adata = adata[~adata.obs["level_2"].isin(remove_cell_types)].copy()
 
-# confirm cells are removed
+# Confirm cells are removed
 print(
     f"Cell types present in the subsetted adata: {adata.obs['level_2'].unique().tolist()}"
 )
