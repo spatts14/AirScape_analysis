@@ -1,5 +1,4 @@
-Vis tcm all pairs · PY
-"""Visualize cell types and compute TCM for all pairwise cell-type interactions in a domain."""
+"""Visualize cell types and compute TCM for all pairwise cell-type interactions."""
 
 import argparse
 import itertools
@@ -122,7 +121,9 @@ def level_2_vis(domain, domain_output_dir, boundCells, logger):
     )
 
 
-def process_pair(domain, cell1, cell2, output_dir, domain_name, boundCells, vmax, logger):
+def process_pair(
+    domain, cell1, cell2, output_dir, domain_name, boundCells, vmax, logger
+):
     """Compute and visualize the TCM between one pair of cell types (may be cell1 == cell2).
 
     Args:
@@ -152,7 +153,9 @@ def process_pair(domain, cell1, cell2, output_dir, domain_name, boundCells, vmax
     )
 
     # Visualize the domain with cell boundaries
-    logger.info(f"Visualizing the domain with cell boundaries for {cell1} vs {cell2}...")
+    logger.info(
+        f"Visualizing the domain with cell boundaries for {cell1} vs {cell2}..."
+    )
     _, ax = plt.subplots(figsize=(10, 5))
     ms.visualise.visualise(
         domain,
@@ -307,8 +310,8 @@ def main():
     # Update color if needed (domain-wide, done once)
     # domain.update_colors(
     #     {"T cells": # cell typr
-            # "#C8A7E3" # color
-            # },
+    # "#C8A7E3" # color
+    # },
     #     colors_to_update="labels",
     #     label_name="Cell Type",
     # )
@@ -322,9 +325,7 @@ def main():
                 f"FIXED_CELL_TYPE_OF_INTEREST '{FIXED_CELL_TYPE_OF_INTEREST}' not found in "
                 f"domain cell types: {cell_types}"
             )
-        cell_type_pairs = [
-            (FIXED_CELL_TYPE_OF_INTEREST, other) for other in cell_types
-        ]
+        cell_type_pairs = [(FIXED_CELL_TYPE_OF_INTEREST, other) for other in cell_types]
     else:
         # Every unordered pair of cell types, including self-pairs (A vs A) — e.g. for
         # cell_types = ["A", "B", "C"] this gives ("A","A"), ("A","B"), ("A","C"),
@@ -356,6 +357,7 @@ def main():
     del domain
 
     logger.info("Finished script!")
+
 
 if __name__ == "__main__":
     main()
