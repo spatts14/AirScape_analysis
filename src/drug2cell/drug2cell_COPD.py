@@ -174,6 +174,8 @@ adata = adata[~adata.obs["timepoint"].isin(["V2", "V3"])]
 print(f"ROIs present in the subsetted adata: {adata.obs['ROI'].unique().tolist()}")
 
 # Remove cell types not in proximal lung
+adata = adata[~adata.obs["level_1"].isin(["Alveolar epithelial cells"])].copy()
+
 remove_cell_types = [
     "Alveolar fibroblasts",
     "Alveolar fibroblasts (collagen high)",
@@ -186,9 +188,7 @@ remove_cell_types = [
 adata = adata[~adata.obs["level_2"].isin(remove_cell_types)].copy()
 
 # Confirm cells are removed
-print(
-    f"Cell types present in the subsetted adata: {adata.obs['level_2'].unique().tolist()}"
-)
+print(f"Cell types present in the subsetted: {adata.obs['level_2'].unique().tolist()}")
 
 # Calculate drug2cell scores
 d2c.score(adata, targets=chembl37_dict, nested=True, use_raw=True)
