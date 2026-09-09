@@ -1,3 +1,5 @@
+"""Split pooled MICA III domain into separate domains for each donor."""
+
 import warnings
 from pathlib import Path
 
@@ -17,20 +19,22 @@ domains_dir = base_dir / "output" / "muspan" / "domains"
 docs_dir = base_dir / "docs" / "xenium_explorer_cell_IDs"
 
 # Set 1
-pooled_domain_path = domains_dir / "MICA_III_319_315_311_muspan_domain.muspan"
-DONOR_CSVS = {
-    "MICA_III_311": docs_dir / "MICA_III_311_cells_stats.csv",
-    "MICA_III_315": docs_dir / "MICA_III_315_cells_stats.csv",
-    "MICA_III_319": docs_dir / "MICA_III_319_cells_stats.csv",
-}
-
-# # Set 2
-# pooled_domain_path = domains_dir / "MICA_III_325_337_379_muspan_domain.muspan"  # pooled domain file
+# pooled_domain_path = domains_dir / "MICA_III_319_315_311_muspan_domain.muspan"
 # DONOR_CSVS = {
-#     "MICA_III_325": docs_dir / "MICA_III_325_cells_stats.csv",
-#     "MICA_III_337": docs_dir / "MICA_III_337_cells_stats.csv",
-#     "MICA_III_379": docs_dir / "MICA_III_379_cells_stats.csv",
+#     "MICA_III_311": docs_dir / "MICA_III_311_cells_stats.csv",
+#     "MICA_III_315": docs_dir / "MICA_III_315_cells_stats.csv",
+#     "MICA_III_319": docs_dir / "MICA_III_319_cells_stats.csv",
 # }
+
+# Set 2
+pooled_domain_path = (
+    domains_dir / "MICA_III_325_337_379_muspan_domain.muspan"
+)  # pooled domain file
+DONOR_CSVS = {
+    "MICA_III_325": docs_dir / "MICA_III_325_cells_stats.csv",
+    "MICA_III_337": docs_dir / "MICA_III_337_cells_stats.csv",
+    "MICA_III_379": docs_dir / "MICA_III_379_cells_stats.csv",
+}
 
 for name, path in DONOR_CSVS.items():
     print(name, "->", path, "exists:", path.exists())
@@ -171,5 +175,6 @@ for donor_name, domain in split_domains.items():
         path_to_save=str(domains_dir),
     )
     print(
-        f"Saved {donor_name} with domain name {domain.name} -> {domains_dir / (donor_name + '_muspan_domain.muspan')}"
+        f"Saved {donor_name} with domain name {domain.name} ->"
+        f"{domains_dir / (donor_name + '_muspan_domain.muspan')}"
     )

@@ -1,6 +1,5 @@
-"""Muspan module."""
+"""Re-calculate MuSpAn stats the MICA III domain."""
 
-import sys
 import warnings
 from pathlib import Path
 
@@ -14,7 +13,7 @@ warnings.filterwarnings("ignore", category=FutureWarning)
 
 
 def main():
-    """Load MICA III domains and recalculate cell types, networks, and adjacency permutation tests."""
+    """Load MICA III domains and recalculate cell types, networks, and APT."""
     base_dir = Path(
         "/Volumes/phenotypingsputumasthmaticsaurorawellcomea1/live/Sara_Patti/009_ST_Xenium"
     )
@@ -189,9 +188,7 @@ def main():
         plt.savefig(roi_dir / f"{roi}_proximity_30um.pdf")
 
         # Calculate adjacency permutation test for the filtered Delaunay network
-        print(
-            f"Calculating adjacency permutation test for {roi} on filtered Delaunay network"
-        )
+        print(f"Calculating adjacency permutation test for {roi} on filtered Delaunay")
         SES, SES_p_val_filtered, label_categories = (
             ms.networks.adjacency_permutation_test(
                 domain,
