@@ -414,6 +414,18 @@ def main():
     # Remove 6 week and 6 month timepoints for COPD vs MICA comparison
     adata = adata[~adata.obs["timepoint"].isin(["V2", "V3"])]
 
+    # Remove cell types not in proximal lung
+    remove_cell_types = [
+        "Alveolar fibroblasts",
+        "Alveolar fibroblasts (collagen high)",
+        "AT1 cells",
+        "AT2 cells",
+        "Lipid-associated macrophages",
+        "Airway/Alveolar macrophages",
+        "Proliferating AT2 cells",
+    ]
+    adata = adata[~adata.obs["level_2"].isin(remove_cell_types)].copy()
+
     # Save to subset df
     if conditions_of_interest:
         subset_conditions = "v".join(conditions_of_interest)
