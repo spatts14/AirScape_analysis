@@ -181,6 +181,7 @@ remove_cell_types = [
     "AT2 cells",
     "Lipid-associated macrophages",
     "Airway/Alveolar macrophages",
+    "Proliferating AT2 cells",
 ]
 adata = adata[~adata.obs["level_2"].isin(remove_cell_types)].copy()
 
