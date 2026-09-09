@@ -165,7 +165,7 @@ adata = ad.read_zarr(dir / "AIRSCAPE/adata_final_object/adata_with_metadata.zarr
 adata = adata[adata.obs["condition"].isin(["COPD", "MICA"])]
 
 # Subset to only include baseline COPD - remove 6 weeks and 6 months
-adata = adata[adata.obs["timepoint"] != ["V2", "V3"]]
+adata = adata[~adata.obs["timepoint"].isin(["V2", "V3"])]
 
 # Exclude specific ROI
 # adata = adata[adata.obs["ROI"] != "PM08_159"]
