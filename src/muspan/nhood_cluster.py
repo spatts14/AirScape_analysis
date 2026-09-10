@@ -392,8 +392,14 @@ def main():
 
     # Remove specified cell type(s) from every domain before building the network
     cell_types_to_remove = [
-        "Alveolar fibroblasts (collagen high)"
-    ]  # Set cell types to remove here
+        "Alveolar fibroblasts",
+        "Alveolar fibroblasts (collagen high)",
+        "AT1 cells",
+        "AT2 cells",
+        "Lipid-associated macrophages",
+        "Airway/Alveolar macrophages",
+        "Proliferating AT2 cells",
+    ]
     if cell_types_to_remove:
         logger.info(f"Removing cell types {cell_types_to_remove} from all domains...")
         for domain in domain_list:
@@ -447,6 +453,20 @@ def main():
     )
     df_ME_id.index.name = f"Neighbourhood ID {network_type}"
     df_ME_id.columns.name = "Cell Type ID"
+
+    # Safety net: consistent_global_labels can retain removed cell types even after
+    # domain.delete_objects() (muspan's internal label vocabulary doesn't always get
+    # rebuilt after deletion) — drop them explicitly so the heatmap matches reality.
+    cols_to_drop = [c for c in df_ME_id.columns if c in cell_types_to_remove]
+    if cols_to_drop:
+        logger.warning(
+            f"Removed cell types still present in consistent_global_labels: "
+            f"{cols_to_drop} — dropping them from the heatmap and enrichment matrix."
+        )
+        df_ME_id = df_ME_id.drop(columns=cols_to_drop)
+        consistent_global_labels = [
+            c for c in consistent_global_labels if c not in cell_types_to_remove
+        ]
 
     # Filter out sentinel values before computing range
     logger.info(
