@@ -266,8 +266,8 @@ def plot_composition_comparison(
                     fontweight="bold",
                 )
 
-    color_1 = palette.get(group_1, "#000000")
-    color_2 = palette.get(group_2, "#000000")
+    # color_1 = palette.get(group_1, "#000000")
+    # color_2 = palette.get(group_2, "#000000")
     ax.set_title(
         f"Niche composition difference: {group_2} vs {group_1}\n(* = p < {alpha_level})"
     )
@@ -281,6 +281,18 @@ def plot_composition_comparison(
     plt.close(fig)
 
     return stats_df
+
+
+def should_load_domain(stem):
+    """True if this domain file should be loaded: any MICA sample (no
+    timepoint restriction), or a COPD sample specifically at the V1
+    timepoint. Everything else (IPF, PM08, COPD V2/V3, etc.) is skipped.
+    """
+    if "MICA" in stem:
+        return True
+    if "COPD" in stem:
+        return "_V1_" in stem
+    return False
 
 
 def main():
@@ -373,11 +385,8 @@ def main():
         if not path.is_file():
             logger.warning(f"Skipping {path.stem} as it is not a file.")
             continue
-        if subset is not None and not any(sub in path.stem for sub in subset):
-            logger.info(
-                f"Skipping {path.stem} as it does not contain any of"
-                f" '{subset}' in the name"
-            )
+        if not should_load_domain(path.stem):
+            logger.info(f"Skipping {path.stem} (not MICA, or not a COPD V1 sample).")
             continue
         logger.info(f"Loading {path.stem}...")
         domain = ms.io.load_domain(str(path))
