@@ -30,6 +30,19 @@ def remove_cell_types(domain, cell_types_to_remove, label_name="Cell Type"):
     return domain
 
 
+def should_load_domain(stem):
+    """True if this domain file should be loaded: any MICA sample (no
+    timepoint restriction), or a COPD sample specifically at the V1
+    timepoint. Everything else (IPF, PM08, COPD V2/V3, etc.) is skipped.
+    """
+
+    if "MICA" in stem:
+        return True
+    if "COPD" in stem:
+        return "_V1_" in stem
+    return False
+
+
 def main():
     """Compute neighbourhood clustering and save the domains."""
     # Define variables
@@ -37,9 +50,9 @@ def main():
     khop = 1  # Number of hops for neighbourhood clustering
     network_type = "proximity"  # 'Delaunay' or 'proximity'
     max_edge_distance = 30
-    subset = ["IPF", "PM08"]  # COPD or IPF and PM08
+    subset = ["COPD", "MICA"]  # COPD or IPF and PM08
     subset_safe_name = "v".join(subset)
-    subset_safe_name = f"{subset_safe_name}_159removed"
+    subset_safe_name = f"{subset_safe_name}_khop_{khop}"  # final dir name
 
     # Base project path
     paths = [
@@ -110,16 +123,14 @@ def main():
     # Load the domains
     domain_list = []
 
+    # domains stored in directory
     logger.info(f"Loading domains from {input_dir}...")
     for path in input_dir.glob("*.muspan"):
         if not path.is_file():
             logger.warning(f"Skipping {path.stem} as it is not a file.")
             continue
-        if subset is not None and not any(sub in path.stem for sub in subset):
-            logger.info(
-                f"Skipping {path.stem} as it does not contain any of"
-                f" '{subset}' in the name"
-            )
+        if not should_load_domain(path.stem):
+            logger.info(f"Skipping {path.stem} (not MICA, or not a COPD V1 sample).")
             continue
         logger.info(f"Loading {path.stem}...")
         domain = ms.io.load_domain(str(path))
@@ -134,8 +145,14 @@ def main():
 
     # Remove specified cell type(s) from every domain before building the network
     cell_types_to_remove = [
-        "Alveolar fibroblasts (collagen high)"
-    ]  # Set cell types to remove here
+        "Alveolar fibroblasts",
+        "Alveolar fibroblasts (collagen high)",
+        "AT1 cells",
+        "AT2 cells",
+        "Lipid-associated macrophages",
+        "Airway/Alveolar macrophages",
+        "Proliferating AT2 cells",
+    ]
     if cell_types_to_remove:
         logger.info(f"Removing cell types {cell_types_to_remove} from all domains...")
         for domain in domain_list:
