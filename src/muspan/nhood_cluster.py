@@ -302,7 +302,7 @@ def main():
 
     # Define variables
     khop = 1  # Number of hops for neighbourhood clustering
-    network_type = "Delaunay"  # 'Delaunay' or 'proximity'
+    network_type = "proximity"  # 'Delaunay' or 'proximity'
     max_edge_distance = 30
     subset = ["COPD", "MICA"]  # COPD or IPF and PM08
     subset_safe_name = "v".join(subset)
@@ -371,7 +371,7 @@ def main():
 
     # If subset is specified, create a subdirectory for plots
     if subset is not None:
-        plots_dir = plots_dir / f"{subset_safe_name}_khop_{khop}"  # final dir name
+        plots_dir = plots_dir / f"{subset_safe_name}"  # final dir name
         plots_dir.mkdir(parents=True, exist_ok=True)
         logger.info(f"Subset specified: {subset}. Plots will be saved to {plots_dir}")
 
