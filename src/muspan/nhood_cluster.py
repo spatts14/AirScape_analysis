@@ -592,6 +592,9 @@ def main():
     # happens to appear in.
     niche_order = [str(label) for label in unique_cluster_labels]
     niche_color_map = dict(zip(niche_order, nb_colors[: len(niche_order)]))
+    domain_color_map = dict(
+        zip(unique_cluster_labels, nb_colors[: len(unique_cluster_labels)])
+    )
 
     # Create a DataFrame from the neighbourhood enrichment matrix
     df_ME_id = pd.DataFrame(
@@ -693,7 +696,7 @@ def main():
         # this domain's own unique labels, so colors are identical across
         # every domain and every downstream plot.
         domain.update_colors(
-            niche_color_map,
+            domain_color_map,
             colors_to_update="labels",
             label_name=f"Neighbourhood ID {network_type}",
         )
