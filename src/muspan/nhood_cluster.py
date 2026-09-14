@@ -161,41 +161,6 @@ def pivot_niche_pct_wide(prop_df, niche_order):
     return wide
 
 
-def plot_niche_pct_stacked_bar(
-    pivot_df,
-    niche_order,
-    niche_color_map,
-    out_path,
-    xlabel,
-    title=None,
-    figsize=None,
-):
-    """Stacked bar plot of niche percentage composition.
-
-    One bar per row of pivot_df (e.g. one bar per ROI, or one bar per disease group),
-    colored by each niche's assigned color.
-    """
-    if figsize is None:
-        figsize = (max(6, 0.4 * len(pivot_df)), 5)
-
-    colors = [niche_color_map.get(n, "#888888") for n in niche_order]
-
-    fig, ax = plt.subplots(figsize=figsize)
-    pivot_df[niche_order].plot(kind="bar", stacked=True, color=colors, ax=ax)
-
-    ax.grid(False)
-    ax.set_ylabel("Percentage of cells (%)")
-    ax.set_xlabel(xlabel)
-    ax.legend(title="Niche", bbox_to_anchor=(1.05, 1), loc="upper left")
-    plt.xticks(rotation=90)
-    if title:
-        ax.set_title(title)
-
-    fig.tight_layout()
-    fig.savefig(out_path, bbox_inches="tight")
-    plt.close(fig)
-
-
 def build_composition_matrix(comp_df, disease_group, niche_order, celltype_order):
     """Pivot into a niche x cell_type matrix averaged across domains for one disease."""
     sub = comp_df[comp_df["disease_group"] == disease_group]
@@ -268,7 +233,8 @@ def plot_composition_comparison(
     Saves two files: '{prefix}_side_by_side.pdf', '{prefix}_difference.pdf',
     and returns the underlying stats dataframe.
     """  # noqa: D205
-    color_map_heatmap = sns.cubehelix_palette(start=0.5, rot=-0.5, as_cmap=True)
+    color_0_1 = sns.cubehelix_palette(start=0.5, rot=-0.5, as_cmap=True)
+    cmap = sns.color_palette("coolwarm", as_cmap=True)
 
     if palette is None:
         palette = {}
@@ -290,7 +256,7 @@ def plot_composition_comparison(
         sns.heatmap(
             mat,
             ax=ax,
-            cmap=color_map_heatmap,
+            cmap=color_0_1,  # scale 0 to 1
             vmin=0,
             vmax=vmax,
             linewidths=0.5,
@@ -335,7 +301,7 @@ def plot_composition_comparison(
     sns.heatmap(
         diff_mat,
         ax=ax,
-        cmap=color_map_heatmap,
+        cmap=cmap,  # scale -1 to 1
         center=0,
         vmin=-diff_abs_max,
         vmax=diff_abs_max,
@@ -372,6 +338,53 @@ def plot_composition_comparison(
     return stats_df
 
 
+def plot_niche_pct_stacked_bar(
+    pivot_df,
+    niche_order,
+    niche_color_map,
+    out_path,
+    xlabel,
+    title=None,
+    figsize=None,
+    row_order=None,
+):
+    """Stacked bar plot of niche percentage composition.
+
+    One bar per row of pivot_df (e.g. one bar per ROI, or one bar per disease group),
+    colored by each niche's assigned color.
+
+    Args:
+        row_order : list, optional
+            Explicit order for the bars (index of pivot_df), e.g. ["MICA", "COPD"].
+            Rows not listed are appended afterward in their existing order, rather
+            than being dropped.
+    """
+    if row_order is not None:
+        present = [r for r in row_order if r in pivot_df.index]
+        remaining = [r for r in pivot_df.index if r not in present]
+        pivot_df = pivot_df.reindex(present + remaining)
+
+    if figsize is None:
+        figsize = (max(6, 0.4 * len(pivot_df)), 5)
+
+    colors = [niche_color_map.get(n, "#888888") for n in niche_order]
+
+    fig, ax = plt.subplots(figsize=figsize)
+    pivot_df[niche_order].plot(kind="bar", stacked=True, color=colors, ax=ax)
+
+    ax.grid(False)
+    ax.set_ylabel("Percentage of cells (%)")
+    ax.set_xlabel(xlabel)
+    ax.legend(title="Niche", bbox_to_anchor=(1.05, 1), loc="upper left")
+    plt.xticks(rotation=90)
+    if title:
+        ax.set_title(title)
+
+    fig.tight_layout()
+    fig.savefig(out_path, bbox_inches="tight")
+    plt.close(fig)
+
+
 def should_load_domain(stem):
     """True if this domain file should be loaded: any MICA sample.
 
@@ -394,7 +407,7 @@ def main():
     khop = 1  # Number of hops for neighbourhood clustering
     network_type = "proximity"  # 'Delaunay' or 'proximity'
     max_edge_distance = 30
-    subset = ["COPD", "MICA"]  # COPD or IPF and PM08
+    subset = ["MICA", "COPD"]  # COPD or IPF and PM08
     subset_safe_name = "v".join(subset)
     subset_safe_name = f"{subset_safe_name}"
 
@@ -738,9 +751,6 @@ def main():
     niche_pct_by_condition = niche_prop_wide.groupby("disease_group")[
         niche_order
     ].mean()
-    niche_pct_by_condition = niche_pct_by_condition.reindex(
-        index=[g for g in subset if g in niche_pct_by_condition.index]
-    )
     niche_pct_by_condition.to_csv(
         data_output_dir
         / f"{network_type}_{number_of_clusters}_clusters_niche_pct_by_condition.csv"
@@ -755,8 +765,8 @@ def main():
         xlabel="Condition",
         title="Niche composition by condition (mean %, averaged across ROIs)",
         figsize=(5, 5),
+        row_order=subset,  # e.g. ["MICA", "COPD"] — controls bar order explicitly
     )
-    logger.info("Saved niche proportion stacked bar plots (by ROI and by condition).")
 
     # Compare niche composition between disease groups
     logger.info(f"Comparing niche composition between {subset[0]} and {subset[1]}...")
