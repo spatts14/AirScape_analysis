@@ -1,4 +1,4 @@
-"""Calculate neighbourhood clusters for a given dataset and visualize the results."""
+"""Calculate neighborhood clusters for a given dataset and visualize the results."""
 
 import argparse
 import sys
@@ -107,7 +107,8 @@ def compute_niche_celltype_composition(
 
 
 def compute_niche_proportions_by_domain(domain_list, network_type, subset):
-    """Per-domain (per-ROI) niche proportions: what % of each ROI's cells fall
+    """Per-domain (per-ROI) niche proportions: what % of each ROI's cells fall.
+
     into each niche. Total cells in the ROI is the denominator; cells in the
     niche is the numerator.
 
@@ -140,7 +141,8 @@ def compute_niche_proportions_by_domain(domain_list, network_type, subset):
 
 
 def pivot_niche_pct_wide(prop_df, niche_order):
-    """Pivot the long per-domain niche-proportion dataframe into a wide table:
+    """Pivot the long per-domain niche-proportion dataframe into a wide table.
+
     rows = domain (ROI), columns = niche_id, values = pct. Missing niches
     (i.e. a niche absent from a given ROI) are filled with 0, not dropped —
     this matters for correct averaging later, since an absent niche should
@@ -168,9 +170,10 @@ def plot_niche_pct_stacked_bar(
     title=None,
     figsize=None,
 ):
-    """Stacked bar plot of niche percentage composition, one bar per row of
-    pivot_df (e.g. one bar per ROI, or one bar per disease group), colored
-    by each niche's assigned color.
+    """Stacked bar plot of niche percentage composition.
+
+    One bar per row of pivot_df (e.g. one bar per ROI, or one bar per disease group),
+    colored by each niche's assigned color.
     """
     if figsize is None:
         figsize = (max(6, 0.4 * len(pivot_df)), 5)
@@ -370,8 +373,9 @@ def plot_composition_comparison(
 
 
 def should_load_domain(stem):
-    """True if this domain file should be loaded: any MICA sample (no
-    timepoint restriction), or a COPD sample specifically at the V1
+    """True if this domain file should be loaded: any MICA sample.
+
+    (no timepoint restriction), or a COPD sample specifically at the V1
     timepoint. Everything else (IPF, PM08, COPD V2/V3, etc.) is skipped.
     """
     if "MICA" in stem:
@@ -388,7 +392,7 @@ def main():
 
     # Define variables
     khop = 1  # Number of hops for neighbourhood clustering
-    network_type = "proximity"  # 'Delaunay' or 'proximity'
+    network_type = "Delaunay"  # 'Delaunay' or 'proximity'
     max_edge_distance = 30
     subset = ["COPD", "MICA"]  # COPD or IPF and PM08
     subset_safe_name = "v".join(subset)
@@ -431,7 +435,6 @@ def main():
     )
 
     # Define a color palette for the neighbourhood labels
-    blue_heatmap_cmap = sns.color_palette("ch:start=.2,rot=-.3", as_cmap=True)
     cmap = sns.color_palette("coolwarm", as_cmap=True)
     nb_colors = [
         "#5B8FA8",  # dusty blue
@@ -697,7 +700,7 @@ def main():
     comp_df = compute_niche_celltype_composition(domain_list, network_type, subset)
     comp_df.to_csv(
         data_output_dir
-        / f"{network_type}_{number_of_clusters}_clusters_niche_celltype_composition.csv",
+        / f"{network_type}_{number_of_clusters}_clusters_niche_celltype_composition.csv",  # Noqa: E501
         index=False,
     )
     logger.info("Saved niche cell-type composition (per domain, per disease group).")
@@ -768,7 +771,7 @@ def main():
     )
     comp_stats_df.to_csv(
         data_output_dir
-        / f"{network_type}_{number_of_clusters}_clusters_niche_composition_mannwhitney.csv",
+        / f"{network_type}_{number_of_clusters}_clusters_niche_composition_mannwhitney.csv",  # Noqa: E501
         index=False,
     )
     logger.info("Saved niche composition comparison plots and stats.")
