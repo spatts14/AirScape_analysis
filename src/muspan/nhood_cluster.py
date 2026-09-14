@@ -265,6 +265,9 @@ def plot_composition_comparison(
     Saves two files: '{prefix}_side_by_side.pdf', '{prefix}_difference.pdf',
     and returns the underlying stats dataframe.
     """  # noqa: D205
+
+    color_map_heatmap = sns.cubehelix_palette(start=0.5, rot=-0.5, as_cmap=True)
+
     if palette is None:
         palette = {}
 
@@ -285,7 +288,7 @@ def plot_composition_comparison(
         sns.heatmap(
             mat,
             ax=ax,
-            cmap="RdBu_r",
+            cmap=color_map_heatmap,
             vmin=0,
             vmax=vmax,
             linewidths=0.5,
@@ -330,7 +333,7 @@ def plot_composition_comparison(
     sns.heatmap(
         diff_mat,
         ax=ax,
-        cmap="RdBu_r",
+        cmap=color_map_heatmap,
         center=0,
         vmin=-diff_abs_max,
         vmax=diff_abs_max,
@@ -429,6 +432,7 @@ def main():
     )
 
     # Define a color palette for the neighbourhood labels
+    blue_heatmap_cmap = sns.color_palette("ch:start=.2,rot=-.3", as_cmap=True)
     cmap = sns.color_palette("coolwarm", as_cmap=True)
     nb_colors = [
         "#5B8FA8",  # dusty blue

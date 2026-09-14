@@ -35,7 +35,6 @@ def should_load_domain(stem):
     timepoint restriction), or a COPD sample specifically at the V1
     timepoint. Everything else (IPF, PM08, COPD V2/V3, etc.) is skipped.
     """
-
     if "MICA" in stem:
         return True
     if "COPD" in stem:
