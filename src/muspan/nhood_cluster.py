@@ -354,10 +354,26 @@ def plot_niche_pct_stacked_bar(
     colored by each niche's assigned color.
 
     Args:
+        pivot_df : pd.DataFrame
+            DataFrame with rows = ROI or disease group.
+            Columns = niche_id, values = pct.
+        niche_order : list
+            List of niche IDs in the order they should appear in the stacked bars.
+        niche_color_map : dict
+            Mapping of niche IDs to colors (hex or RGB).
+        out_path : str or Path
+            Path to save the figure.
+        xlabel : str
+            Label for the x-axis.
+        title : str, optional
+            Title for the plot.
+        figsize : tuple, optional
+            Size of the figure (width, height). If None, a default size is calculated.
         row_order : list, optional
             Explicit order for the bars (index of pivot_df), e.g. ["MICA", "COPD"].
             Rows not listed are appended afterward in their existing order, rather
             than being dropped.
+
     """
     if row_order is not None:
         present = [r for r in row_order if r in pivot_df.index]
@@ -386,15 +402,24 @@ def plot_niche_pct_stacked_bar(
 
 
 def should_load_domain(stem):
-    """True if this domain file should be loaded: any MICA sample.
+    """True if this domain file should be loaded.
 
-    (no timepoint restriction), or a COPD sample specifically at the V1
+    Loads MICA sample (no timepoint restriction), or a COPD sample at the V1
     timepoint. Everything else (IPF, PM08, COPD V2/V3, etc.) is skipped.
+    OR
+    Loads PM08 and IPF samples as per the current requirements.
     """
-    if "MICA" in stem:
+    ## MICA and COPD
+    # if "MICA" in stem:
+    #     return True
+    # if "COPD" in stem:
+    #     return "_V1_" in stem
+    # return False
+
+    if "PM08" in stem:
         return True
-    if "COPD" in stem:
-        return "_V1_" in stem
+    if "IPF" in stem:
+        return True
     return False
 
 
@@ -407,7 +432,7 @@ def main():
     khop = 1  # Number of hops for neighbourhood clustering
     network_type = "proximity"  # 'Delaunay' or 'proximity'
     max_edge_distance = 30
-    subset = ["MICA", "COPD"]  # COPD or IPF and PM08
+    subset = ["PM08", "IPF"]  # COPD or IPF and PM08
     subset_safe_name = "v".join(subset)
     subset_safe_name = f"{subset_safe_name}"
 
@@ -503,14 +528,18 @@ def main():
     logger.info(f"After filtering, {len(domain_list)} domains remain for processing.")
 
     # Remove specified cell type(s) from every domain before building the network
+    # cell_types_to_remove = [
+    #     "Alveolar fibroblasts",
+    #     "Alveolar fibroblasts (collagen high)",
+    #     "AT1 cells",
+    #     "AT2 cells",
+    #     "Lipid-associated macrophages",
+    #     "Airway/Alveolar macrophages",
+    #     "Proliferating AT2 cells",
+    # ]
+
     cell_types_to_remove = [
-        "Alveolar fibroblasts",
         "Alveolar fibroblasts (collagen high)",
-        "AT1 cells",
-        "AT2 cells",
-        "Lipid-associated macrophages",
-        "Airway/Alveolar macrophages",
-        "Proliferating AT2 cells",
     ]
     if cell_types_to_remove:
         logger.info(f"Removing cell types {cell_types_to_remove} from all domains...")
