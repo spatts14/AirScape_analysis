@@ -49,18 +49,19 @@ def main():
             domain, ("label", "Neighbourhood ID proximity"), "in", clusters_of_interest
         )
 
-        # Restrict to cell centroids only
-        cell_centroids = ms.query.query(domain, ("Collection",), "is", "Cell centroids")
+        # Restrict to cell boundaries only
+        boundCells = ms.query.query(domain, ("Collection",), "is", "Cell boundaries")
 
-        # Combine: cells in one of the selected clusters AND in Cell centroids
-        selected_centroids = selected_clusters & cell_centroids
+        # Combine: cells in one of the selected clusters AND in Cell boundaries
+        selected_boundaries = selected_clusters & boundCells
 
         # Visualize
+        print(f"Visualizing clusters {label}...")
         fig, ax = plt.subplots(figsize=(8, 6))
 
         ms.visualise.visualise(
             domain,
-            objects_to_plot=("collection", "Cell boundaries"),
+            objects_to_plot=boundCells,
             add_cbar=False,
             shape_kwargs={
                 "alpha": 0.5,
@@ -74,8 +75,8 @@ def main():
         ms.visualise.visualise(
             domain,
             color_by="Neighbourhood ID proximity",
-            objects_to_plot=selected_centroids,
-            marker_size=0.8,
+            objects_to_plot=selected_boundaries,
+            shape_kwargs=dict(alpha=1, linewidth=0.001, edgecolor="#00000000"),
             ax=ax,
             add_scalebar=True,
             scalebar_kwargs={
@@ -105,11 +106,11 @@ def main():
                 domain, ("label", "Neighbourhood ID proximity"), "is", cluster_id
             )
 
-            cell_centroids = ms.query.query(
-                domain, ("Collection",), "is", "Cell centroids"
+            boundCells = ms.query.query(
+                domain, ("Collection",), "is", "Cell boundaries"
             )
 
-            selected_centroids = selected_clusters & cell_centroids
+            selected_boundaries = selected_clusters & boundCells
 
             fig, axes = plt.subplots(1, 2, figsize=(16, 6))
 
@@ -118,7 +119,7 @@ def main():
 
             ms.visualise.visualise(
                 domain,
-                objects_to_plot=("collection", "Cell boundaries"),
+                objects_to_plot=boundCells,
                 add_cbar=False,
                 shape_kwargs={
                     "alpha": 0.5,
@@ -132,8 +133,8 @@ def main():
             ms.visualise.visualise(
                 domain,
                 color_by="Neighbourhood ID proximity",
-                objects_to_plot=selected_centroids,
-                marker_size=0.8,
+                objects_to_plot=selected_boundaries,
+                shape_kwargs=dict(alpha=1, linewidth=0.001, edgecolor="#00000000"),
                 ax=ax,
                 add_scalebar=True,
                 scalebar_kwargs={
@@ -152,7 +153,7 @@ def main():
 
             ms.visualise.visualise(
                 domain,
-                objects_to_plot=("collection", "Cell boundaries"),
+                objects_to_plot=boundCells,
                 add_cbar=False,
                 shape_kwargs={
                     "alpha": 0.5,
@@ -166,8 +167,8 @@ def main():
             ms.visualise.visualise(
                 domain,
                 color_by="Cell Type",
-                objects_to_plot=selected_centroids,
-                marker_size=0.8,
+                objects_to_plot=selected_boundaries,
+                shape_kwargs=dict(alpha=1, linewidth=0.001, edgecolor="#00000000"),
                 ax=ax,
                 add_scalebar=True,
                 scalebar_kwargs={
@@ -191,12 +192,12 @@ def main():
             plt.show()
             plt.close(fig)
 
-        # Plot cluster alone (final selected_centroids from the loop above)
+        # Plot cluster alone (final selected_boundaries from the loop above)
         fig, ax = plt.subplots(figsize=(8, 6))
 
         ms.visualise.visualise(
             domain,
-            objects_to_plot=("collection", "Cell boundaries"),
+            objects_to_plot=boundCells,
             add_cbar=False,
             shape_kwargs={
                 "alpha": 0.5,
@@ -210,8 +211,8 @@ def main():
         ms.visualise.visualise(
             domain,
             color_by="Neighbourhood ID proximity",
-            objects_to_plot=selected_centroids,
-            marker_size=0.8,
+            objects_to_plot=selected_boundaries,
+            shape_kwargs=dict(alpha=1, linewidth=0.001, edgecolor="#00000000"),
             ax=ax,
             add_scalebar=True,
             scalebar_kwargs={
@@ -234,7 +235,7 @@ def main():
         plt.close(fig)
 
         # --- Free memory before loading the next domain ---
-        del domain, selected_clusters, cell_centroids, selected_centroids
+        del domain, selected_clusters, boundCells, selected_boundaries
         gc.collect()
 
 
