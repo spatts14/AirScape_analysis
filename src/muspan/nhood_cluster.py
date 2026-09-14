@@ -106,6 +106,93 @@ def compute_niche_celltype_composition(
     return pd.DataFrame.from_records(records)
 
 
+def compute_niche_proportions_by_domain(domain_list, network_type, subset):
+    """Per-domain (per-ROI) niche proportions: what % of each ROI's cells fall
+    into each niche. Total cells in the ROI is the denominator; cells in the
+    niche is the numerator.
+
+    Returns a long dataframe with columns: domain, disease_group, niche_id,
+    n_cells, total_cells, pct.
+    """
+    niche_label_name = f"Neighbourhood ID {network_type}"
+    records = []
+
+    for domain in domain_list:
+        niche_labels = np.asarray(domain.labels[niche_label_name]["labels"])
+        disease_group = get_disease_group(str(domain.name), subset)
+        total_cells = len(niche_labels)
+
+        unique_niches, counts = np.unique(niche_labels, return_counts=True)
+
+        for niche_id, count in zip(unique_niches, counts):
+            records.append(
+                {
+                    "domain": str(domain.name),
+                    "disease_group": disease_group,
+                    "niche_id": str(niche_id),
+                    "n_cells": count,
+                    "total_cells": total_cells,
+                    "pct": 100 * count / total_cells,
+                }
+            )
+
+    return pd.DataFrame.from_records(records)
+
+
+def pivot_niche_pct_wide(prop_df, niche_order):
+    """Pivot the long per-domain niche-proportion dataframe into a wide table:
+    rows = domain (ROI), columns = niche_id, values = pct. Missing niches
+    (i.e. a niche absent from a given ROI) are filled with 0, not dropped —
+    this matters for correct averaging later, since an absent niche should
+    count as 0% for that ROI rather than being excluded from any mean.
+
+    A 'disease_group' column is attached per domain for downstream grouping.
+    """
+    wide = prop_df.pivot(index="domain", columns="niche_id", values="pct").fillna(0)
+    wide = wide.reindex(columns=niche_order, fill_value=0)
+
+    domain_to_group = prop_df.drop_duplicates("domain").set_index("domain")[
+        "disease_group"
+    ]
+    wide["disease_group"] = domain_to_group
+
+    return wide
+
+
+def plot_niche_pct_stacked_bar(
+    pivot_df,
+    niche_order,
+    niche_color_map,
+    out_path,
+    xlabel,
+    title=None,
+    figsize=None,
+):
+    """Stacked bar plot of niche percentage composition, one bar per row of
+    pivot_df (e.g. one bar per ROI, or one bar per disease group), colored
+    by each niche's assigned color.
+    """
+    if figsize is None:
+        figsize = (max(6, 0.4 * len(pivot_df)), 5)
+
+    colors = [niche_color_map.get(n, "#888888") for n in niche_order]
+
+    fig, ax = plt.subplots(figsize=figsize)
+    pivot_df[niche_order].plot(kind="bar", stacked=True, color=colors, ax=ax)
+
+    ax.grid(False)
+    ax.set_ylabel("Percentage of cells (%)")
+    ax.set_xlabel(xlabel)
+    ax.legend(title="Niche", bbox_to_anchor=(1.05, 1), loc="upper left")
+    plt.xticks(rotation=90)
+    if title:
+        ax.set_title(title)
+
+    fig.tight_layout()
+    fig.savefig(out_path, bbox_inches="tight")
+    plt.close(fig)
+
+
 def build_composition_matrix(comp_df, disease_group, niche_order, celltype_order):
     """Pivot into a niche x cell_type matrix averaged across domains for one disease."""
     sub = comp_df[comp_df["disease_group"] == disease_group]
@@ -266,12 +353,9 @@ def plot_composition_comparison(
                     fontweight="bold",
                 )
 
-    # color_1 = palette.get(group_1, "#000000")
-    # color_2 = palette.get(group_2, "#000000")
     ax.set_title(
         f"Niche composition difference: {group_2} vs {group_1}\n(* = p < {alpha_level})"
     )
-    # Color the axis labels/ticks to hint which side is which direction
     ax.set_xlabel("Cell type")
     ax.set_ylabel("Niche ID")
     ax.tick_params(axis="x", rotation=90)
@@ -454,6 +538,13 @@ def main():
         )
     )
 
+    # Build ONE global niche -> color mapping, used consistently everywhere
+    # (per-domain visualization, ROI stacked bar, condition stacked bar) so a
+    # given niche always has the same color regardless of which domains it
+    # happens to appear in.
+    niche_order = [str(label) for label in unique_cluster_labels]
+    niche_color_map = dict(zip(niche_order, nb_colors[: len(niche_order)]))
+
     # Create a DataFrame from the neighbourhood enrichment matrix
     df_ME_id = pd.DataFrame(
         data=neighbourhood_enrichment_matrix,
@@ -549,16 +640,12 @@ def main():
     plt.close()
 
     for domain in domain_list:
-        # Get unique labels for the neighbourhood label
-        unique_labels = np.unique(
-            domain.labels[f"Neighbourhood ID {network_type}"]["labels"]
-        )
-
-        # Create a color map dict
-        color_map = dict(zip(unique_labels, nb_colors[: len(unique_labels)]))
-
+        # Use the single global niche color map (built above from
+        # unique_cluster_labels) instead of re-deriving colors from just
+        # this domain's own unique labels, so colors are identical across
+        # every domain and every downstream plot.
         domain.update_colors(
-            color_map,
+            niche_color_map,
             colors_to_update="labels",
             label_name=f"Neighbourhood ID {network_type}",
         )
@@ -611,6 +698,59 @@ def main():
         index=False,
     )
     logger.info("Saved niche cell-type composition (per domain, per disease group).")
+
+    # --- Niche proportion stacked bar plots: by ROI and by condition ---
+    logger.info("Computing per-domain (per-ROI) niche proportions...")
+    niche_prop_df = compute_niche_proportions_by_domain(
+        domain_list, network_type, subset
+    )
+    niche_prop_df.to_csv(
+        data_output_dir
+        / f"{network_type}_{number_of_clusters}_clusters_niche_proportions_by_roi.csv",
+        index=False,
+    )
+
+    niche_prop_wide = pivot_niche_pct_wide(niche_prop_df, niche_order)
+
+    logger.info("Plotting niche proportion stacked bar by ROI...")
+    plot_niche_pct_stacked_bar(
+        niche_prop_wide,
+        niche_order=niche_order,
+        niche_color_map=niche_color_map,
+        out_path=plots_dir_cluster
+        / f"{network_type}_{number_of_clusters}_clusters_niche_pct_by_roi.pdf",
+        xlabel="ROI",
+        title="Niche composition by ROI (% of cells)",
+    )
+
+    logger.info(
+        "Plotting niche proportion stacked bar by condition "
+        "(averaged across ROIs within each condition)..."
+    )
+    # Average each ROI's niche % within its disease group — every ROI
+    # contributes equally regardless of its cell count.
+    niche_pct_by_condition = niche_prop_wide.groupby("disease_group")[
+        niche_order
+    ].mean()
+    niche_pct_by_condition = niche_pct_by_condition.reindex(
+        index=[g for g in subset if g in niche_pct_by_condition.index]
+    )
+    niche_pct_by_condition.to_csv(
+        data_output_dir
+        / f"{network_type}_{number_of_clusters}_clusters_niche_pct_by_condition.csv"
+    )
+
+    plot_niche_pct_stacked_bar(
+        niche_pct_by_condition,
+        niche_order=niche_order,
+        niche_color_map=niche_color_map,
+        out_path=plots_dir_cluster
+        / f"{network_type}_{number_of_clusters}_clusters_niche_pct_by_condition.pdf",
+        xlabel="Condition",
+        title="Niche composition by condition (mean %, averaged across ROIs)",
+        figsize=(5, 5),
+    )
+    logger.info("Saved niche proportion stacked bar plots (by ROI and by condition).")
 
     # Compare niche composition between disease groups
     logger.info(f"Comparing niche composition between {subset[0]} and {subset[1]}...")
