@@ -11,8 +11,11 @@ import muspan as ms
 def main():
     """Visualize all clusters in a domain for every domain in the directory."""
     # Base project path
+    # base_path = Path(
+    #     "/Volumes/phenotypingsputumasthmaticsaurorawellcomea1/live/Sara_Patti/009_ST_Xenium/"
+    # )
     base_path = Path(
-        "/Volumes/phenotypingsputumasthmaticsaurorawellcomea1/live/Sara_Patti/009_ST_Xenium/"
+        "/rds/general/user/sep22/projects/phenotypingsputumasthmaticsaurorawellcomea1/live/Sara_Patti/009_ST_Xenium/"
     )
     # Output directories
     outpath = base_path / "output" / "muspan" / "nb_clustering"
@@ -95,7 +98,7 @@ def main():
             bbox_inches="tight",
             dpi=600,
         )
-        plt.show()
+        # # plt.show()
         plt.close(fig)
 
         # Plot cluster and cell type for each cluster
@@ -116,7 +119,7 @@ def main():
 
             # --- Left plot: colored by neighbourhood/proximity ---
             ax = axes[0]
-
+            print("Plotting left plot...")
             ms.visualise.visualise(
                 domain,
                 objects_to_plot=boundCells,
@@ -150,7 +153,7 @@ def main():
 
             # --- Right plot: colored by cell type ---
             ax = axes[1]
-
+            print("Plotting right plot...")
             ms.visualise.visualise(
                 domain,
                 objects_to_plot=boundCells,
@@ -184,12 +187,13 @@ def main():
 
             plt.tight_layout()
 
+            print("Saving combined plot...")
             plt.savefig(
                 f"{save_path_domain}/combined_plot_{cluster_id}.png",
                 bbox_inches="tight",
                 dpi=600,
             )
-            plt.show()
+            # plt.show()
             plt.close(fig)
 
         # Plot cluster alone (final selected_boundaries from the loop above)
@@ -231,7 +235,7 @@ def main():
             bbox_inches="tight",
             dpi=600,
         )
-        plt.show()
+        # plt.show()
         plt.close(fig)
 
         # --- Free memory before loading the next domain ---
