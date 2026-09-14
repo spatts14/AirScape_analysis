@@ -265,7 +265,6 @@ def plot_composition_comparison(
     Saves two files: '{prefix}_side_by_side.pdf', '{prefix}_difference.pdf',
     and returns the underlying stats dataframe.
     """  # noqa: D205
-
     color_map_heatmap = sns.cubehelix_palette(start=0.5, rot=-0.5, as_cmap=True)
 
     if palette is None:
