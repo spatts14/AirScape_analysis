@@ -23,7 +23,7 @@ def main():
     domain_dir = (
         outpath
         / "domains_with_niches"
-        / "proximity"
+        / "Delaunay"  # Delaunay or proximity
         / "COPDvMICA_khop_1"
         / "18_clusters"
     )
