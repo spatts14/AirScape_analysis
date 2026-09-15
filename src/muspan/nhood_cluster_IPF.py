@@ -404,18 +404,8 @@ def plot_niche_pct_stacked_bar(
 def should_load_domain(stem):
     """True if this domain file should be loaded.
 
-    Loads MICA sample (no timepoint restriction), or a COPD sample at the V1
-    timepoint. Everything else (IPF, PM08, COPD V2/V3, etc.) is skipped.
-    OR
     Loads PM08 and IPF samples as per the current requirements.
     """
-    ## MICA and COPD
-    # if "MICA" in stem:
-    #     return True
-    # if "COPD" in stem:
-    #     return "_V1_" in stem
-    # return False
-
     if "PM08" in stem:
         return True
     if "IPF" in stem:
@@ -615,16 +605,6 @@ def main():
     logger.info(f"After filtering, {len(domain_list)} domains remain for processing.")
 
     # Remove specified cell type(s) from every domain before building the network
-    # cell_types_to_remove = [
-    #     "Alveolar fibroblasts",
-    #     "Alveolar fibroblasts (collagen high)",
-    #     "AT1 cells",
-    #     "AT2 cells",
-    #     "Lipid-associated macrophages",
-    #     "Airway/Alveolar macrophages",
-    #     "Proliferating AT2 cells",
-    # ]
-
     cell_types_to_remove = [
         "Alveolar fibroblasts (collagen high)",
     ]
