@@ -115,6 +115,14 @@ def main():
 
             selected_boundaries = selected_clusters & boundCells
 
+            # Skip if no cells belong to this cluster in this domain
+            if len(selected_boundaries) == 0:
+                print(
+                    f"No cells found in cluster {cluster_id} for this domain, skipping."
+                )
+                continue
+
+            # Plot cluster and cell type for each cluster
             fig, axes = plt.subplots(1, 2, figsize=(16, 6))
 
             # --- Left plot: colored by neighbourhood/proximity ---
