@@ -4,6 +4,7 @@ import gc
 from pathlib import Path
 
 import matplotlib.pyplot as plt
+import numpy as np
 
 import muspan as ms
 
@@ -42,71 +43,25 @@ def main():
         print(f"Processing domain: {domain_path.name}...")
 
         domain = ms.io.load_domain(str(domain_path))
+        # Restrict to cell boundaries only
+        boundCells = ms.query.query(domain, ("Collection",), "is", "Cell boundaries")
 
         save_path_domain = save_path / str(domain.name.replace(".muspan", ""))
         save_path_domain.mkdir(parents=True, exist_ok=True)
 
-        # Define variables
-        clusters_of_interest = [16, 17]
-
-        # Query for cells in clusters
-        label = "_".join(str(c) for c in clusters_of_interest)
-        selected_clusters = ms.query.query(
-            domain, ("label", niche_label_name), "in", clusters_of_interest
-        )
-
-        # Restrict to cell boundaries only
-        boundCells = ms.query.query(domain, ("Collection",), "is", "Cell boundaries")
-
-        # Combine: cells in one of the selected clusters AND in Cell boundaries
-        selected_boundaries = selected_clusters & boundCells
-
-        # Visualize
-        print(f"Visualizing clusters {label}...")
-        fig, ax = plt.subplots(figsize=(8, 6))
-
-        ms.visualise.visualise(
-            domain,
-            objects_to_plot=boundCells,
-            add_cbar=False,
-            shape_kwargs={
-                "alpha": 0.5,
-                "linewidth": 0.005,
-                "edgecolor": "#00000000",
-                "color": "#848484",
-            },
-            ax=ax,
-        )
-
-        ms.visualise.visualise(
-            domain,
-            color_by=niche_label_name,
-            objects_to_plot=selected_boundaries,
-            shape_kwargs=dict(alpha=1, linewidth=0.001, edgecolor="#00000000"),
-            ax=ax,
-            add_scalebar=True,
-            scalebar_kwargs={
-                "size": 500,
-                "label": "500µm",
-                "loc": "lower right",
-                "pad": 0.1,
-                "color": "black",
-                "frameon": False,
-                "size_vertical": 2,
-            },
-        )
-        plt.savefig(f"{save_path_domain}/clusters_{label}.pdf", bbox_inches="tight")
-        plt.savefig(
-            f"{save_path_domain}/clusters_{label}.png",
-            bbox_inches="tight",
-            dpi=600,
-        )
-        # # plt.show()
-        plt.close(fig)
-
         # Plot cluster and cell type for each cluster
         for cluster_id in range(0, 18):
             print(f"Plotting cluster {cluster_id}...")
+
+            niche_labels = np.asarray(domain.labels[niche_label_name]["labels"])
+            n_cells_in_cluster = int(np.sum(niche_labels == cluster_id))
+            print(f"Number of cells in cluster {cluster_id}: {n_cells_in_cluster}")
+
+            if n_cells_in_cluster == 0:
+                print(
+                    f"No cells found in cluster {cluster_id} for this domain, skipping."
+                )
+                continue
 
             selected_clusters = ms.query.query(
                 domain, ("label", niche_label_name), "is", cluster_id
@@ -117,13 +72,6 @@ def main():
             )
 
             selected_boundaries = selected_clusters & boundCells
-
-            # Skip if no cells belong to this cluster in this domain
-            if len(selected_boundaries) == 0:
-                print(
-                    f"No cells found in cluster {cluster_id} for this domain, skipping."
-                )
-                continue
 
             # Plot cluster and cell type for each cluster
             fig, axes = plt.subplots(1, 2, figsize=(16, 6))
@@ -247,6 +195,61 @@ def main():
             dpi=600,
         )
         # plt.show()
+        plt.close(fig)
+
+        # Define variables
+        clusters_of_interest = [16, 17]
+
+        # Query for cells in clusters
+        label = "_".join(str(c) for c in clusters_of_interest)
+        selected_clusters = ms.query.query(
+            domain, ("label", niche_label_name), "in", clusters_of_interest
+        )
+
+        # Combine: cells in one of the selected clusters AND in Cell boundaries
+        selected_boundaries = selected_clusters & boundCells
+
+        # Visualize
+        print(f"Visualizing clusters {label}...")
+        fig, ax = plt.subplots(figsize=(8, 6))
+
+        ms.visualise.visualise(
+            domain,
+            objects_to_plot=boundCells,
+            add_cbar=False,
+            shape_kwargs={
+                "alpha": 0.5,
+                "linewidth": 0.005,
+                "edgecolor": "#00000000",
+                "color": "#848484",
+            },
+            ax=ax,
+        )
+
+        ms.visualise.visualise(
+            domain,
+            color_by=niche_label_name,
+            objects_to_plot=selected_boundaries,
+            shape_kwargs=dict(alpha=1, linewidth=0.001, edgecolor="#00000000"),
+            ax=ax,
+            add_scalebar=True,
+            scalebar_kwargs={
+                "size": 500,
+                "label": "500µm",
+                "loc": "lower right",
+                "pad": 0.1,
+                "color": "black",
+                "frameon": False,
+                "size_vertical": 2,
+            },
+        )
+        plt.savefig(f"{save_path_domain}/clusters_{label}.pdf", bbox_inches="tight")
+        plt.savefig(
+            f"{save_path_domain}/clusters_{label}.png",
+            bbox_inches="tight",
+            dpi=600,
+        )
+        # # plt.show()
         plt.close(fig)
 
         # --- Free memory before loading the next domain ---
