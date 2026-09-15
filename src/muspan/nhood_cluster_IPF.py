@@ -546,7 +546,7 @@ def main():
     logs_dir = Path(base_path) / "logs" / "muspan"
     logs_dir.mkdir(parents=True, exist_ok=True)
     logger = setup_logger(
-        log_dir=logs_dir, log_name=f"nhood_cluster_{number_of_clusters}"
+        log_dir=logs_dir, log_name=f"IPF_nhood_cluster_{number_of_clusters}"
     )
 
     # Define a color palette for the neighbourhood labels
