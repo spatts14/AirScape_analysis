@@ -10,6 +10,9 @@ import muspan as ms
 
 def main():
     """Visualize all clusters in a domain for every domain in the directory."""
+    network_type = "Delaunay"  # "Delaunay" or "proximity"
+    niche_label_name = f"Neighbourhood ID {network_type}"
+
     # Base project path
     # base_path = Path(
     #     "/Volumes/phenotypingsputumasthmaticsaurorawellcomea1/live/Sara_Patti/009_ST_Xenium/"
@@ -23,7 +26,7 @@ def main():
     domain_dir = (
         outpath
         / "domains_with_niches"
-        / "Delaunay"  # Delaunay or proximity
+        / network_type  # Delaunay or proximity
         / "COPDvMICA_khop_1"
         / "18_clusters"
     )
@@ -49,7 +52,7 @@ def main():
         # Query for cells in clusters
         label = "_".join(str(c) for c in clusters_of_interest)
         selected_clusters = ms.query.query(
-            domain, ("label", "Neighbourhood ID proximity"), "in", clusters_of_interest
+            domain, ("label", niche_label_name), "in", clusters_of_interest
         )
 
         # Restrict to cell boundaries only
@@ -77,7 +80,7 @@ def main():
 
         ms.visualise.visualise(
             domain,
-            color_by="Neighbourhood ID proximity",
+            color_by=niche_label_name,
             objects_to_plot=selected_boundaries,
             shape_kwargs=dict(alpha=1, linewidth=0.001, edgecolor="#00000000"),
             ax=ax,
@@ -106,7 +109,7 @@ def main():
             print(f"Plotting cluster {cluster_id}...")
 
             selected_clusters = ms.query.query(
-                domain, ("label", "Neighbourhood ID proximity"), "is", cluster_id
+                domain, ("label", niche_label_name), "is", cluster_id
             )
 
             boundCells = ms.query.query(
@@ -143,7 +146,7 @@ def main():
 
             ms.visualise.visualise(
                 domain,
-                color_by="Neighbourhood ID proximity",
+                color_by=niche_label_name,
                 objects_to_plot=selected_boundaries,
                 shape_kwargs=dict(alpha=1, linewidth=0.001, edgecolor="#00000000"),
                 ax=ax,
@@ -222,7 +225,7 @@ def main():
 
         ms.visualise.visualise(
             domain,
-            color_by="Neighbourhood ID proximity",
+            color_by=niche_label_name,
             objects_to_plot=selected_boundaries,
             shape_kwargs=dict(alpha=1, linewidth=0.001, edgecolor="#00000000"),
             ax=ax,
