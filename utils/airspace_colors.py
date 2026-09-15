@@ -10,7 +10,7 @@ condition_palette = {
     "IPF":   "#6A7FB5",  # slate blue
     "PM08":  "#B07D4A",  # warm tan
     "COPD":  "#7EB0B8",  # dusty teal
-    "MICA":  "#A67B8A",  # muted rose
+    "MICA":  "#8EA882",  # muted rose
 }
 
 diagnosis_palette = {
