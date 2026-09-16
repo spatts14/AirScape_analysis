@@ -277,7 +277,7 @@ def main():
     # Set to a cell type name (e.g. "CD4+ T cells") to only compute that cell type against
     # every other cell type (including itself). Set to None to compute the full pairwise
     # sweep across all cell types instead.
-    FIXED_CELL_TYPE_OF_INTEREST = "CTHRC1+ fibroblasts"  # or None
+    FIXED_CELL_TYPE_OF_INTEREST = "Interstitial macrophages"  # or None
 
     # Make list of all domains to process
     domain_name, domain_path = parse_args(sys.argv[1:])
@@ -349,7 +349,8 @@ def main():
             )
         except Exception:
             # Log and continue so one problematic pair (e.g. too few cells of one type)
-            # doesn't kill the whole batch — re-raise here if you'd rather fail fast instead.
+            # doesn't kill the whole batch
+            # re-raise here if you'd rather fail fast instead.
             logger.exception(f"Failed processing {cell1} vs {cell2} — skipping.")
         finally:
             plt.close("all")
