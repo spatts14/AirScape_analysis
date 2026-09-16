@@ -31,9 +31,11 @@ def remove_cell_types(domain, cell_types_to_remove, label_name="Cell Type"):
 
 
 def should_load_domain(stem):
-    """True if this domain file should be loaded: any MICA sample (no
-    timepoint restriction), or a COPD sample specifically at the V1
-    timepoint. Everything else (IPF, PM08, COPD V2/V3, etc.) is skipped.
+    """True if this domain file should be loaded.
+
+    Load any MICA sample. (no timepoint restriction)
+    or a COPD sample specifically at the V1 timepoint.
+    Everything else (IPF, PM08, COPD V2/V3, etc.) is skipped.
     """
     if "MICA" in stem:
         return True
@@ -45,9 +47,9 @@ def should_load_domain(stem):
 def main():
     """Compute neighbourhood clustering and save the domains."""
     # Define variables
-    number_of_clusters = 18
+    number_of_clusters = 12
     khop = 1  # Number of hops for neighbourhood clustering
-    network_type = "Delaunay"  # 'Delaunay' or 'proximity'
+    network_type = "proximity"  # 'Delaunay' or 'proximity'
     max_edge_distance = 30
     subset = ["COPD", "MICA"]  # COPD or IPF and PM08
     subset_safe_name = "v".join(subset)
