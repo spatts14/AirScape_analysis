@@ -30,18 +30,39 @@ def remove_cell_types(domain, cell_types_to_remove, label_name="Cell Type"):
     return domain
 
 
-def should_load_domain(stem):
-    """True if this domain file should be loaded.
+def should_load_domain(stem, subset):
+    """True if this domain file's stem should be loaded, based on subset.
 
-    Load any MICA sample. (no timepoint restriction)
-    or a COPD sample specifically at the V1 timepoint.
+    For subset == ["MICA", "COPD"]: loads any MICA sample (no timepoint
+    restriction), or a COPD sample specifically at the V1 timepoint.
     Everything else (IPF, PM08, COPD V2/V3, etc.) is skipped.
+
+    For subset == ["IPF", "PM08"]: loads any IPF or PM08 sample, no
+    further restriction.
+
+    Args:
+        stem: the domain file's stem (filename without extension).
+        subset: list of sample group names controlling which loading
+            rule to apply — must be exactly ["MICA", "COPD"] or
+            ["IPF", "PM08"].
     """
-    if "MICA" in stem:
-        return True
-    if "COPD" in stem:
-        return "_V1_" in stem
-    return False
+    if subset is None:
+        raise ValueError("Subset must be specified as a list of sample types.")
+
+    if subset == ["MICA", "COPD"]:
+        if "MICA" in stem:
+            return True
+        if "COPD" in stem:
+            return "_V1_" in stem
+        return False
+
+    if subset == ["IPF", "PM08"]:
+        return "IPF" in stem or "PM08" in stem
+
+    raise ValueError(
+        f"Subset {subset} is not recognized. "
+        "Must be one of ['MICA', 'COPD'] or ['IPF', 'PM08']."
+    )
 
 
 def main():
@@ -130,8 +151,8 @@ def main():
         if not path.is_file():
             logger.warning(f"Skipping {path.stem} as it is not a file.")
             continue
-        if not should_load_domain(path.stem):
-            logger.info(f"Skipping {path.stem} (not MICA, or not a COPD V1 sample).")
+        if not should_load_domain(path.stem, subset):
+            logger.info(f"Skipping {path.stem}.")
             continue
         logger.info(f"Loading {path.stem}...")
         domain = ms.io.load_domain(str(path))
