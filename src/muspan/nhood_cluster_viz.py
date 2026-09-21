@@ -14,6 +14,7 @@ def main():
     network_type = "Delaunay"  # "Delaunay" or "proximity"
     niche_label_name = f"Neighbourhood ID {network_type}"
 
+    number_of_clusters = 12  # Number of clusters to visualize
     # Base project path
     # base_path = Path(
     #     "/Volumes/phenotypingsputumasthmaticsaurorawellcomea1/live/Sara_Patti/009_ST_Xenium/"
@@ -29,7 +30,7 @@ def main():
         / "domains_with_niches"
         / network_type  # Delaunay or proximity
         / "COPDvMICA_khop_1"
-        / "18_clusters"
+        / f"{number_of_clusters}_clusters"
     )
     if not domain_dir.exists():
         raise FileNotFoundError(f"Domain directory not found: {domain_dir}")
@@ -50,7 +51,7 @@ def main():
         save_path_domain.mkdir(parents=True, exist_ok=True)
 
         # Plot cluster and cell type for each cluster
-        for cluster_id in range(0, 18):
+        for cluster_id in range(0, number_of_clusters):
             print(f"Plotting cluster {cluster_id}...")
 
             niche_labels = np.asarray(domain.labels[niche_label_name]["labels"])
