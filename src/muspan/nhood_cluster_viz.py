@@ -11,10 +11,11 @@ import muspan as ms
 
 def main():
     """Visualize all clusters in a domain for every domain in the directory."""
-    network_type = "Delaunay"  # "Delaunay" or "proximity"
+    network_type = "proximity"  # "Delaunay" or "proximity"
     niche_label_name = f"Neighbourhood ID {network_type}"
-
     number_of_clusters = 12  # Number of clusters to visualize
+    clusters_of_interest = [4, 5]
+
     # Base project path
     # base_path = Path(
     #     "/Volumes/phenotypingsputumasthmaticsaurorawellcomea1/live/Sara_Patti/009_ST_Xenium/"
@@ -197,9 +198,6 @@ def main():
         )
         # plt.show()
         plt.close(fig)
-
-        # Define variables
-        clusters_of_interest = [16, 17]
 
         # Query for cells in clusters
         label = "_".join(str(c) for c in clusters_of_interest)
