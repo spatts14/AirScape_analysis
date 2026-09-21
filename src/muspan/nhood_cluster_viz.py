@@ -17,12 +17,12 @@ def main():
     clusters_of_interest = [4, 5]
 
     # Base project path
-    # base_path = Path(
-    #     "/Volumes/phenotypingsputumasthmaticsaurorawellcomea1/live/Sara_Patti/009_ST_Xenium/"
-    # )
     base_path = Path(
-        "/rds/general/user/sep22/projects/phenotypingsputumasthmaticsaurorawellcomea1/live/Sara_Patti/009_ST_Xenium/"
+        "/Volumes/phenotypingsputumasthmaticsaurorawellcomea1/live/Sara_Patti/009_ST_Xenium/"
     )
+    # base_path = Path(
+    #     "/rds/general/user/sep22/projects/phenotypingsputumasthmaticsaurorawellcomea1/live/Sara_Patti/009_ST_Xenium/"
+    # )
     # Output directories
     outpath = base_path / "output" / "muspan" / "nb_clustering"
 
