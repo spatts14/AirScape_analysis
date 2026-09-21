@@ -158,6 +158,9 @@ drugs_of_interest = [
     "CHEMBL4650469|DEPEMOKIMAB",
     "CHEMBL4594385|ASTEGOLIMAB",
     "CHEMBL3707229|TEZEPELUMAB",
+    # IM
+    "CHEMBL4594608|AXATILIMAB",
+    "CHEMBL2108282|CATRIDECACOG",
 ]
 
 # Load the custom ChEMBL 37 drug-target dictionary built by parse_database.py
