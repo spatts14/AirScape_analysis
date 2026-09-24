@@ -16,8 +16,6 @@ sys.path.append(str(Path(__file__).resolve().parents[2]))
 from utils.airspace_colors import level_2_listed
 from utils.setup_logger import setup_logger
 
-logger = setup_logger(__name__)
-
 
 def _gene_values(adata: sc.AnnData, gene: str) -> np.ndarray:
     """Return a 1D dense array of expression values for one gene from .X."""
@@ -208,7 +206,6 @@ logs_dir = Path(wd) / "logs" / "spatial_plots"
 logs_dir.mkdir(parents=True, exist_ok=True)
 logger = setup_logger(log_dir=logs_dir, log_name="spatial_plots")
 
-
 # Set directories
 path = Path(
     "/rds/general/user/sep22/projects/phenotypingsputumasthmaticsaurorawellcomea1/live/Sara_Patti/009_ST_Xenium"
@@ -339,7 +336,7 @@ if n_dropped > 0:
 subset_for_combined = adata[mask]
 
 sc.pl.dotplot(
-    adata,
+    subset_for_combined,
     var_names=gene_present,
     groupby=["level_2", "condition"],
     standard_scale="var",
