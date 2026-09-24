@@ -3,6 +3,7 @@
 from collections.abc import Sequence
 from pathlib import Path
 
+import anndata as ad
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
@@ -63,9 +64,10 @@ def create_df_gene(
 seed_everything(19960915)
 
 # Set directories
-dir = Path(
-    "/rds/general/user/sep22/projects/phenotypingsputumasthmaticsaurorawellcomea1/live/Sara_Patti/009_ST_Xenium/output/2026-02-22_analysis_run_HVG2000/"
+path = Path(
+    "/rds/general/user/sep22/projects/phenotypingsputumasthmaticsaurorawellcomea1/live/Sara_Patti/009_ST_Xenium"
 )
+dir = path / "output/AIRSCAPE/"
 
 fig_dir = dir / "manual_analysis/plots"
 fig_dir.mkdir(parents=True, exist_ok=True)
@@ -83,9 +85,8 @@ custom_palette = sns.color_palette(
 )
 
 # Load data
-print(f"Loading data from {dir / 'annotate/adata.h5ad'}...")
-adata = sc.read_h5ad(dir / "annotate/adata.h5ad")
-
+print("Loading data from 'adata_final_object/adata_with_metadata.zarr'...")
+adata = ad.read_zarr(dir / "adata_final_object/adata_with_metadata.zarr")
 print("Data loaded successfully.")
 
 # Gene name
@@ -103,7 +104,7 @@ if hasattr(expr, "toarray"):
     expr = expr.toarray()
 
 df = pd.DataFrame(expr, columns=genes_found)
-df["cell_type"] = adata.obs["level_0_annotation"].values
+df["cell_type"] = adata.obs["level_2"].values
 df["condition"] = adata.obs["condition"].values
 
 # Compute mean expression per (cell_type, condition)
