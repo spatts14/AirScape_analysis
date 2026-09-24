@@ -11,9 +11,7 @@ import seaborn as sns
 import squidpy as sq
 from matplotlib.colors import ListedColormap, Normalize
 
-sys.path.append(
-    str(Path(__file__).resolve().parents[3])
-)  # goes up 3 levels to AirScape/
+sys.path.append(str(Path(__file__).resolve().parents[2]))
 
 from utils.airspace_colors import level_2_listed
 from utils.setup_logger import setup_logger
