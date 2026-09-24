@@ -230,7 +230,7 @@ palette = level_2_listed
 cmap = sns.color_palette("mako", as_cmap=True)
 
 # Set cell type annotation levels
-annotation_levels = ["level_1", "level_2", "level_3"]
+annotation_levels = ["level_1", "level_2"]
 gene_list = [
     # TGF-β activation
     "TGFB1",
@@ -291,18 +291,18 @@ gene_list = [
 score_name = "fibroblast_remodeling_score"
 gene_score_list = gene_list
 
-for level in annotation_levels:
-    if level in adata.obs:
-        adata.obs[level] = adata.obs[level].astype("category")
+# for level in annotation_levels:
+#     if level in adata.obs:
+#         adata.obs[level] = adata.obs[level].astype("category")
 
-    # make a new folder for spatial plots for this level
-    level_spatial_dir = fig_dir / level
-    level_spatial_dir.mkdir(exist_ok=True, parents=True)
+#     # make a new folder for spatial plots for this level
+#     level_spatial_dir = fig_dir / level
+#     level_spatial_dir.mkdir(exist_ok=True, parents=True)
 
-    # Plot spatial distribution of clusters for this level
-    plot_spatial_distribution(
-        adata=adata, module_dir=level_spatial_dir, annotation_key=level, palette=palette
-    )
+#     # Plot spatial distribution of clusters for this level
+#     plot_spatial_distribution(
+#         adata=adata, module_dir=level_spatial_dir, annotation_key=level, palette=palette
+#     )
 
 # Gene-level spatial expression plots
 gene_present = [g for g in gene_list if g in adata.var_names]
