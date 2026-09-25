@@ -79,7 +79,7 @@ def plot_spatial_gene_expression(
     module_dir: Path,
     gene_list: list[str],
     cmap: str | ListedColormap | None = "mako",
-    background_color: str = "#414042",
+    background_color: str = "#000000",
 ):
     """Plot spatial expression of each gene in gene_list, for every ROI.
 
@@ -171,7 +171,7 @@ def plot_spatial_score(
     module_dir: Path,
     score_name: str,
     cmap: str | ListedColormap | None = "mako",
-    background_color: str = "#414042",
+    background_color: str = "#000000",
 ):
     """Plot spatial distribution of a continuous score for every ROI.
 
