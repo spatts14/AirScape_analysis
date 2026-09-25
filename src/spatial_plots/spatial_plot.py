@@ -237,7 +237,7 @@ gc.collect()
 
 # Set palette
 palette = level_2_listed
-cmap = sns.color_palette("mako", as_cmap=True)
+cmap = sns.color_palette("rocket", as_cmap=True)
 
 # Set cell type annotation levels
 annotation_levels = ["level_1", "level_2"]
