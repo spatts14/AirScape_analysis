@@ -1,6 +1,6 @@
 #!/bin/bash
 #PBS -l walltime=04:00:00
-#PBS -l select=1:ncpus=1:mem=128gb
+#PBS -l select=1:ncpus=1:mem=258gb
 #PBS -N spatial_plot
 #PBS -j oe
 
