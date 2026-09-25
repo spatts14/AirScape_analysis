@@ -1,5 +1,6 @@
 """Spatial plots for the AirScape analysis."""
 
+import gc
 import sys
 from pathlib import Path
 
@@ -225,12 +226,14 @@ sc.settings.figdir = fig_dir
 print("Loading data from 'adata_final_object/adata_with_metadata.zarr'...")
 adata = ad.read_zarr(dir / "adata_final_object/adata_with_metadata.zarr")
 
-# Remove donor PM08_159
-adata = adata[adata.obs["ROI"] != "PM08_159"]
+remove_rois = ["PM08_159"]  # donor PM08_159
+remove_cell_types = ["Alveolar fibroblasts (collagen high)"]  # only present in PM08_159
 
-# Remove cells only in PM08_159 (donor PM08_159) from the analysis
-remove_cell_types = ["Alveolar fibroblasts (collagen high)"]
-adata = adata[~adata.obs["level_2"].isin(remove_cell_types)]
+keep = (
+    ~adata.obs["ROI"].isin(remove_rois) & ~adata.obs["level_2"].isin(remove_cell_types)
+).to_numpy()
+adata = adata[keep].copy()  # one real copy; the full object is released here
+gc.collect()
 
 # Set palette
 palette = level_2_listed
