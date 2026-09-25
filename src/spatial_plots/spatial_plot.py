@@ -318,6 +318,9 @@ gene_score_list = gene_list
 #     )
 
 # Gene score spatial expression plots
+score_name_dir = fig_dir / score_name
+score_name_dir.mkdir(exist_ok=True, parents=True)
+
 gene_score_present = [g for g in gene_score_list if g in adata.var_names]
 
 sc.tl.score_genes(
@@ -328,7 +331,7 @@ sc.tl.score_genes(
 
 plot_spatial_score(
     adata=adata,
-    module_dir=fig_dir,
+    module_dir=score_name_dir,
     score_name=score_name,
     cmap=cmap,
 )
