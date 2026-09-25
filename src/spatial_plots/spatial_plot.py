@@ -79,7 +79,7 @@ def plot_spatial_gene_expression(
     module_dir: Path,
     gene_list: list[str],
     cmap: str | ListedColormap | None = "mako",
-    background_color: str = "#000000",
+    background_color: str = "#424141",
 ):
     """Plot spatial expression of each gene in gene_list, for every ROI.
 
@@ -171,7 +171,7 @@ def plot_spatial_score(
     module_dir: Path,
     score_name: str,
     cmap: str | ListedColormap | None = "mako",
-    background_color: str = "#000000",
+    background_color: str = "#424141",
 ):
     """Plot spatial distribution of a continuous score for every ROI.
 
@@ -261,10 +261,11 @@ adata = adata[keep].copy()  # one real copy; the full object is released here
 gc.collect()
 
 # Set palette
-cmap = sns.color_palette("rocket", as_cmap=True)
+cmap = sns.color_palette("mako", as_cmap=True)
 
 # Set cell type annotation levels
 annotation_levels = ["level_1", "level_2"]
+# gene_list = ["IL17A", "GMCSF", "TGFB1", "MMP9", "CD29"]
 gene_list = [
     # TGF-β activation
     "TGFB1",
@@ -289,7 +290,6 @@ gene_list = [
     "TNC",
     "COMP",
     "FBN1",
-    "ELN",
     # Proteoglycans
     "LUM",
     "VCAN",
