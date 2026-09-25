@@ -143,10 +143,10 @@ def plot_spatial_gene_expression(
                 norm=norm,
                 wspace=0.4,
                 figsize=(16, 16),
-                size=5,
+                size=8,
                 edgecolor="none",
                 cmap=cmap,
-                save=gene_dir / f"{gene}_{safe_roi_name}_spatial.png",
+                save=gene_dir / f"{gene}_{safe_roi_name}_spatial.pdf",
             )
 
         logger.info(f"Saved spatial plots for '{gene}' to {gene_dir}")
@@ -191,10 +191,10 @@ def plot_spatial_score(
             color=[score_name],
             wspace=0.4,
             figsize=(16, 16),
-            size=5,
+            size=8,
             edgecolor="none",
             cmap=cmap,
-            save=module_dir / f"{score_name}_{safe_roi_name}_spatial.png",
+            save=module_dir / f"{score_name}_{safe_roi_name}_spatial.pdf",
         )
 
     logger.info(f"Spatial score plots saved to {module_dir}")
@@ -224,6 +224,13 @@ sc.settings.figdir = fig_dir
 # Load data
 print("Loading data from 'adata_final_object/adata_with_metadata.zarr'...")
 adata = ad.read_zarr(dir / "adata_final_object/adata_with_metadata.zarr")
+
+# Remove donor PM08_159
+adata = adata[adata.obs["ROI"] != "PM08_159"]
+
+# Remove cells only in PM08_159 (donor PM08_159) from the analysis
+remove_cell_types = ["Alveolar fibroblasts (collagen high)"]
+adata = adata[~adata.obs["level_2"].isin(remove_cell_types)]
 
 # Set palette
 palette = level_2_listed
@@ -301,8 +308,27 @@ gene_score_list = gene_list
 
 #     # Plot spatial distribution of clusters for this level
 #     plot_spatial_distribution(
-#         adata=adata, module_dir=level_spatial_dir, annotation_key=level, palette=palette
+#         adata=adata,
+#         module_dir=level_spatial_dir,
+#         annotation_key=level,
+#         palette=palette
 #     )
+
+# Gene score spatial expression plots
+gene_score_present = [g for g in gene_score_list if g in adata.var_names]
+
+sc.tl.score_genes(
+    adata,
+    gene_list=gene_score_present,
+    score_name=score_name,
+)
+
+plot_spatial_score(
+    adata=adata,
+    module_dir=fig_dir,
+    score_name=score_name,
+    cmap=cmap,
+)
 
 # Gene-level spatial expression plots
 gene_present = [g for g in gene_list if g in adata.var_names]
@@ -326,39 +352,21 @@ sc.pl.dotplot(
 )
 
 # Plot dotplot of genes in list, grouped by level_2 and condition
-mask = adata.obs["level_2"].notna() & adata.obs["condition"].notna()
+mask = (adata.obs["level_2"].notna() & adata.obs["condition"].notna()).to_numpy()
 n_dropped = (~mask).sum()
 if n_dropped > 0:
     logger.warning(
         f"Dropping {n_dropped} cells with missing 'level_2' or 'condition' "
         "before combined dotplot."
     )
-subset_for_combined = adata[mask]
 
 sc.pl.dotplot(
-    subset_for_combined,
+    adata[mask],
     var_names=gene_present,
     groupby=["level_2", "condition"],
     standard_scale="var",
     cmap=cmap,
     save="_level_2_condition.pdf",
-)
-
-
-# Gene score spatial expression plots
-gene_score_present = [g for g in gene_score_list if g in adata.var_names]
-
-sc.tl.score_genes(
-    adata,
-    gene_list=gene_score_present,
-    score_name=score_name,
-)
-
-plot_spatial_score(
-    adata=adata,
-    module_dir=fig_dir,
-    score_name=score_name,
-    cmap=cmap,
 )
 
 logger.info("Spatial plot module complete.")
