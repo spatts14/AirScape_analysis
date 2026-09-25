@@ -157,9 +157,10 @@ def plot_spatial_gene_expression(
             ax.set_facecolor(background_color)
 
             fig.savefig(
-                gene_dir / f"{gene}_{safe_roi_name}_spatial.pdf",
+                gene_dir / f"{gene}_{safe_roi_name}_spatial.png",
                 facecolor=background_color,
                 bbox_inches="tight",
+                dpi=600,
             )
             plt.close(fig)
 
@@ -217,9 +218,10 @@ def plot_spatial_score(
         ax.set_facecolor(background_color)
 
         fig.savefig(
-            module_dir / f"{score_name}_{safe_roi_name}_spatial.pdf",
+            module_dir / f"{score_name}_{safe_roi_name}_spatial.png",
             facecolor=background_color,
             bbox_inches="tight",
+            dpi=600,
         )
         plt.close(fig)
 
