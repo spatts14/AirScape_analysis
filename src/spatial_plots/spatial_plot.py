@@ -5,6 +5,7 @@ import sys
 from pathlib import Path
 
 import anndata as ad
+import matplotlib.pyplot as plt
 import numpy as np
 import scanpy as sc
 import scipy.sparse as sp
@@ -79,6 +80,7 @@ def plot_spatial_gene_expression(
     module_dir: Path,
     gene_list: list[str],
     cmap: str | ListedColormap | None = "mako",
+    background_color: str = "#414042",
 ):
     """Plot spatial expression of each gene in gene_list, for every ROI.
 
@@ -94,6 +96,7 @@ def plot_spatial_gene_expression(
         gene_list: List of gene names to plot spatially
         cmap: Colormap for expression values (a sequential colormap,
             since gene expression is continuous)
+        background_color: Figure/axes background color for saved plots
     """
     if "ROI" not in adata.obs.columns:
         logger.warning("'ROI' column not found, skipping spatial gene plots")
@@ -135,6 +138,7 @@ def plot_spatial_gene_expression(
             subset = adata[adata.obs["ROI"] == roi]
             safe_roi_name = str(roi).replace(" ", "_").replace("/", "-")
 
+            fig, ax = plt.subplots(figsize=(16, 16))
             sq.pl.spatial_scatter(
                 subset,
                 library_id="spatial",
@@ -143,12 +147,21 @@ def plot_spatial_gene_expression(
                 use_raw=False,  # read the same values (.X) the scale was computed from
                 norm=norm,
                 wspace=0.4,
-                figsize=(16, 16),
                 size=8,
                 edgecolor="none",
                 cmap=cmap,
-                save=gene_dir / f"{gene}_{safe_roi_name}_spatial.pdf",
+                ax=ax,
             )
+
+            fig.patch.set_facecolor(background_color)
+            ax.set_facecolor(background_color)
+
+            fig.savefig(
+                gene_dir / f"{gene}_{safe_roi_name}_spatial.pdf",
+                facecolor=background_color,
+                bbox_inches="tight",
+            )
+            plt.close(fig)
 
         logger.info(f"Saved spatial plots for '{gene}' to {gene_dir}")
 
@@ -158,6 +171,7 @@ def plot_spatial_score(
     module_dir: Path,
     score_name: str,
     cmap: str | ListedColormap | None = "mako",
+    background_color: str = "#414042",
 ):
     """Plot spatial distribution of a continuous score for every ROI.
 
@@ -168,6 +182,7 @@ def plot_spatial_score(
         score_name: Name of the .obs column holding the continuous score
         cmap: Colormap for the score (continuous, so a sequential colormap
             like "mako" is used, not a categorical palette)
+        background_color: Figure/axes background color for saved plots
     """
     module_dir.mkdir(exist_ok=True, parents=True)
 
@@ -185,18 +200,28 @@ def plot_spatial_score(
         subset = adata[adata.obs["ROI"] == roi]
         safe_roi_name = str(roi).replace(" ", "_").replace("/", "-")
 
+        fig, ax = plt.subplots(figsize=(16, 16))
         sq.pl.spatial_scatter(
             subset,
             library_id="spatial",
             shape=None,
             color=[score_name],
             wspace=0.4,
-            figsize=(16, 16),
             size=8,
             edgecolor="none",
             cmap=cmap,
-            save=module_dir / f"{score_name}_{safe_roi_name}_spatial.pdf",
+            ax=ax,
         )
+
+        fig.patch.set_facecolor(background_color)
+        ax.set_facecolor(background_color)
+
+        fig.savefig(
+            module_dir / f"{score_name}_{safe_roi_name}_spatial.pdf",
+            facecolor=background_color,
+            bbox_inches="tight",
+        )
+        plt.close(fig)
 
     logger.info(f"Spatial score plots saved to {module_dir}")
 
@@ -217,7 +242,6 @@ fig_dir = dir / "spatial_plots"
 fig_dir.mkdir(parents=True, exist_ok=True)
 gene_spatial_dir = fig_dir / "gene_expression"
 gene_spatial_dir.mkdir(exist_ok=True, parents=True)
-
 
 # Configure scanpy to save figures in our custom directory
 sc.settings.figdir = fig_dir
