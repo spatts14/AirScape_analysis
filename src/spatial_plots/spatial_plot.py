@@ -15,7 +15,6 @@ from matplotlib.colors import ListedColormap, Normalize
 
 sys.path.append(str(Path(__file__).resolve().parents[2]))
 
-from utils.airspace_colors import level_2_listed
 from utils.setup_logger import setup_logger
 
 
@@ -262,7 +261,6 @@ adata = adata[keep].copy()  # one real copy; the full object is released here
 gc.collect()
 
 # Set palette
-palette = level_2_listed
 cmap = sns.color_palette("rocket", as_cmap=True)
 
 # Set cell type annotation levels
@@ -327,22 +325,6 @@ gene_list = [
 score_name = "fibroblast_remodeling_score"
 gene_score_list = gene_list
 
-# for level in annotation_levels:
-#     if level in adata.obs:
-#         adata.obs[level] = adata.obs[level].astype("category")
-
-#     # make a new folder for spatial plots for this level
-#     level_spatial_dir = fig_dir / level
-#     level_spatial_dir.mkdir(exist_ok=True, parents=True)
-
-#     # Plot spatial distribution of clusters for this level
-#     plot_spatial_distribution(
-#         adata=adata,
-#         module_dir=level_spatial_dir,
-#         annotation_key=level,
-#         palette=palette
-#     )
-
 # Gene score spatial expression plots
 score_name_dir = fig_dir / score_name
 score_name_dir.mkdir(exist_ok=True, parents=True)
@@ -400,5 +382,19 @@ sc.pl.dotplot(
     cmap=cmap,
     save="_level_2_condition.pdf",
 )
+
+# Spatial distribution of clusters for each annotation level
+for level in annotation_levels:
+    if level in adata.obs:
+        adata.obs[level] = adata.obs[level].astype("category")
+
+    # make a new folder for spatial plots for this level
+    level_spatial_dir = fig_dir / level
+    level_spatial_dir.mkdir(exist_ok=True, parents=True)
+
+    # Plot spatial distribution of clusters for this level
+    plot_spatial_distribution(
+        adata=adata, module_dir=level_spatial_dir, annotation_key=level
+    )
 
 logger.info("Spatial plot module complete.")
