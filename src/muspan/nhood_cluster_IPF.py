@@ -500,6 +500,138 @@ def plot_niche_count_heatmap(
     plt.close(fig)
 
 
+def plot_niche_celltype_dotplot(
+    comp_df,
+    enrichment_df,
+    niche_order,
+    celltype_order,
+    out_path,
+    size_scale=500,
+    figsize=None,
+    title=None,
+    vmax=5,
+):
+    """Dot plot of niche x cell-type composition and enrichment.
+
+    Dot size encodes the mean percentage each cell type represents within
+    a niche (from comp_df's proportion_within_niche, averaged across
+    domains). Dot color encodes the log-fold enrichment value for that
+    niche/cell-type pair (from enrichment_df, the same values shown in
+    the neighbourhood enrichment clustermap/heatmap).
+
+    Args:
+        comp_df : pd.DataFrame
+            Long dataframe from compute_niche_celltype_composition, with
+            columns niche_id, cell_type, proportion_within_niche.
+        enrichment_df : pd.DataFrame
+            Wide niche x cell_type matrix of log-fold enrichment values
+            (e.g. df_plot from the clustermap step). Index = niche_id,
+            columns = cell_type.
+        niche_order : list
+            Niche IDs in the order they should appear on the y-axis.
+        celltype_order : list
+            Cell types in the order they should appear on the x-axis.
+        out_path : str or Path
+            Path to save the figure.
+        size_scale : float
+            Multiplier converting proportion (0-1) into marker area
+            (points^2). Increase for bigger dots, decrease for smaller.
+        figsize : tuple, optional
+            Figure size. If None, scaled to the number of niches/cell types.
+        title : str, optional
+            Plot title.
+        vmax : float
+            Symmetric color-scale limit for enrichment (-vmax to vmax),
+            matching the clustermap's plot_vmin/plot_vmax convention.
+    """
+    # Average proportion_within_niche across domains, per niche x cell type
+    pct_matrix = (
+        comp_df.groupby(["niche_id", "cell_type"])["proportion_within_niche"]
+        .mean()
+        .unstack(fill_value=0)
+        .reindex(index=niche_order, columns=celltype_order, fill_value=0)
+    )
+
+    # Align enrichment values to the same niche/cell-type grid.
+    # enrichment_df's index (e.g. df_plot) is the raw, unstringified
+    # unique_cluster_labels, while niche_order is a list of strings —
+    # cast to string first so reindex actually matches instead of
+    # silently returning all fill_value=0.
+    lfc_matrix = enrichment_df.copy()
+    lfc_matrix.index = lfc_matrix.index.astype(str)
+    lfc_matrix = lfc_matrix.reindex(
+        index=niche_order, columns=celltype_order, fill_value=0
+    )
+
+    if figsize is None:
+        figsize = (0.5 * len(celltype_order) + 3, 0.4 * len(niche_order) + 3)
+
+    fig, ax = plt.subplots(figsize=figsize)
+
+    # Build long-form x/y/size/color arrays for a single scatter call
+    x_positions = []
+    y_positions = []
+    sizes = []
+    colors = []
+
+    for i, niche_id in enumerate(niche_order):
+        for j, cell_type in enumerate(celltype_order):
+            pct = pct_matrix.loc[niche_id, cell_type]
+            lfc = lfc_matrix.loc[niche_id, cell_type]
+
+            x_positions.append(j)
+            y_positions.append(i)
+            sizes.append(pct * size_scale)
+            colors.append(lfc)
+
+    scatter = ax.scatter(
+        x_positions,
+        y_positions,
+        s=sizes,
+        c=colors,
+        cmap="coolwarm",
+        vmin=-vmax,
+        vmax=vmax,
+        edgecolor="black",
+        linewidth=0.4,
+    )
+
+    ax.set_xticks(range(len(celltype_order)))
+    ax.set_xticklabels(celltype_order, rotation=90)
+    ax.set_yticks(range(len(niche_order)))
+    ax.set_yticklabels(niche_order)
+    ax.set_xlabel("Cell type")
+    ax.set_ylabel("Niche ID")
+    ax.invert_yaxis()  # niche 0 at top, matching heatmap convention
+
+    if title:
+        ax.set_title(title)
+
+    fig.colorbar(scatter, ax=ax, label="Neighbourhood enrichment (log-fold)")
+
+    # Add a size legend showing what dot sizes correspond to which percentages
+    legend_pcts = [0.1, 0.25, 0.5]
+    legend_handles = [
+        plt.scatter(
+            [], [], s=p * size_scale, c="grey", edgecolor="black", linewidth=0.4
+        )
+        for p in legend_pcts
+    ]
+    legend_labels = [f"{int(p * 100)}%" for p in legend_pcts]
+    ax.legend(
+        legend_handles,
+        legend_labels,
+        title="% of niche",
+        bbox_to_anchor=(1.3, 1),
+        loc="upper left",
+        frameon=False,
+    )
+
+    fig.tight_layout()
+    fig.savefig(out_path, bbox_inches="tight")
+    plt.close(fig)
+
+
 def main():
     """Main function to calculate neighbourhood clusters."""
     # Parse command line arguments
@@ -756,6 +888,21 @@ def main():
         bbox_inches="tight",
     )
     plt.close()
+
+    # --- Dot plot: niche x cell-type composition (size) and enrichment (color) ---
+    logger.info(
+        "Plotting niche x cell-type dot plot (size=%, color=log-fold enrichment)..."
+    )
+    plot_niche_celltype_dotplot(
+        comp_df,
+        enrichment_df=df_plot,
+        niche_order=niche_order,
+        celltype_order=consistent_global_labels,
+        out_path=plots_dir_cluster
+        / f"{network_type}_{number_of_clusters}_clusters_niche_celltype_dotplot.pdf",
+        title="Niche composition (dot size) and enrichment (color)",
+        vmax=plot_vmax,
+    )
 
     for domain in domain_list:
         # Use the single global niche color map (built above from
