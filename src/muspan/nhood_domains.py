@@ -68,11 +68,11 @@ def should_load_domain(stem, subset):
 def main():
     """Compute neighbourhood clustering and save the domains."""
     # Define variables
-    number_of_clusters = 12
+    number_of_clusters = 18
     khop = 1  # Number of hops for neighbourhood clustering
     network_type = "proximity"  # 'Delaunay' or 'proximity'
     max_edge_distance = 30
-    subset = ["COPD", "MICA"]  # COPD or IPF and PM08
+    subset = ["IPF", "PM08"]  # COPD or IPF and PM08
     subset_safe_name = "v".join(subset)
     subset_safe_name = f"{subset_safe_name}_khop_{khop}"  # final dir name
 
