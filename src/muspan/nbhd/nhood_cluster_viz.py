@@ -28,7 +28,7 @@ def main():
     """Visualize all clusters for a single domain, selected via --domain_index."""
     args = parse_args()
 
-    network_type = "proximity"  # "Delaunay" or "proximity"
+    network_type = "Delaunay"  # "Delaunay" or "proximity"
     niche_label_name = f"Neighbourhood ID {network_type}"
     dir_name = "PM08vIPF_khop_1"
     clusters_of_interest = [5, 10]
