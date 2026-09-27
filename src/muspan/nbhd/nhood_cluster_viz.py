@@ -32,6 +32,7 @@ def main():
     niche_label_name = f"Neighbourhood ID {network_type}"
     dir_name = "PM08vIPF_khop_1"
     clusters_of_interest = [5, 10]
+    cluster = 18
 
     # Base project path
     base_path = Path(
@@ -41,7 +42,11 @@ def main():
     outpath = base_path / "output" / "muspan" / "nb_clustering"
 
     domain_dir = (
-        outpath / "domains_with_niches" / network_type / dir_name / "18_clusters"
+        outpath
+        / "domains_with_niches"
+        / network_type
+        / dir_name
+        / f"{cluster}_clusters"
     )
     if not domain_dir.exists():
         raise FileNotFoundError(f"Domain directory not found: {domain_dir}")
