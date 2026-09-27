@@ -1,5 +1,5 @@
 #!/bin/bash
-#PBS -J 0-15   # one index per domain file — adjust to match your actual count
+#PBS -J 0-16   # one index per domain file — adjust to match your actual count
 #PBS -l walltime=04:00:00
 #PBS -l select=1:ncpus=1:mem=128gb
 #PBS -N viz_nhood_cluster
