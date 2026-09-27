@@ -1,7 +1,7 @@
 #!/bin/bash
-#PBS -l walltime=04:00:00
-#PBS -l select=1:ncpus=1:mem=128gb
-#PBS -N viz_nhood_cluster
+#PBS -l walltime=8:0:0
+#PBS -l select=1:ncpus=4:mem=128gb
+#PBS -N nhood_prox_18_COPD
 #PBS -j oe
 
 # Load production tools
@@ -19,6 +19,6 @@ source muspan/bin/activate
 # Run with error logging
 echo "Starting at $(date)"
 
-python src/muspan/nhood_cluster_viz.py
+python src/muspan/nbhd/nhood_domains_individual_COPD.py
 
 echo "Completed at $(date)"
