@@ -37,14 +37,14 @@ def should_load_domain(stem, subset):
     restriction), or a COPD sample specifically at the V1 timepoint.
     Everything else (IPF, PM08, COPD V2/V3, etc.) is skipped.
 
-    For subset == ["IPF", "PM08"]: loads any IPF or PM08 sample, no
+    For subset == ["PM08", "IPF"]: loads any IPF or PM08 sample, no
     further restriction.
 
     Args:
         stem: the domain file's stem (filename without extension).
         subset: list of sample group names controlling which loading
             rule to apply — must be exactly ["MICA", "COPD"] or
-            ["IPF", "PM08"].
+            ["PM08", "IPF"].
     """
     if subset is None:
         raise ValueError("Subset must be specified as a list of sample types.")

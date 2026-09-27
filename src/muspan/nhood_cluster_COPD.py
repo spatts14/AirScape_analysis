@@ -892,21 +892,6 @@ def main():
     )
     plt.close()
 
-    # --- Dot plot: niche x cell-type composition (size) and enrichment (color) ---
-    logger.info(
-        "Plotting niche x cell-type dot plot (size=%, color=log-fold enrichment)..."
-    )
-    plot_niche_celltype_dotplot(
-        comp_df,
-        enrichment_df=df_plot,
-        niche_order=niche_order,
-        celltype_order=consistent_global_labels,
-        out_path=plots_dir_cluster
-        / f"{network_type}_{number_of_clusters}_clusters_niche_celltype_dotplot.pdf",
-        title="Niche composition (dot size) and enrichment (color)",
-        vmax=plot_vmax,
-    )
-
     for domain in domain_list:
         # Use the single global niche color map (built above from
         # unique_cluster_labels) instead of re-deriving colors from just
@@ -1066,6 +1051,21 @@ def main():
         palette=diagnosis_palette,
         row_order=subset,
         title="Number of cells per niche, by domain (ROI)",
+    )
+
+    # --- Dot plot: niche x cell-type composition (size) and enrichment (color) ---
+    logger.info(
+        "Plotting niche x cell-type dot plot (size=%, color=log-fold enrichment)..."
+    )
+    plot_niche_celltype_dotplot(
+        comp_df,
+        enrichment_df=df_plot,
+        niche_order=niche_order,
+        celltype_order=consistent_global_labels,
+        out_path=plots_dir_cluster
+        / f"{network_type}_{number_of_clusters}_clusters_niche_celltype_dotplot.pdf",
+        title="Niche composition (dot size) and enrichment (color)",
+        vmax=plot_vmax,
     )
 
 

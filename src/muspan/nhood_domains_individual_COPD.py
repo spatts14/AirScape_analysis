@@ -168,12 +168,6 @@ def main():
         domain_list.append(domain)
     logger.info(f"Loaded {len(domain_list)} domains from {input_dir}")
 
-    # Remove PM08_159 domain from the list
-    domain_list = [
-        domain for domain in domain_list if "PM08_159" not in str(domain.name)
-    ]
-    logger.info(f"After filtering, {len(domain_list)} domains remain for processing.")
-
     if cell_types_to_remove:
         logger.info(f"Removing cell types {cell_types_to_remove} from all domains...")
         for domain in domain_list:
