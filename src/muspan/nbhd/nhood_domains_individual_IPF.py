@@ -70,7 +70,7 @@ def main():
     # Define variables
     number_of_clusters = 18
     khop = 1  # Number of hops for neighbourhood clustering
-    network_type = "proximity"  # 'Delaunay' or 'proximity'
+    network_type = "Delaunay"  # 'Delaunay' or 'proximity'
     max_edge_distance = 30
     subset = ["PM08", "IPF"]  # COPD or IPF and PM08
     subset_safe_name = "v".join(subset)
