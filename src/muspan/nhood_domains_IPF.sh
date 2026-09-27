@@ -19,6 +19,6 @@ source muspan/bin/activate
 # Run with error logging
 echo "Starting at $(date)"
 
-python src/muspan/nhood_domains.py
+python src/muspan/nhood_domains_individual_IPF.py
 
 echo "Completed at $(date)"
