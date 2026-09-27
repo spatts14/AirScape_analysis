@@ -25,5 +25,5 @@ CLUSTER_LIST=(12 14 16 18 20)
 NUMBER_OF_CLUSTERS=${CLUSTER_LIST[$PBS_ARRAY_INDEX]}
 
 echo "Starting cluster count $NUMBER_OF_CLUSTERS at $(date) (array index $PBS_ARRAY_INDEX)"
-python src/muspan/nbhd/nhood_cluster_IPF.py --number_of_clusters "$NUMBER_OF_CLUSTERS"
+python src/muspan/nbhd/IPF_nhood_cluster.py --number_of_clusters "$NUMBER_OF_CLUSTERS"
 echo "Completed at $(date)"
