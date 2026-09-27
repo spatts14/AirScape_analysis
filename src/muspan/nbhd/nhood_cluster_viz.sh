@@ -1,4 +1,5 @@
 #!/bin/bash
+#PBS -J 0-15   # one index per domain file — adjust to match your actual count
 #PBS -l walltime=04:00:00
 #PBS -l select=1:ncpus=1:mem=128gb
 #PBS -N viz_nhood_cluster
@@ -19,6 +20,6 @@ source muspan/bin/activate
 # Run with error logging
 echo "Starting at $(date)"
 
-python src/muspan/nbhd/nhood_cluster_viz.py
+python src/muspan/nbhd/nhood_cluster_viz.py --domain_index "$PBS_ARRAY_INDEX"
 
 echo "Completed at $(date)"
