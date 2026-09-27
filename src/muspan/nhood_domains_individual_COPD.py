@@ -1,4 +1,4 @@
-"""Calculate neighbourhood clusters and save the annotated domains to disk."""
+"""Calculate neighbourhood clusters and save the annotated domains to disk - COPD."""
 
 import sys
 from pathlib import Path
@@ -56,7 +56,7 @@ def should_load_domain(stem, subset):
             return "_V1_" in stem
         return False
 
-    if subset == ["IPF", "PM08"]:
+    if subset == ["PM08", "IPF"]:
         return "IPF" in stem or "PM08" in stem
 
     raise ValueError(
@@ -72,9 +72,18 @@ def main():
     khop = 1  # Number of hops for neighbourhood clustering
     network_type = "proximity"  # 'Delaunay' or 'proximity'
     max_edge_distance = 30
-    subset = ["IPF", "PM08"]  # COPD or IPF and PM08
+    subset = ["MICA", "COPD"]
     subset_safe_name = "v".join(subset)
     subset_safe_name = f"{subset_safe_name}_khop_{khop}"  # final dir name
+    cell_types_to_remove = [
+        "Alveolar fibroblasts",
+        "Alveolar fibroblasts (collagen high)",
+        "AT1 cells",
+        "AT2 cells",
+        "Lipid-associated macrophages",
+        "Airway/Alveolar macrophages",
+        "Proliferating AT2 cells",
+    ]
 
     # Base project path
     paths = [
@@ -165,16 +174,6 @@ def main():
     ]
     logger.info(f"After filtering, {len(domain_list)} domains remain for processing.")
 
-    # Remove specified cell type(s) from every domain before building the network
-    cell_types_to_remove = [
-        "Alveolar fibroblasts",
-        "Alveolar fibroblasts (collagen high)",
-        "AT1 cells",
-        "AT2 cells",
-        "Lipid-associated macrophages",
-        "Airway/Alveolar macrophages",
-        "Proliferating AT2 cells",
-    ]
     if cell_types_to_remove:
         logger.info(f"Removing cell types {cell_types_to_remove} from all domains...")
         for domain in domain_list:
