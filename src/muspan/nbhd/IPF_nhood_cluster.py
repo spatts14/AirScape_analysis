@@ -12,7 +12,7 @@ from scipy.stats import mannwhitneyu
 
 import muspan as ms
 
-sys.path.append(str(Path(__file__).resolve().parents[2]))
+sys.path.append(str(Path(__file__).resolve().parents[3]))
 
 from utils.airspace_colors import diagnosis_palette
 from utils.setup_logger import setup_logger

@@ -8,7 +8,7 @@ import numpy as np
 
 import muspan as ms
 
-sys.path.append(str(Path(__file__).resolve().parents[2]))
+sys.path.append(str(Path(__file__).resolve().parents[3]))
 
 from utils.setup_logger import setup_logger
 
