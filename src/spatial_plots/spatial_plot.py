@@ -65,7 +65,7 @@ def plot_spatial_distribution(
             color=[annotation_key],
             wspace=0.4,
             figsize=(16, 16),
-            size=5,
+            size=10,
             edgecolor="none",
             palette=palette,
             save=module_dir / f"{annotation_key}_{roi}_spatial.png",
