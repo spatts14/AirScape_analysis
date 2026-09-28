@@ -3,8 +3,8 @@
 # Count them with: ls <domain_dir>/*.muspan | wc -l
 # Or override at submit time: qsub -J 0-$((N-1)) nhood_cluster_viz.sh
 #PBS -J 0-16
-#PBS -l walltime=04:00:00
-#PBS -l select=1:ncpus=1:mem=128gb
+#PBS -l walltime=08:00:00
+#PBS -l select=1:ncpus=1:mem=16gb
 #PBS -N viz_nhood_cluster
 #PBS -j oe
 
