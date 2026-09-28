@@ -12,7 +12,7 @@ def main():
     network_type = "proximity"  # "Delaunay" or "proximity"
     niche_label_name = f"Neighbourhood ID {network_type}"
     dir_name = "PM08vIPF_khop_1"
-    clusters_of_interest = [5, 9, 17, 10]
+    clusters_of_interest = [12, 13, 3]
     cluster = 18
     sample_ID = "IPF_RBH_16_proximity_18_muspan_domain.muspan"
 
@@ -100,3 +100,7 @@ def main():
         dpi=600,
     )
     plt.close(fig)
+
+
+if __name__ == "__main__":
+    main()
