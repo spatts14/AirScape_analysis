@@ -265,18 +265,55 @@ cmap = sns.color_palette("mako", as_cmap=True)
 
 # Set cell type annotation levels
 annotation_levels = ["level_1", "level_2"]
-# gene_list = ["IL17A", "GMCSF", "TGFB1", "MMP9", "CD29"]
+score_name = "inflammatory_score"
 gene_list = [
-    "MMP1",
-    "MMP2",
-    "MMP7",
-    "MMP2",
-    "MMP13",
-    "TIMP1",
-    "TIMP3",
-    "ADAM12",
-    "CTSK",
+    "IL1A",
+    "IL1B",
+    "IL18",
+    "IL33",
+    "IL36A",
+    "IL36B",
+    "IL36G",
+    "TNF",
+    "LTA",
+    "TNFSF14",
+    "IL6",
+    "OSM",
+    "LIF",
+    "IL12A",
+    "IL12B",
+    "IL23A",
+    "IL17A",
+    "IL17F",
+    "IL25",
+    "IL2",
+    "IL7",
+    "CXCL8",
+    "IL15",
+    "IL21",
+    "IL22",
+    "IFNA1",
+    "IFNB1",
+    "IFNG",
+    "IFNL1",
+    "CSF2",
+    "CSF3",
+    "CSF1",
+    "MIF",
+    "HMGB1",
 ]
+# gene_list = ["IL17A", "GMCSF", "TGFB1", "MMP9", "CD29"]
+# gene_list = [
+#     "MMP1",
+#     "MMP2",
+#     "MMP7",
+#     "MMP2",
+#     "MMP13",
+#     "TIMP1",
+#     "TIMP3",
+#     "ADAM12",
+#     "CTSK",
+# ]
 # gene_list = [
 #     # TGF-β activation
 #     "TGFB1",
@@ -333,7 +370,7 @@ gene_list = [
 #     "HES1",  # Notch
 # ]
 
-score_name = "MMP_score"
+
 gene_score_list = gene_list
 
 # Gene score spatial expression plots
