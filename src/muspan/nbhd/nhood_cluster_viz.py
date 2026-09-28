@@ -78,6 +78,11 @@ def main():
     save_path_domain = save_path / str(domain.name.replace(".muspan", ""))
     save_path_domain.mkdir(parents=True, exist_ok=True)
 
+    # Update color
+    domain.update_colors(
+        {"17": "#8B7CB3"}, colors_to_update="labels", label_name=niche_label_name
+    )
+
     # --- Plot combined clusters of interest, before the per-cluster loop
     # below reassigns selected_boundaries ---
     label = "_".join(str(c) for c in clusters_of_interest)
