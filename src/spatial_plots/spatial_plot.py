@@ -267,62 +267,73 @@ cmap = sns.color_palette("mako", as_cmap=True)
 annotation_levels = ["level_1", "level_2"]
 # gene_list = ["IL17A", "GMCSF", "TGFB1", "MMP9", "CD29"]
 gene_list = [
-    # TGF-β activation
-    "TGFB1",
-    "ITGB6",
-    "THBS1",
-    "CCN2",
-    "TGFBI",
-    # Fibrillar and other collagens
-    "COL1A1",
-    "COL1A2",
-    "COL3A1",
-    "COL5A1",
-    "COL6A1",
-    "COL6A2",
-    "COL6A3",
-    "COL14A1",
-    # Glycoproteins and matricellular proteins
-    "FN1",
-    "POSTN",
-    "CTHRC1",
-    "SPARC",
-    "TNC",
-    "COMP",
-    "FBN1",
-    # Proteoglycans
-    "LUM",
-    "VCAN",
-    "BGN",
-    "ASPN",
-    "FMOD",
-    # Myofibroblast marker
-    "ACTA2",
-    # Crosslinking
-    "LOX",
-    "LOXL1",
-    "LOXL2",
-    "PLOD2",
-    # Turnover and biomarkers
     "MMP1",
     "MMP2",
     "MMP7",
-    "MMP14",
+    "MMP2",
+    "MMP13",
     "TIMP1",
-    "SERPINE1",
-    "SPP1",
-    # Developmental pathways (representative genes)
-    "CTNNB1",
-    "WNT5A",
-    "AXIN2",  # Wnt/β-catenin
-    "SHH",
-    "GLI1",  # Hedgehog
-    "NOTCH1",
-    "JAG1",
-    "HES1",  # Notch
+    "TIMP3",
+    "ADAM12",
+    "CTSK",
 ]
+# gene_list = [
+#     # TGF-β activation
+#     "TGFB1",
+#     "ITGB6",
+#     "THBS1",
+#     "CCN2",
+#     "TGFBI",
+#     # Fibrillar and other collagens
+#     "COL1A1",
+#     "COL1A2",
+#     "COL3A1",
+#     "COL5A1",
+#     "COL6A1",
+#     "COL6A2",
+#     "COL6A3",
+#     "COL14A1",
+#     # Glycoproteins and matricellular proteins
+#     "FN1",
+#     "POSTN",
+#     "CTHRC1",
+#     "SPARC",
+#     "TNC",
+#     "COMP",
+#     "FBN1",
+#     # Proteoglycans
+#     "LUM",
+#     "VCAN",
+#     "BGN",
+#     "ASPN",
+#     "FMOD",
+#     # Myofibroblast marker
+#     "ACTA2",
+#     # Crosslinking
+#     "LOX",
+#     "LOXL1",
+#     "LOXL2",
+#     "PLOD2",
+#     # Turnover and biomarkers
+#     "MMP1",
+#     "MMP2",
+#     "MMP7",
+#     "MMP14",
+#     "TIMP1",
+#     "SERPINE1",
+#     "SPP1",
+#     # Developmental pathways (representative genes)
+#     "CTNNB1",
+#     "WNT5A",
+#     "AXIN2",  # Wnt/β-catenin
+#     "SHH",
+#     "GLI1",  # Hedgehog
+#     "NOTCH1",
+#     "JAG1",
+#     "HES1",  # Notch
+# ]
 
-score_name = "fibroblast_remodeling_score"
+score_name = "MMP_score"
 gene_score_list = gene_list
 
 # Gene score spatial expression plots
