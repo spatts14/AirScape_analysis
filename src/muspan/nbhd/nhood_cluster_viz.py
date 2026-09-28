@@ -31,7 +31,7 @@ def main():
     network_type = "proximity"  # "Delaunay" or "proximity"
     niche_label_name = f"Neighbourhood ID {network_type}"
     dir_name = "PM08vIPF_khop_1"
-    clusters_of_interest = [5, 10]
+    clusters_of_interest = [5, 9, 17, 10]
     cluster = 18
 
     # Base project path
