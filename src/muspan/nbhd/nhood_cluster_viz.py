@@ -28,7 +28,7 @@ def main():
     """Visualize all clusters for a single domain, selected via --domain_index."""
     args = parse_args()
 
-    network_type = "proximity"  # "Delaunay" or "proximity"
+    network_type = "Delaunay"  # "Delaunay" or "proximity"
     niche_label_name = f"Neighbourhood ID {network_type}"
     dir_name = "PM08vIPF_khop_1"
     clusters_of_interest = [5, 9, 17, 10]
@@ -135,148 +135,148 @@ def main():
     )
     plt.close(fig)
 
-    # # --- Plot cluster and cell type for each individual cluster ---
-    # for cluster_id in range(0, 18):
-    #     print(f"Plotting cluster {cluster_id}...")
+    # --- Plot cluster and cell type for each individual cluster ---
+    for cluster_id in range(0, 18):
+        print(f"Plotting cluster {cluster_id}...")
 
-    #     niche_labels = np.asarray(domain.labels[niche_label_name]["labels"])
-    #     n_cells_in_cluster = int(np.sum(niche_labels == cluster_id))
-    #     print(f"Number of cells in cluster {cluster_id}: {n_cells_in_cluster}")
+        niche_labels = np.asarray(domain.labels[niche_label_name]["labels"])
+        n_cells_in_cluster = int(np.sum(niche_labels == cluster_id))
+        print(f"Number of cells in cluster {cluster_id}: {n_cells_in_cluster}")
 
-    #     if n_cells_in_cluster == 0:
-    #         print(f"No cells found in cluster {cluster_id} for this domain, skipping.")
-    #         continue
+        if n_cells_in_cluster == 0:
+            print(f"No cells found in cluster {cluster_id} for this domain, skipping.")
+            continue
 
-    #     selected_clusters = ms.query.query(
-    #         domain, ("label", niche_label_name), "is", cluster_id
-    #     )
-    #     selected_boundaries = selected_clusters & boundCells
+        selected_clusters = ms.query.query(
+            domain, ("label", niche_label_name), "is", cluster_id
+        )
+        selected_boundaries = selected_clusters & boundCells
 
-    #     fig, axes = plt.subplots(1, 2, figsize=(16, 6))
+        fig, axes = plt.subplots(1, 2, figsize=(16, 6))
 
-    #     # --- Left plot: colored by neighbourhood ---
-    #     ax = axes[0]
-    #     print("Plotting left plot...")
-    #     ms.visualise.visualise(
-    #         domain,
-    #         objects_to_plot=boundCells,
-    #         add_cbar=False,
-    #         shape_kwargs={
-    #             "alpha": 0.5,
-    #             "linewidth": 0.005,
-    #             "edgecolor": "#00000000",
-    #             "color": "#848484",
-    #         },
-    #         ax=ax,
-    #     )
+        # --- Left plot: colored by neighbourhood ---
+        ax = axes[0]
+        print("Plotting left plot...")
+        ms.visualise.visualise(
+            domain,
+            objects_to_plot=boundCells,
+            add_cbar=False,
+            shape_kwargs={
+                "alpha": 0.5,
+                "linewidth": 0.005,
+                "edgecolor": "#00000000",
+                "color": "#848484",
+            },
+            ax=ax,
+        )
 
-    #     ms.visualise.visualise(
-    #         domain,
-    #         color_by=niche_label_name,
-    #         objects_to_plot=selected_boundaries,
-    #         shape_kwargs=dict(alpha=1, linewidth=0.001, edgecolor="#00000000"),
-    #         ax=ax,
-    #         add_scalebar=True,
-    #         scalebar_kwargs={
-    #             "size": 500,
-    #             "label": "500µm",
-    #             "loc": "lower right",
-    #             "pad": 0.1,
-    #             "color": "black",
-    #             "frameon": False,
-    #             "size_vertical": 2,
-    #         },
-    #     )
+        ms.visualise.visualise(
+            domain,
+            color_by=niche_label_name,
+            objects_to_plot=selected_boundaries,
+            shape_kwargs=dict(alpha=1, linewidth=0.001, edgecolor="#00000000"),
+            ax=ax,
+            add_scalebar=True,
+            scalebar_kwargs={
+                "size": 500,
+                "label": "500µm",
+                "loc": "lower right",
+                "pad": 0.1,
+                "color": "black",
+                "frameon": False,
+                "size_vertical": 2,
+            },
+        )
 
-    #     # --- Right plot: colored by cell type ---
-    #     ax = axes[1]
-    #     print("Plotting right plot...")
-    #     ms.visualise.visualise(
-    #         domain,
-    #         objects_to_plot=boundCells,
-    #         add_cbar=False,
-    #         shape_kwargs={
-    #             "alpha": 0.5,
-    #             "linewidth": 0.005,
-    #             "edgecolor": "#00000000",
-    #             "color": "#848484",
-    #         },
-    #         ax=ax,
-    #     )
+        # --- Right plot: colored by cell type ---
+        ax = axes[1]
+        print("Plotting right plot...")
+        ms.visualise.visualise(
+            domain,
+            objects_to_plot=boundCells,
+            add_cbar=False,
+            shape_kwargs={
+                "alpha": 0.5,
+                "linewidth": 0.005,
+                "edgecolor": "#00000000",
+                "color": "#848484",
+            },
+            ax=ax,
+        )
 
-    #     ms.visualise.visualise(
-    #         domain,
-    #         color_by="Cell Type",
-    #         objects_to_plot=selected_boundaries,
-    #         shape_kwargs=dict(alpha=1, linewidth=0.001, edgecolor="#00000000"),
-    #         ax=ax,
-    #         add_scalebar=True,
-    #         scalebar_kwargs={
-    #             "size": 500,
-    #             "label": "500µm",
-    #             "loc": "lower right",
-    #             "pad": 0.1,
-    #             "color": "black",
-    #             "frameon": False,
-    #             "size_vertical": 2,
-    #         },
-    #     )
+        ms.visualise.visualise(
+            domain,
+            color_by="Cell Type",
+            objects_to_plot=selected_boundaries,
+            shape_kwargs=dict(alpha=1, linewidth=0.001, edgecolor="#00000000"),
+            ax=ax,
+            add_scalebar=True,
+            scalebar_kwargs={
+                "size": 500,
+                "label": "500µm",
+                "loc": "lower right",
+                "pad": 0.1,
+                "color": "black",
+                "frameon": False,
+                "size_vertical": 2,
+            },
+        )
 
-    #     plt.tight_layout()
-    #     print("Saving combined plot...")
-    #     plt.savefig(
-    #         f"{save_path_domain}/combined_plot_{cluster_id}.png",
-    #         bbox_inches="tight",
-    #         dpi=600,
-    #     )
-    #     plt.close(fig)
+        plt.tight_layout()
+        print("Saving combined plot...")
+        plt.savefig(
+            f"{save_path_domain}/combined_plot_{cluster_id}.png",
+            bbox_inches="tight",
+            dpi=600,
+        )
+        plt.close(fig)
 
-    #     # --- "Cluster alone" plot for THIS cluster ---
-    #     fig, ax = plt.subplots(figsize=(8, 6))
+        # --- "Cluster alone" plot for THIS cluster ---
+        fig, ax = plt.subplots(figsize=(8, 6))
 
-    #     ms.visualise.visualise(
-    #         domain,
-    #         objects_to_plot=boundCells,
-    #         add_cbar=False,
-    #         shape_kwargs={
-    #             "alpha": 0.5,
-    #             "linewidth": 0.005,
-    #             "edgecolor": "#00000000",
-    #             "color": "#848484",
-    #         },
-    #         ax=ax,
-    #     )
+        ms.visualise.visualise(
+            domain,
+            objects_to_plot=boundCells,
+            add_cbar=False,
+            shape_kwargs={
+                "alpha": 0.5,
+                "linewidth": 0.005,
+                "edgecolor": "#00000000",
+                "color": "#848484",
+            },
+            ax=ax,
+        )
 
-    #     ms.visualise.visualise(
-    #         domain,
-    #         color_by=niche_label_name,
-    #         objects_to_plot=selected_boundaries,
-    #         shape_kwargs=dict(alpha=1, linewidth=0.001, edgecolor="#00000000"),
-    #         ax=ax,
-    #         add_scalebar=True,
-    #         scalebar_kwargs={
-    #             "size": 500,
-    #             "label": "500µm",
-    #             "loc": "lower right",
-    #             "pad": 0.1,
-    #             "color": "black",
-    #             "frameon": False,
-    #             "size_vertical": 2,
-    #         },
-    #     )
-    #     plt.tight_layout()
-    #     plt.savefig(
-    #         f"{save_path_domain}/cluster_only_{cluster_id}.png",
-    #         bbox_inches="tight",
-    #         dpi=600,
-    #     )
-    #     plt.close(fig)
+        ms.visualise.visualise(
+            domain,
+            color_by=niche_label_name,
+            objects_to_plot=selected_boundaries,
+            shape_kwargs=dict(alpha=1, linewidth=0.001, edgecolor="#00000000"),
+            ax=ax,
+            add_scalebar=True,
+            scalebar_kwargs={
+                "size": 500,
+                "label": "500µm",
+                "loc": "lower right",
+                "pad": 0.1,
+                "color": "black",
+                "frameon": False,
+                "size_vertical": 2,
+            },
+        )
+        plt.tight_layout()
+        plt.savefig(
+            f"{save_path_domain}/cluster_only_{cluster_id}.png",
+            bbox_inches="tight",
+            dpi=600,
+        )
+        plt.close(fig)
 
-    # # --- Free memory ---
-    # del domain, selected_clusters, boundCells, selected_boundaries
-    # gc.collect()
+    # --- Free memory ---
+    del domain, selected_clusters, boundCells, selected_boundaries
+    gc.collect()
 
-    # print(f"Finished processing {domain_path.name}.")
+    print(f"Finished processing {domain_path.name}.")
 
 
 if __name__ == "__main__":
