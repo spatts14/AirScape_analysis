@@ -24,6 +24,7 @@ pycrosstalker 2.1.8):  see setup_venv_RL.sh
 Outputs go to OUTDIR = <INPUT_DIR>/ccc/IPFvPM08 (CSV tables + PDF/PNG figures).
 """
 
+import gc
 import os
 import re
 import warnings
@@ -96,6 +97,8 @@ OUTDIR.mkdir(parents=True, exist_ok=True)
 sc.settings.figdir = OUTDIR
 plt.rcParams.update({"figure.dpi": 110, "savefig.bbox": "tight"})
 
+# Sequential colour map for non-negative values (counts, lr_means, local scores).
+# Signed values (differences, stats) use the diverging "RdBu_r".
 cmap = sns.color_palette("Blues", as_cmap=True)
 
 
@@ -155,14 +158,32 @@ def circle_plots(adata, df, name, title, cell_types):
 # =============================================================================
 adata = ad.read_zarr(INPUT_ZARR)
 
+# Remember the existing level_2 colours by name so they survive subsetting
+_orig_colors = {}
+if (
+    f"{GROUP_KEY}_colors" in adata.uns
+    and isinstance(adata.obs[GROUP_KEY].dtype, pd.CategoricalDtype)
+    and len(adata.uns[f"{GROUP_KEY}_colors"])
+    == len(adata.obs[GROUP_KEY].cat.categories)
+):
+    _orig_colors = dict(
+        zip(
+            adata.obs[GROUP_KEY].cat.categories.astype(str),
+            adata.uns[f"{GROUP_KEY}_colors"],
+        )
+    )
+
 # Subset to IPF and PM08 samples
 adata = adata[adata.obs[CONDITION_KEY].isin(CONDITIONS)]
 # Exclude PM08_159
 adata = adata[~adata.obs[SAMPLE_KEY].isin(DROP_ROIS)]
 # Remove cell types listed in DROP_CELL_TYPES
-adata = adata[
-    ~adata.obs[GROUP_KEY].isin(DROP_CELL_TYPES)
-].copy()  # .copy() avoids view warnings
+adata = adata[~adata.obs[GROUP_KEY].isin(DROP_CELL_TYPES)]
+# Remove cells without a cell-type label (NaN / "nan") - they break the plots
+lab = adata.obs[GROUP_KEY]
+unlabelled = lab.isna() | lab.astype(str).str.lower().isin(["nan", "none", ""])
+print(f"Removing {int(unlabelled.sum())} cells without a {GROUP_KEY} label")
+adata = adata[~unlabelled].copy()  # .copy() avoids view warnings
 
 # Convert relevant columns to categorical and reorder
 for key in (CONDITION_KEY, GROUP_KEY, SAMPLE_KEY):
@@ -170,6 +191,16 @@ for key in (CONDITION_KEY, GROUP_KEY, SAMPLE_KEY):
 adata.obs[CONDITION_KEY] = adata.obs[CONDITION_KEY].cat.reorder_categories(
     [REFERENCE, TEST]
 )
+
+# Re-align level_2 colours with the remaining categories (new ones get defaults)
+adata.uns.pop(f"{GROUP_KEY}_colors", None)
+sc.pl._utils._set_default_colors_for_categorical_obs(adata, GROUP_KEY)
+adata.uns[f"{GROUP_KEY}_colors"] = [
+    _orig_colors.get(c, d)
+    for c, d in zip(
+        adata.obs[GROUP_KEY].cat.categories, adata.uns[f"{GROUP_KEY}_colors"]
+    )
+]
 
 print(adata)
 print("\nCells per condition x level_2:")
@@ -205,6 +236,7 @@ if not looks_like_counts(counts):
 adata.layers["counts"] = counts.copy()
 adata.X = adata.layers["counts"].copy()
 sc.pp.normalize_total(adata, target_sum=1e4)
+adata.uns.pop("log1p", None)  # stale flag from the saved object; X is raw counts here
 sc.pp.log1p(adata)
 adata.raw = None  # make sure LIANA uses X
 
@@ -216,14 +248,22 @@ adata.raw = None  # make sure LIANA uses X
 # magnitude_rank (strength) and specificity_rank (cell-type specificity).
 # Run separately per condition so IPF and PM08 are not pooled.
 
-
 print("\n[Part A] Running LIANA rank_aggregate per condition ...")
 groups_all = adata.obs[GROUP_KEY].cat.categories.tolist()
-if f"{GROUP_KEY}_colors" not in adata.uns:  # same node colours in every plot
-    sc.pl._utils._set_default_colors_for_categorical_obs(adata, GROUP_KEY)
+
+# LIANA scales (densifies) the expression matrix; restricting to genes in the
+# resource cuts memory a lot and doesn't change the results.
+_rs = li.rs.select_resource(RESOURCE)
+lr_genes = sorted(
+    {g for x in pd.concat([_rs["ligand"], _rs["receptor"]]) for g in str(x).split("_")}
+    & set(adata.var_names)
+)
+print(f"  {len(lr_genes)} of {adata.n_vars} genes are in the {RESOURCE} resource")
+
 res_list = []
 for c in CONDITIONS:
-    adata_c = adata[adata.obs[CONDITION_KEY] == c].copy()
+    adata_c = adata[adata.obs[CONDITION_KEY] == c, lr_genes].copy()
+    adata_c.layers.clear()  # counts not needed here
     rank_aggregate(
         adata_c,
         groupby=GROUP_KEY,
@@ -289,6 +329,8 @@ for c in CONDITIONS:
 
     res_c.insert(0, CONDITION_KEY, c)
     res_list.append(res_c)
+    del adata_c
+    gc.collect()
 
 # Combined table (both conditions) used by the plots below
 adata.uns["liana_res"] = pd.concat(res_list, ignore_index=True)
@@ -437,8 +479,6 @@ ax.grid(axis="y", lw=0.3, alpha=0.5)
 savefig(fig, "A4_dotplot_by_condition")
 
 # ---- A5: circle plots per condition (overview + one page per cell type) ----
-if f"{GROUP_KEY}_colors" not in adata.uns:  # consistent node colours
-    sc.pl._utils._set_default_colors_for_categorical_obs(adata, GROUP_KEY)
 for c in CONDITIONS:
     sig_c = res[(res[CONDITION_KEY] == c) & res["sig"]].copy()
     circle_plots(
@@ -685,16 +725,17 @@ ax.set_title(f"{TEST} vs {REFERENCE}")
 savefig(fig, "B3_ligand_vs_receptor_stat")
 
 # ---- B4: source -> target summary of changed interactions ------------------
+# (loop variable is `cm`, not `cmap`, so the global cmap is not overwritten)
 fig, axes = plt.subplots(
     1, 2, figsize=(2 * max(5, 0.45 * n + 2), max(4.5, 0.45 * n + 1.5))
 )
-for ax, (lab, sub, cmap) in zip(
+for ax, (lab, sub, cm) in zip(
     axes, [(f"Up in {TEST}", up, "Reds"), (f"Up in {REFERENCE}", down, "Blues")]
 ):
     mat = pd.crosstab(sub["source"], sub["target"]).reindex(
         index=groups, columns=groups, fill_value=0
     )
-    im = ax.imshow(mat.values, cmap=cmap)
+    im = ax.imshow(mat.values, cmap=cm)
     ax.set_title(f"# L-R interactions {lab}")
     ax.set_xticks(range(n))
     ax.set_xticklabels(groups, rotation=90)
@@ -910,7 +951,7 @@ print("\n[Part D] Spatial L-R maps ...")
 sp_dir = OUTDIR / "D_spatial"
 sp_dir.mkdir(exist_ok=True)
 COND_COLORS = {TEST: "#c0392b", REFERENCE: "#2c6fbb"}
-ARROW = " \u2192 "
+ARROW = " → "
 
 
 def pretty(pair):
@@ -1043,6 +1084,9 @@ pairs_scored = [
 ]
 
 # ---- D1: tissue maps, one page per pair, all ROIs ---------------------------
+# The local cosine score is non-negative (0 = no co-expression, 1 = maximal),
+# so a sequential map (cmap) is correct here; a diverging map would imply a
+# meaningful midpoint / negative values that don't exist.
 rois_done = [r for r in roi_order if r in local_scores]
 ncol = min(4, max(1, len(rois_done)))
 nrow = int(np.ceil(len(rois_done) / ncol)) if rois_done else 0
@@ -1067,7 +1111,7 @@ with PdfPages(sp_dir / "D1_spatial_maps_all_pairs.pdf") as pdf:
                     xy[o, 1],
                     c=v[o],
                     s=SPATIAL_POINT_SIZE,
-                    cmap=cmap,  # not sure is it should be divergent colors
+                    cmap=cmap,
                     vmin=0,
                     vmax=vmax,
                     linewidths=0,
@@ -1168,7 +1212,7 @@ if pairs_scored:
     for t, roi in zip(ax.get_xticklabels(), rois_done):
         t.set_color(COND_COLORS.get(roi_meta[roi], "k"))
     ax.set_yticks(range(len(pairs_scored)))
-    ax.set_yticklabels([p.replace("^", " → ") for p in pairs_scored], fontsize=8)
+    ax.set_yticklabels([pretty(p) for p in pairs_scored], fontsize=8)
     fig.colorbar(im, ax=ax, shrink=0.6, label="Moran's I (bivariate)")
     ax.set_title(
         f"Global spatial co-localisation of ligand & receptor\n"
