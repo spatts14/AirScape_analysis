@@ -193,13 +193,17 @@ adata.obs[CONDITION_KEY] = adata.obs[CONDITION_KEY].cat.reorder_categories(
 )
 
 # Re-align level_2 colours with the remaining categories (new ones get defaults)
-adata.uns.pop(f"{GROUP_KEY}_colors", None)
-sc.pl._utils._set_default_colors_for_categorical_obs(adata, GROUP_KEY)
+# (uses scanpy's public palettes, so it works across scanpy versions)
+from scanpy.plotting import palettes as _pal
+
+_cats = adata.obs[GROUP_KEY].cat.categories
+_n = len(_cats)
+_default = (
+    _pal.default_20 if _n <= 20 else _pal.default_28 if _n <= 28 else _pal.default_102
+)
+_default = [_default[i % len(_default)] for i in range(_n)]
 adata.uns[f"{GROUP_KEY}_colors"] = [
-    _orig_colors.get(c, d)
-    for c, d in zip(
-        adata.obs[GROUP_KEY].cat.categories, adata.uns[f"{GROUP_KEY}_colors"]
-    )
+    _orig_colors.get(c, d) for c, d in zip(_cats, _default)
 ]
 
 print(adata)
