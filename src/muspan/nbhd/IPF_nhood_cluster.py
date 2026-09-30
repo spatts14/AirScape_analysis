@@ -414,9 +414,9 @@ def should_load_domain(stem):
 
 
 def pivot_niche_count_wide(prop_df, niche_order):
-    """Pivot the long per-domain niche-proportion dataframe into a wide table
-    of raw cell counts: rows = domain (ROI), columns = niche_id, values = n_cells.
+    """Pivot the long per-domain niche-proportion dataframe into a wide table.
 
+    Raw cell counts: rows = domain (ROI), columns = niche_id, values = n_cells.
     Missing niches (absent from a given ROI) are filled with 0, not dropped —
     an absent niche is a real 0, not missing data.
     """

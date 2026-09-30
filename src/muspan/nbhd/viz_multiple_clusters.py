@@ -12,9 +12,15 @@ def main():
     network_type = "proximity"  # "Delaunay" or "proximity"
     niche_label_name = f"Neighbourhood ID {network_type}"
     dir_name = "PM08vIPF_khop_1"
-    clusters_of_interest = [12, 13, 3]
+    clusters_of_interest = [
+        10,  # mix lymphocytes
+        15,  # IM
+        9,  # Plasma cells
+        8,  # AW
+        17,  # mix lymphocytes + vein
+    ]
     cluster = 18
-    sample_ID = "IPF_RBH_16_proximity_18_muspan_domain.muspan"
+    sample_ID = f"IPF_RBH_16_{network_type}_{cluster}_muspan_domain.muspan"
 
     base_path = Path(
         "/Volumes/phenotypingsputumasthmaticsaurorawellcomea1/live/Sara_Patti/009_ST_Xenium"
