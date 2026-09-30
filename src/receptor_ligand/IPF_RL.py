@@ -272,7 +272,7 @@ for c in CONDITIONS:
         min_cells=MIN_CELLS_PER_GROUP,
         n_perms=N_PERMS,
         use_raw=False,  # log-normalized data is in X (adata.raw is None)
-        verbose=True,
+        verbose=False,  # True prints a 1000-line permutation progress bar
     )
     res_c = adata_c.uns["liana_res"].copy()
     res_c.to_csv(os.path.join(OUTDIR, f"A0_rank_aggregate_{c}.csv"), index=False)
