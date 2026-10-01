@@ -158,6 +158,27 @@ def circle_plots(adata, df, name, title, cell_types):
 # =============================================================================
 adata = ad.read_zarr(INPUT_ZARR)
 
+
+# Keep memory down: store X / counts as sparse float32 and drop other layers.
+# (A dense 600k x 5k matrix is ~25 GB per copy in float64.)
+def _to_sparse32(M):
+    if sparse.issparse(M):
+        return M.tocsr().astype(np.float32)
+    return sparse.csr_matrix(np.asarray(M, dtype=np.float32))
+
+
+print(
+    f"X is {'sparse' if sparse.issparse(adata.X) else 'DENSE'} "
+    f"({adata.X.dtype}); converting to sparse float32"
+)
+adata.X = _to_sparse32(adata.X)
+for _k in list(adata.layers.keys()):
+    if _k == COUNTS_LAYER:
+        adata.layers[_k] = _to_sparse32(adata.layers[_k])
+    else:
+        del adata.layers[_k]
+gc.collect()
+
 # Remember the existing level_2 colours by name so they survive subsetting
 _orig_colors = {}
 if (
@@ -237,8 +258,10 @@ if not looks_like_counts(counts):
         "DESeq2 in Part B needs raw counts."
     )
 
-adata.layers["counts"] = counts.copy()
-adata.X = adata.layers["counts"].copy()
+adata.layers["counts"] = counts  # raw counts kept for Part B (no extra copy)
+adata.X = counts.copy()  # normalised in place below
+del counts
+gc.collect()
 sc.pp.normalize_total(adata, target_sum=1e4)
 adata.uns.pop("log1p", None)  # stale flag from the saved object; X is raw counts here
 sc.pp.log1p(adata)
@@ -289,8 +312,9 @@ for c in CONDITIONS:
             size="specificity_rank",
             inverse_colour=True,  # small ranks = strong -> bright
             inverse_size=True,  # small ranks = specific -> large
-            source_labels=groups_all,
-            target_labels=groups_all,
+            # only cell types that appear in this condition's results
+            source_labels=[g for g in groups_all if g in set(res_c["source"])],
+            target_labels=[g for g in groups_all if g in set(res_c["target"])],
             top_n=TOP_N,
             orderby="magnitude_rank",
             orderby_ascending=True,
@@ -310,6 +334,56 @@ for c in CONDITIONS:
         verbose=False,
         limitsize=False,
     )
+
+    # ---- A0: one dotplot per sender cell type (source -> all targets) -------
+    # e.g. A0_dotplots_by_source/IPF/Interstitial_macrophages.png
+    # Same colour/size as the overview: magnitude_rank / specificity_rank.
+    from plotnine import save_as_pdf_pages
+
+    src_dir = os.path.join(OUTDIR, "A0_dotplots_by_source", c)
+    os.makedirs(src_dir, exist_ok=True)
+    pages = []
+    for celltype in groups_all:
+        sub = res_c[res_c["source"] == celltype]
+        if sub.empty:
+            print(f"  A0 {c} / {celltype}: no interactions as sender, skipped")
+            continue
+        targets = [g for g in groups_all if g in set(sub["target"])]
+        n_int = min(
+            TOP_N,
+            sub[["ligand_complex", "receptor_complex"]].drop_duplicates().shape[0],
+        )
+        p_ct = (
+            li.pl.dotplot(
+                liana_res=res_c,
+                colour="magnitude_rank",
+                size="specificity_rank",
+                inverse_colour=True,
+                inverse_size=True,
+                source_labels=[celltype],
+                target_labels=targets,
+                top_n=TOP_N,
+                orderby="magnitude_rank",
+                orderby_ascending=True,
+                figure_size=(max(8, 0.45 * len(targets) + 4), max(5, 0.28 * n_int + 2)),
+            )
+            + ggtitle(f"{c}: {celltype} \u2192 all {GROUP_KEY} (top {TOP_N})")
+            + labs(colour="-log10(magnitude_rank)", size="-log10(specificity_rank)")
+        )
+        safe = re.sub(r"[^A-Za-z0-9_.-]+", "_", str(celltype)).strip("_")
+        p_ct.save(
+            os.path.join(src_dir, f"{safe}.png"),
+            dpi=300,
+            verbose=False,
+            limitsize=False,
+        )
+        pages.append(p_ct)
+    if pages:
+        save_as_pdf_pages(
+            pages,
+            filename=os.path.join(OUTDIR, f"A0_dotplots_by_source_{c}.pdf"),
+            verbose=False,
+        )
 
     # ---- A0: circle plot of the whole network --------------------------------
     # edge width = number of interactions with magnitude_rank <= SIG_RANK
@@ -520,7 +594,7 @@ for c in CONDITIONS:
                 size="cellphone_pvals",
                 inverse_size=True,  # small p-values -> large dots
                 source_labels=[celltype],
-                target_labels=cell_list,
+                target_labels=[g for g in cell_list if g in set(res_c["target"])],
                 filter_fun=lambda x: x["cellphone_pvals"] <= DOTPLOT_PVAL,
                 top_n=DOTPLOT_TOP_N,
                 orderby="lr_means" if DOTPLOT_TOP_N else None,
