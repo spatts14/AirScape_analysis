@@ -156,55 +156,84 @@ def circle_plots(adata, df, name, title, cell_types):
 # =============================================================================
 # 1. Load and subset
 # =============================================================================
-adata = ad.read_zarr(INPUT_ZARR)
+# Memory-efficient load: the full object has dense X + dense counts (~25 GB
+# each), so instead of ad.read_zarr() we read only what this script needs
+# (obs columns, var names, spatial coords, level_2 colours, raw counts), only
+# for the cells we keep, and convert counts to sparse float32 in row chunks.
+import zarr
 
+try:
+    from anndata.io import read_elem, sparse_dataset
+except ImportError:  # older anndata
+    from anndata.experimental import read_elem, sparse_dataset
 
-# Keep memory down: store X / counts as sparse float32 and drop other layers.
-# (A dense 600k x 5k matrix is ~25 GB per copy in float64.)
-def _to_sparse32(M):
-    if sparse.issparse(M):
-        return M.tocsr().astype(np.float32)
-    return sparse.csr_matrix(np.asarray(M, dtype=np.float32))
+LOAD_CHUNK = 20000  # rows read at a time when the matrix is stored dense
 
-
-print(
-    f"X is {'sparse' if sparse.issparse(adata.X) else 'DENSE'} "
-    f"({adata.X.dtype}); converting to sparse float32"
-)
-adata.X = _to_sparse32(adata.X)
-for _k in list(adata.layers.keys()):
-    if _k == COUNTS_LAYER:
-        adata.layers[_k] = _to_sparse32(adata.layers[_k])
-    else:
-        del adata.layers[_k]
-gc.collect()
+g = zarr.open(str(INPUT_ZARR), mode="r")
+obs_all = read_elem(g["obs"])[[CONDITION_KEY, SAMPLE_KEY, GROUP_KEY]]
+var = read_elem(g["var"])[[]]  # gene names only
 
 # Remember the existing level_2 colours by name so they survive subsetting
 _orig_colors = {}
-if (
-    f"{GROUP_KEY}_colors" in adata.uns
-    and isinstance(adata.obs[GROUP_KEY].dtype, pd.CategoricalDtype)
-    and len(adata.uns[f"{GROUP_KEY}_colors"])
-    == len(adata.obs[GROUP_KEY].cat.categories)
-):
-    _orig_colors = dict(
-        zip(
-            adata.obs[GROUP_KEY].cat.categories.astype(str),
-            adata.uns[f"{GROUP_KEY}_colors"],
-        )
-    )
+if "uns" in g and f"{GROUP_KEY}_colors" in g["uns"]:
+    _cols = list(read_elem(g["uns"][f"{GROUP_KEY}_colors"]))
+    _lab = obs_all[GROUP_KEY]
+    if isinstance(_lab.dtype, pd.CategoricalDtype) and len(_cols) == len(
+        _lab.cat.categories
+    ):
+        _orig_colors = dict(zip(_lab.cat.categories.astype(str), _cols))
 
-# Subset to IPF and PM08 samples
-adata = adata[adata.obs[CONDITION_KEY].isin(CONDITIONS)]
-# Exclude PM08_159
-adata = adata[~adata.obs[SAMPLE_KEY].isin(DROP_ROIS)]
-# Remove cell types listed in DROP_CELL_TYPES
-adata = adata[~adata.obs[GROUP_KEY].isin(DROP_CELL_TYPES)]
-# Remove cells without a cell-type label (NaN / "nan") - they break the plots
-lab = adata.obs[GROUP_KEY]
+# Which cells to keep (decided from obs before touching the matrix)
+lab = obs_all[GROUP_KEY]
 unlabelled = lab.isna() | lab.astype(str).str.lower().isin(["nan", "none", ""])
-print(f"Removing {int(unlabelled.sum())} cells without a {GROUP_KEY} label")
-adata = adata[~unlabelled].copy()  # .copy() avoids view warnings
+keep = (
+    obs_all[CONDITION_KEY].isin(CONDITIONS)  # IPF and PM08 only
+    & ~obs_all[SAMPLE_KEY].isin(DROP_ROIS)  # exclude PM08_159
+    & ~lab.isin(DROP_CELL_TYPES)  # drop listed cell types
+).values
+n_unlab = int((keep & unlabelled.values).sum())
+keep &= ~unlabelled.values  # cells without a level_2 label break the plots
+print(f"Removing {n_unlab} cells without a {GROUP_KEY} label")
+print(f"Keeping {keep.sum()} of {len(keep)} cells")
+idx = np.flatnonzero(keep)
+
+# Raw counts: from layers[COUNTS_LAYER] if present, else X
+if COUNTS_LAYER is not None and "layers" in g and COUNTS_LAYER in g["layers"]:
+    src = g["layers"][COUNTS_LAYER]
+else:
+    src = g["X"]
+enc = dict(src.attrs).get("encoding-type", "array")
+if enc == "csr_matrix":
+    print("Counts stored sparse (CSR); reading selected rows")
+    counts = sparse_dataset(src)[idx].tocsr().astype(np.float32)
+elif enc == "csc_matrix":
+    print("Counts stored sparse (CSC); reading then subsetting")
+    counts = read_elem(src).tocsr()[idx].astype(np.float32)
+else:
+    print(f"Counts stored DENSE {src.shape}; converting to sparse in chunks")
+    blocks = []
+    for start in range(0, src.shape[0], LOAD_CHUNK):
+        stop = min(start + LOAD_CHUNK, src.shape[0])
+        rows = keep[start:stop]
+        if rows.any():
+            blk = np.asarray(src[start:stop], dtype=np.float32)[rows]
+            blocks.append(sparse.csr_matrix(blk))
+            del blk
+    counts = sparse.vstack(blocks, format="csr")
+    del blocks
+gc.collect()
+
+spatial = np.asarray(read_elem(g["obsm"][SPATIAL_KEY]))[idx]
+adata = ad.AnnData(
+    X=counts,
+    obs=obs_all.iloc[idx].copy(),
+    var=var,
+    obsm={SPATIAL_KEY: spatial},
+    layers={"counts": counts},
+)
+COUNTS_LAYER = "counts"
+del obs_all, spatial
+gc.collect()
 
 # Convert relevant columns to categorical and reorder
 for key in (CONDITION_KEY, GROUP_KEY, SAMPLE_KEY):
