@@ -37,6 +37,6 @@ print(f"Removing {int(unlabelled.sum())} cells without a {GROUP_KEY} label")
 adata = adata[~unlabelled].copy()  # .copy() avoids view warnings
 
 # Save the subsetted object for later use
-SUBSET_ZARR = INPUT_DIR / "AIRSCAPE" / "adata_subset_toy.zarr"
+SUBSET_ZARR = INPUT_DIR / "AIRSCAPE" / "subset_adata" / "adata_subset_toy.zarr"
 print(f"Saving subsetted object to {SUBSET_ZARR}")
 adata.write_zarr(SUBSET_ZARR)
