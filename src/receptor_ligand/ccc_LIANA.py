@@ -90,6 +90,7 @@ plt.rcParams.update({"figure.dpi": 110, "savefig.bbox": "tight"})
 # Sequential colour map for non-negative values (counts, lr_means, local scores).
 # Signed values (differences, stats) use the diverging "RdBu_r".
 cmap = sns.color_palette("Blues", as_cmap=True)
+CMAP_NAME = "Blues"
 
 
 def savefig(fig, name):
@@ -236,7 +237,7 @@ for c in CONDITIONS:
             top_n=TOP_N,
             orderby="magnitude_rank",
             orderby_ascending=True,
-            cmap=cmap,
+            cmap=CMAP_NAME,
             figure_size=(max(10, 2 * len(groups_all) + 8), max(6, 0.3 * TOP_N + 2)),
         )
         + plotnine.ggtitle(f"{c}: top {TOP_N} interactions (rank_aggregate)")
@@ -310,7 +311,7 @@ for c in CONDITIONS:
                 top_n=TOP_N,
                 orderby="magnitude_rank",
                 orderby_ascending=True,
-                cmap=cmap,
+                cmap=CMAP_NAME,
                 figure_size=(max(8, 0.45 * len(targets) + 4), max(5, 0.28 * n_int + 2)),
             )
             + plotnine.ggtitle(f"{c}: {celltype} \u2192 all {GROUP_KEY} (top {TOP_N})")
@@ -380,7 +381,7 @@ fig, axes = plt.subplots(
 )
 vmax = max(m.values.max() for m in mats.values()) or 1
 for ax, c in zip(axes[:2], [REFERENCE, TEST]):
-    im = ax.imshow(mats[c].values, cmap=cmap, vmin=0, vmax=vmax)
+    im = ax.imshow(mats[c].values, cmap=CMAP_NAME, vmin=0, vmax=vmax)
     ax.set_title(f"{c}: # significant L-R")
     fig.colorbar(im, ax=ax, shrink=0.7)
 lim = np.abs(diff.values).max() or 1
@@ -470,7 +471,7 @@ sca = ax.scatter(
     res_top[CONDITION_KEY].astype(str).map(xpos),
     res_top["label"].map(ypos),
     c=res_top["lr_means"],
-    cmap=cmap,
+    cmap=CMAP_NAME,
     s=20 + 25 * -np.log10(res_top["specificity_rank"].clip(lower=1e-4)),
     edgecolors="k",
     linewidths=0.3,
@@ -536,7 +537,7 @@ for c in CONDITIONS:
                 target_labels=[g for g in cell_list if g in set(res_c["target"])],
                 filter_fun=lambda x: x["cellphone_pvals"] <= DOTPLOT_PVAL,
                 top_n=DOTPLOT_TOP_N,
-                cmap=cmap,
+                cmap=CMAP_NAME,
                 orderby="lr_means" if DOTPLOT_TOP_N else None,
                 orderby_ascending=False if DOTPLOT_TOP_N else None,
                 figure_size=(
