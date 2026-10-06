@@ -49,6 +49,12 @@ def count_matrix(df, cond):
     return m
 
 
+def savefig(fig, name):
+    for ext in ("pdf", "png"):
+        fig.savefig(os.path.join(OUTDIR, f"{name}.{ext}"), dpi=300)
+    plt.close(fig)
+
+
 # CONFIG
 INPUT_DIR = Path(
     "/rds/general/user/sep22/projects/phenotypingsputumasthmaticsaurorawellcomea1/live/Sara_Patti/009_ST_Xenium/output"
@@ -91,58 +97,6 @@ plt.rcParams.update({"figure.dpi": 110, "savefig.bbox": "tight"})
 # Signed values (differences, stats) use the diverging "RdBu_r".
 cmap = sns.color_palette("Blues", as_cmap=True)
 CMAP_NAME = "Blues"
-
-
-def savefig(fig, name):
-    for ext in ("pdf", "png"):
-        fig.savefig(os.path.join(OUTDIR, f"{name}.{ext}"), dpi=300)
-    plt.close(fig)
-
-
-def circle_plots(adata, df, name, title, cell_types):
-    """Circle plots of interaction counts between level_2 groups.
-
-    Page 1 = all cell types; then one page per cell type showing its
-    outgoing (as sender) and incoming (as receiver) interactions.
-    Saved as one multi-page PDF plus a PNG of the overview.
-    Edge width = number of interactions; widths are scaled within each plot,
-    so compare across plots using the counts heatmaps, not edge widths.
-    """
-    from matplotlib.backends.backend_pdf import PdfPages
-
-    if df.empty:
-        print(f"  {name}: no interactions to plot")
-        return
-    kw = dict(
-        groupby=GROUP_KEY,
-        liana_res=df,
-        pivot_mode="counts",
-        figure_size=(6, 6),
-        node_label_size=8,
-        edge_arrow_size=12,
-    )
-    with PdfPages(os.path.join(OUTDIR, f"{name}.pdf")) as pdf:
-        ax = li.pl.circle_plot(adata, **kw)
-        ax.set_title(f"{title}\nall {GROUP_KEY} groups (n = {len(df)})")
-        fig = ax.get_figure()
-        fig.savefig(os.path.join(OUTDIR, f"{name}_overview.png"), dpi=300)
-        pdf.savefig(fig)
-        plt.close(fig)
-        for ct in cell_types:
-            for role, sub, lab in [
-                ("source", df[df["source"] == ct], "outgoing"),
-                ("target", df[df["target"] == ct], "incoming"),
-            ]:
-                if sub.empty:
-                    continue
-                ax = li.pl.circle_plot(
-                    adata, **{**kw, "liana_res": sub}, **{f"{role}_labels": [ct]}
-                )
-                ax.set_title(f"{title}\n{ct}: {lab} (n = {len(sub)})")
-                fig = ax.get_figure()
-                pdf.savefig(fig)
-                plt.close(fig)
-
 
 # 1. Load and subset
 adata = ad.read_zarr(INPUT_ZARR)
@@ -233,8 +187,7 @@ for c in CONDITIONS:
             # only cell types that appear in this condition's results
             source_labels=[g for g in groups_all if g in set(res_c["source"])],
             target_labels=[g for g in groups_all if g in set(res_c["target"])],
-            # show the top N interactions
-            top_n=TOP_N,
+            top_n=TOP_N,  # show the top N interactions
             orderby="magnitude_rank",
             orderby_ascending=True,
             cmap=CMAP_NAME,
@@ -497,19 +450,12 @@ ax.set_title("Top shifted interactions by condition")
 ax.grid(axis="y", lw=0.3, alpha=0.5)
 savefig(fig, "A4_dotplot_by_condition")
 
-# ---- A5: circle plots per condition (overview + one page per cell type) ----
-for c in CONDITIONS:
-    sig_c = res[(res[CONDITION_KEY] == c) & res["sig"]].copy()
-    circle_plots(
-        adata, sig_c, f"A5_circle_{c}", f"{c}: significant L-R interactions", groups
-    )
-
-# ---- A6: dotplot per source cell type -> all targets, per condition ---------
+# ---- A5: dotplot per source cell type -> all targets, per condition ---------
 # colour = lr_means, size = -log10(cellphone_pvals); CellPhoneDB-style filter
 # One multi-page PDF per condition (one page per source) + one PNG per source.
 
 cell_list = adata.obs[GROUP_KEY].cat.categories.tolist()
-dot_dir = os.path.join(OUTDIR, "A6_dotplots_by_source")
+dot_dir = os.path.join(OUTDIR, "A5_dotplots_by_source")
 os.makedirs(dot_dir, exist_ok=True)
 
 for c in CONDITIONS:
@@ -522,7 +468,7 @@ for c in CONDITIONS:
         ]
         if sub.empty:
             print(
-                f"  A6 {c} / {celltype}: no interactions with p <= {DOTPLOT_PVAL}, skipped"
+                f"  A5 {c} / {celltype}: no interactions with p <= {DOTPLOT_PVAL}, skipped"
             )
             continue
         n_int = sub[["ligand_complex", "receptor_complex"]].drop_duplicates().shape[0]
