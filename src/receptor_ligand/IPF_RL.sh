@@ -1,6 +1,6 @@
 #!/bin/bash
 #PBS -l walltime=01:0:0
-#PBS -l select=1:ncpus=16:mem=128gb
+#PBS -l select=1:ncpus=16:mem=256gb
 #PBS -N IPF_RL
 #PBS -j oe
 
@@ -19,6 +19,6 @@ source venv_RL/bin/activate
 # Run with error logging
 echo "Starting at $(date)"
 
-python src/receptor_ligand/IPF_RL.py
+python src/receptor_ligand/ccc_LIANA.py
 
 echo "Completed at $(date)"
