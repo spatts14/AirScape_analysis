@@ -19,6 +19,6 @@ source venv_RL/bin/activate
 # Run with error logging
 echo "Starting at $(date)"
 
-python src/receptor_ligand/IPF_RL.py
+python src/ccc/IPF_RL.py
 
 echo "Completed at $(date)"
