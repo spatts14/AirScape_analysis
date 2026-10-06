@@ -39,4 +39,4 @@ adata = adata[~unlabelled].copy()  # .copy() avoids view warnings
 # Save the subsetted object for later use
 SUBSET_ZARR = INPUT_DIR / "AIRSCAPE" / "adata_subset_toy.zarr"
 print(f"Saving subsetted object to {SUBSET_ZARR}")
-adata.write_zarr(SUBSET_ZARR, mode="w")
+adata.write_zarr(SUBSET_ZARR)

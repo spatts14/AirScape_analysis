@@ -85,8 +85,8 @@ MIN_CELLS_PER_GROUP = 10  # LIANA: min cells per level_2 group
 N_PERMS = 1000  # permutations for specificity p-values
 TOP_N = 25  # number of interactions to show in dotplots (overview and per source)
 SIG_RANK = 0.05  # threshold for "significant" interactions
-DOTPLOT_PVAL = 0.05  # threshold for dotplots by source (A6)
-DOTPLOT_TOP_N = 25  # max number of interactions to show in dotplots by source (A6)
+DOTPLOT_PVAL = 0.05  # threshold for dotplots by source (A5)
+DOTPLOT_TOP_N = 25  # max number of interactions to show in dotplots by source (A5)
 
 
 OUTDIR.mkdir(parents=True, exist_ok=True)
