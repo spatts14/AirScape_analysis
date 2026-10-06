@@ -347,6 +347,7 @@ for c in CONDITIONS:
             top_n=TOP_N,
             orderby="magnitude_rank",
             orderby_ascending=True,
+            cmap="Blues",
             figure_size=(max(10, 0.9 * len(groups_all) + 4), max(6, 0.3 * TOP_N + 2)),
         )
         + ggtitle(f"{c}: top {TOP_N} interactions (rank_aggregate)")
@@ -394,6 +395,7 @@ for c in CONDITIONS:
                 top_n=TOP_N,
                 orderby="magnitude_rank",
                 orderby_ascending=True,
+                cmap="Blues",
                 figure_size=(max(8, 0.45 * len(targets) + 4), max(5, 0.28 * n_int + 2)),
             )
             + ggtitle(f"{c}: {celltype} \u2192 all {GROUP_KEY} (top {TOP_N})")
@@ -413,6 +415,25 @@ for c in CONDITIONS:
             filename=os.path.join(OUTDIR, f"A0_dotplots_by_source_{c}.pdf"),
             verbose=False,
         )
+
+    # Plot circle plot per source cell
+    circ_dir = os.path.join(OUTDIR, "A0_circle_by_celltype", c)
+    os.makedirs(circ_dir, exist_ok=True)
+    ax = li.pl.circle_plot(
+        adata_c,
+        uns_key="liana_sig",
+        groupby=GROUP_KEY,
+        pivot_mode="counts",
+        source_labels=celltype,  # None = whole network
+        figure_size=(7, 7),
+    )
+    name = "all_cell_types" if celltype is None else celltype
+    ax.set_title(f"{c}: {name} (magnitude_rank \u2264 {SIG_RANK})")
+    safe = re.sub(r"[^A-Za-z0-9_.-]+", "_", name).strip("_")
+    ax.get_figure().savefig(
+        os.path.join(circ_dir, f"{safe}.png"), dpi=300, bbox_inches="tight"
+    )
+    plt.close(ax.get_figure())
 
     # ---- A0: circle plot of the whole network --------------------------------
     # edge width = number of interactions with magnitude_rank <= SIG_RANK
@@ -626,6 +647,7 @@ for c in CONDITIONS:
                 target_labels=[g for g in cell_list if g in set(res_c["target"])],
                 filter_fun=lambda x: x["cellphone_pvals"] <= DOTPLOT_PVAL,
                 top_n=DOTPLOT_TOP_N,
+                cmap="Blues",
                 orderby="lr_means" if DOTPLOT_TOP_N else None,
                 orderby_ascending=False if DOTPLOT_TOP_N else None,
                 figure_size=(

@@ -1,7 +1,7 @@
 #!/bin/bash
-#PBS -l walltime=01:0:0
-#PBS -l select=1:ncpus=16:mem=256gb
-#PBS -N IPF_RL
+#PBS -l walltime=02:00:00
+#PBS -l select=1:ncpus=8:mem=512gb
+#PBS -N composition
 #PBS -j oe
 
 # Load production tools
@@ -14,11 +14,11 @@ module load Biopython/1.84-foss-2024a
 cd /rds/general/user/sep22/home/Projects/AirScape_analysis
 
 # Activate virtual environment
-source venv_RL/bin/activate
+source muspan/bin/activate
 
 # Run with error logging
 echo "Starting at $(date)"
 
-python src/receptor_ligand/IPF_RL.py
+python src/misc/subset.py
 
 echo "Completed at $(date)"
