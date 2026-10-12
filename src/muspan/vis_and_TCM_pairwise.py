@@ -277,7 +277,7 @@ def main():
     # Set to a cell type name (e.g. "CD4+ T cells") to only compute that cell type against
     # every other cell type (including itself). Set to None to compute the full pairwise
     # sweep across all cell types instead.
-    FIXED_CELL_TYPE_OF_INTEREST = "Interstitial macrophages"  # or None
+    FIXED_CELL_TYPE_OF_INTEREST = "Airway/alveolar macrophages"  # or None
 
     # Make list of all domains to process
     domain_name, domain_path = parse_args(sys.argv[1:])
