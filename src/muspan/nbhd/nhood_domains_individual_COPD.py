@@ -68,7 +68,7 @@ def should_load_domain(stem, subset):
 def main():
     """Compute neighbourhood clustering and save the domains."""
     # Define variables
-    number_of_clusters = 18
+    number_of_clusters = 12  # Change number of clusters here!
     khop = 1  # Number of hops for neighbourhood clustering
     network_type = "Delaunay"  # 'Delaunay' or 'proximity'
     max_edge_distance = 30
