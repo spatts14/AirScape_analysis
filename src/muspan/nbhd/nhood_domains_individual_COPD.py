@@ -85,14 +85,10 @@ def main():
         "Proliferating AT2 cells",
     ]
 
-    # Base project path
+    # Base project path # UPDATED OCTOBER 29 2026 BECAUSE CHANGE TO RDF
     paths = [
-        Path(
-            "/rds/general/user/sep22/projects/phenotypingsputumasthmaticsaurorawellcomea1/live/Sara_Patti/009_ST_Xenium/"
-        ),
-        Path(
-            "/Volumes/phenotypingsputumasthmaticsaurorawellcomea1/live/Sara_Patti/009_ST_Xenium/"
-        ),
+        Path("/rds/general/user/sep22/ephemeral/"),
+        Path("/Volumes/sep22/ephemeral/"),
     ]
 
     base_path = next((p for p in paths if p.exists()), None)
@@ -103,13 +99,13 @@ def main():
     print(f"Using base path: {base_path}")
 
     # Input
-    input_dir = base_path / "output" / "muspan" / "domains"
+    input_dir = base_path / "NEW_DOMAINS"
 
     # Output directory for the annotated domains
-    outpath = base_path / "output" / "muspan" / "nb_clustering"
+    outpath = base_path / "output"
     domains_out_dir = (
         outpath
-        / "domains_with_niches"
+        / "muspan_domains_with_niches"
         / network_type
         / subset_safe_name
         / f"{number_of_clusters}_clusters"
