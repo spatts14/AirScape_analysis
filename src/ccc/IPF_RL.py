@@ -33,10 +33,12 @@ from pathlib import Path
 import anndata as ad
 import liana as li
 import matplotlib.pyplot as plt
+import networkx as nx
 import numpy as np
 import pandas as pd
 import scanpy as sc
 import seaborn as sns
+import zarr
 from liana.mt import rank_aggregate
 from plotnine import ggtitle, labs
 from scipy import sparse
@@ -106,6 +108,18 @@ def savefig(fig, name):
     plt.close(fig)
 
 
+_orig_from_adj = nx.convert_matrix.from_pandas_adjacency
+
+
+def _square_adjacency(df, *args, **kwargs):
+    labels = df.index.union(df.columns)
+    df = df.reindex(index=labels, columns=labels, fill_value=0)
+    return _orig_from_adj(df, *args, **kwargs)
+
+
+nx.convert_matrix.from_pandas_adjacency = _square_adjacency
+
+
 def circle_plots(adata, df, name, title, cell_types):
     """Circle plots of interaction counts between level_2 groups.
 
@@ -158,7 +172,6 @@ def circle_plots(adata, df, name, title, cell_types):
 # each), so instead of ad.read_zarr() we read only what this script needs
 # (obs columns, var names, spatial coords, level_2 colours, raw counts), only
 # for the cells we keep, and convert counts to sparse float32 in row chunks.
-import zarr
 
 try:
     from anndata.io import read_elem, sparse_dataset
