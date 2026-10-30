@@ -56,6 +56,20 @@ REFERENCE = "MICA"  # baseline: red = higher in COPD, blue = lower in COPD
 TEST = "COPD"
 CMP = f"{TEST}_x_{REFERENCE}"  # CrossTalkeR comparison name, e.g. "COPD_x_MICA"
 
+GROUP_KEY = "level_2"  # cell types used as sources/targets
+SAMPLE_KEY = "ROI"  # replicate unit for pseudobulk (Part B)
+DROP_ROIS = ["PM08_159"]
+# Cell types removed before analysis
+DROP_CELL_TYPES = [
+    "Alveolar fibroblasts",
+    "Alveolar fibroblasts (collagen high)",
+    "AT1 cells",
+    "AT2 cells",
+    "Lipid-associated macrophages",
+    "Airway/Alveolar macrophages",
+    "Proliferating AT2 cells",
+]
+
 # Where raw counts live. None = adata.X already holds raw counts.
 # The script checks this and warns if the values don't look like counts.
 COUNTS_LAYER = "counts"
