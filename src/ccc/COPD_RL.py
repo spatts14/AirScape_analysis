@@ -46,7 +46,7 @@ warnings.filterwarnings("ignore", category=FutureWarning)
 # Config
 INPUT_DIR = Path("/rds/general/user/sep22/ephemeral/")
 INPUT_ZARR = INPUT_DIR / "adata_with_metadata.zarr"
-OUTDIR = INPUT_DIR / "ccc" / "COPDvMICA"
+OUTDIR = INPUT_DIR / "output" / "ccc" / "COPDvMICA"
 
 CONDITION_KEY = "condition"
 CONDITIONS = ["COPD", "MICA"]
