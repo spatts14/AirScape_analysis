@@ -32,22 +32,18 @@ def main():
     niche_label_name = f"Neighbourhood ID {network_type}"
     dir_name = "PM08vIPF_khop_1"
     clusters_of_interest = [5, 9, 17, 10]
-    cluster = 18
+    cluster = 12
 
     # Base project path
     base_path = Path(
-        "/rds/general/user/sep22/projects/phenotypingsputumasthmaticsaurorawellcomea1/live/Sara_Patti/009_ST_Xenium/"
+        "/Volumes/sep22/ephemeral/output/muspan_domains_with_niches/proximity/MICAvCOPD_khop_1/12_clusters"
     )
 
-    outpath = base_path / "output" / "muspan" / "nb_clustering"
+    # Output directories
+    outpath = base_path / "plots"
+    plots_dir = outpath / "COPD_R014_V1"
 
-    domain_dir = (
-        outpath
-        / "domains_with_niches"
-        / network_type
-        / dir_name
-        / f"{cluster}_clusters"
-    )
+    domain_dir = base_path / "COPD_R014_V1_proximity_12_muspan_domain.muspan"
     if not domain_dir.exists():
         raise FileNotFoundError(f"Domain directory not found: {domain_dir}")
 

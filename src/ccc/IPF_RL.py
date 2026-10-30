@@ -46,10 +46,8 @@ warnings.filterwarnings("ignore", category=FutureWarning)
 # =============================================================================
 # CONFIG - edit these
 # =============================================================================
-INPUT_DIR = Path(
-    "/rds/general/user/sep22/projects/phenotypingsputumasthmaticsaurorawellcomea1/live/Sara_Patti/009_ST_Xenium/output"
-)
-INPUT_ZARR = INPUT_DIR / "AIRSCAPE/adata_final_object/adata_with_metadata.zarr"
+INPUT_DIR = Path("/rds/general/user/sep22/ephemeral/")
+INPUT_ZARR = INPUT_DIR / "adata_with_metadata.zarr"
 OUTDIR = INPUT_DIR / "ccc" / "IPFvPM08"
 
 CONDITION_KEY = "condition"
