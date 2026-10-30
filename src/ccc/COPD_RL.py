@@ -241,6 +241,8 @@ adata = ad.AnnData(
     obsm={SPATIAL_KEY: spatial},
     layers={"counts": counts},
 )
+print(adata.obs)
+print(adata.obs["time_point"].value_counts())
 COUNTS_LAYER = "counts"
 del obs_all, spatial
 gc.collect()
