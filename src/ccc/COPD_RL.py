@@ -50,8 +50,8 @@ OUTDIR = INPUT_DIR / "output" / "ccc" / "COPDvMICA"
 
 CONDITION_KEY = "condition"
 CONDITIONS = ["COPD", "MICA"]
-# TIMEPOINT_KEY = "time_point"
-# TIMEPOINT = ["V1"]
+TIMEPOINT_KEY = "time_point"
+TIMEPOINT = ["V1"]
 REFERENCE = "MICA"  # baseline: red = higher in COPD, blue = lower in COPD
 TEST = "COPD"
 CMP = f"{TEST}_x_{REFERENCE}"  # CrossTalkeR comparison name, e.g. "COPD_x_MICA"
@@ -175,7 +175,7 @@ except ImportError:  # older anndata
 LOAD_CHUNK = 20000  # rows read at a time when the matrix is stored dense
 
 g = zarr.open(str(INPUT_ZARR), mode="r")
-obs_all = read_elem(g["obs"])[[CONDITION_KEY, SAMPLE_KEY, GROUP_KEY]]
+obs_all = read_elem(g["obs"])[[CONDITION_KEY, SAMPLE_KEY, GROUP_KEY, TIMEPOINT_KEY]]
 var = read_elem(g["var"])[[]]  # gene names only
 
 # Remember the existing level_2 colours by name so they survive subsetting
@@ -193,7 +193,7 @@ lab = obs_all[GROUP_KEY]
 unlabelled = lab.isna() | lab.astype(str).str.lower().isin(["nan", "none", ""])
 keep = (
     obs_all[CONDITION_KEY].isin(CONDITIONS)
-    # & obs_all[TIMEPOINT_KEY].isin(TIMEPOINT)
+    & obs_all[TIMEPOINT_KEY].isin(TIMEPOINT)
     & ~obs_all[SAMPLE_KEY].isin(DROP_ROIS)
     & ~lab.isin(DROP_CELL_TYPES)  # drop listed cell types
 ).values
