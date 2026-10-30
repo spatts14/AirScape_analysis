@@ -73,9 +73,15 @@ CMP = f"{TEST}_x_{REFERENCE}"  # CrossTalkeR comparison name, e.g. "COPD_x_MICA"
 
 GROUP_KEY = "level_2"  # cell types used as sources/targets
 SAMPLE_KEY = "ROI"  # replicate unit for pseudobulk (Part B)
-DROP_ROIS = ["PM08_159"]
+DROP_ROIS = ["PM08_159"]  #! update to drop anything but V1
 DROP_CELL_TYPES = [
-    "Alveolar fibroblasts (collagen high)",  # only present in one donor
+    "Alveolar fibroblasts",
+    "Alveolar fibroblasts (collagen high)",
+    "AT1 cells",
+    "AT2 cells",
+    "Lipid-associated macrophages",
+    "Airway/Alveolar macrophages",
+    "Proliferating AT2 cells",
 ]
 
 # Where raw counts live in the zarr store. None = X already holds raw counts.
