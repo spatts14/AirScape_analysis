@@ -1,7 +1,7 @@
 #!/bin/bash
 #PBS -l walltime=01:0:0
 #PBS -l select=1:ncpus=16:mem=256gb
-#PBS -N IPF_RL
+#PBS -N COPD_RL
 #PBS -j oe
 
 # Load production tools
