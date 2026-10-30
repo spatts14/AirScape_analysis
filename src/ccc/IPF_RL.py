@@ -415,23 +415,29 @@ for c in CONDITIONS:
         )
 
     # Plot circle plot per source cell
+    adata_c.uns[f"{GROUP_KEY}_colors"] = adata.uns[f"{GROUP_KEY}_colors"]
     circ_dir = os.path.join(OUTDIR, "A0_circle_by_celltype", c)
     os.makedirs(circ_dir, exist_ok=True)
-    ax = li.pl.circle_plot(
-        adata_c,
-        uns_key="liana_sig",
-        groupby=GROUP_KEY,
-        pivot_mode="counts",
-        source_labels=celltype,  # None = whole network
-        figure_size=(7, 7),
-    )
-    name = "all_cell_types" if celltype is None else celltype
-    ax.set_title(f"{c}: {name} (magnitude_rank \u2264 {SIG_RANK})")
-    safe = re.sub(r"[^A-Za-z0-9_.-]+", "_", name).strip("_")
-    ax.get_figure().savefig(
-        os.path.join(circ_dir, f"{safe}.png"), dpi=300, bbox_inches="tight"
-    )
-    plt.close(ax.get_figure())
+    senders = set(res_c.loc[res_c["magnitude_rank"] <= SIG_RANK, "source"])
+    for celltype in groups_all:
+        if celltype not in senders:  # no significant outgoing interactions
+            continue
+        ax = li.pl.circle_plot(
+            adata_c,
+            groupby=GROUP_KEY,
+            score_key="magnitude_rank",
+            inverse_score=True,
+            filter_fun=lambda x: x["magnitude_rank"] <= SIG_RANK,
+            pivot_mode="counts",
+            source_labels=[celltype],
+            figure_size=(7, 7),
+        )
+        ax.set_title(f"{c}: {celltype} (magnitude_rank \u2264 {SIG_RANK})")
+        safe = re.sub(r"[^A-Za-z0-9_.-]+", "_", celltype).strip("_")
+        ax.get_figure().savefig(
+            os.path.join(circ_dir, f"{safe}.png"), dpi=300, bbox_inches="tight"
+        )
+        plt.close(ax.get_figure())
 
     # ---- A0: circle plot of the whole network --------------------------------
     # edge width = number of interactions with magnitude_rank <= SIG_RANK
