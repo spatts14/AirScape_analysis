@@ -50,7 +50,7 @@ OUTDIR = INPUT_DIR / "output" / "ccc" / "COPDvMICA"
 
 CONDITION_KEY = "condition"
 CONDITIONS = ["COPD", "MICA"]
-TIMEPOINT_KEY = "timepoint"
+TIMEPOINT_KEY = "time_point"
 TIMEPOINT = ["V1"]
 REFERENCE = "MICA"  # baseline: red = higher in COPD, blue = lower in COPD
 TEST = "COPD"
