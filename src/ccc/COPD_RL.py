@@ -193,7 +193,7 @@ lab = obs_all[GROUP_KEY]
 unlabelled = lab.isna() | lab.astype(str).str.lower().isin(["nan", "none", ""])
 keep = (
     obs_all[CONDITION_KEY].isin(CONDITIONS)
-    & obs_all[TIMEPOINT_KEY].isin(TIMEPOINTS)
+    & obs_all[TIMEPOINT_KEY].isin(TIMEPOINT)
     & ~obs_all[SAMPLE_KEY].isin(DROP_ROIS)
     & ~lab.isin(DROP_CELL_TYPES)  # drop listed cell types
 ).values
