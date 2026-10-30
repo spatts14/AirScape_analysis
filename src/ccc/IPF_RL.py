@@ -40,8 +40,14 @@ import scanpy as sc
 import seaborn as sns
 import zarr
 from liana.mt import rank_aggregate
-from plotnine import ggtitle, labs
+from plotnine import ggtitle, labs, save_as_pdf_pages
+from pydeseq2.dds import DeseqDataSet
+from pydeseq2.ds import DeseqStats
+from scanpy.plotting import palettes as _pal
 from scipy import sparse
+import pycrosstalker as ct
+import pycrosstalker.plots as ctpl
+
 
 warnings.filterwarnings("ignore", category=FutureWarning)
 
@@ -165,6 +171,98 @@ def circle_plots(adata, df, name, title, cell_types):
                 plt.close(fig)
 
 
+def looks_like_counts(X):
+    vals = X[:1000].toarray() if sparse.issparse(X) else np.asarray(X[:1000])
+    return np.all(vals >= 0) and np.allclose(vals, np.round(vals))
+
+
+def count_matrix(df, cond):
+    sub = df[(df[CONDITION_KEY] == cond) & df["sig"]]
+    m = pd.crosstab(sub["source"], sub["target"])
+    return m
+
+
+def crosstalker_cci(key, title, signed=False, **kw):
+    """Wrapper around ctpl.plot.plot_cci that saves the figure.
+
+    plot_cci sizes nodes in the order of graph.nodes(), so the PageRank values
+    are re-ordered to match the graph before plotting.
+    """
+    import networkx as nx
+
+    edges = ctk_res["graphs"][key]
+    g = nx.from_pandas_edgelist(
+        edges, source="source", target="target", create_using=nx.DiGraph()
+    )
+    pr = ctk_res["rankings"][key].set_index("nodes")["Pagerank"]
+    # node size = |PageRank|; for the comparison a node that loses importance
+    # would otherwise get a negative size and vanish
+    pg = pr.abs() if signed else pr
+    pg = pg.reindex(list(g.nodes())).fillna(0)
+    args = dict(
+        graph=edges,
+        colors=ctk_res["colors"],
+        plt_name=title,
+        coords=ctk_res["coords"],
+        emax=None,
+        leg=False,
+        low=0,
+        high=0,
+        ignore_alpha=False,
+        log=False,
+        efactor=2,
+        vfactor=12,
+        pg=pg,
+        figsize=(7, 7),
+        scale_factor=2.0,
+        node_size=3.0,
+        font_size=8,
+        return_figure=True,
+    )
+    args.update(kw)
+    fig, ax = ctpl.plot.plot_cci(**args)
+    savefig(fig, os.path.join("C_crosstalker", f"C1_cci_{key}"))
+
+
+def pair_heatmap(df, value, pcol, title, name):
+    d = df.copy()
+    d[["source", "target"]] = d["cellpair"].str.split("@", expand=True)
+    vals = d.pivot(index="source", columns="target", values=value).reindex(
+        index=groups, columns=groups
+    )
+    pv = d.pivot(index="source", columns="target", values=pcol).reindex(
+        index=groups, columns=groups
+    )
+    lim = np.nanmax(np.abs(vals.values)) or 1
+    fig, ax = plt.subplots(figsize=(max(5, 0.5 * n + 2.5), max(4.5, 0.5 * n + 1.5)))
+    im = ax.imshow(vals.values, cmap="RdBu_r", vmin=-lim, vmax=lim)
+    for i in range(n):
+        for j in range(n):
+            p_ij = pv.values[i, j]
+            if np.isfinite(p_ij) and p_ij < 0.05:
+                ax.text(j, i, "*", ha="center", va="center", fontsize=10)
+    ax.set_xticks(range(n))
+    ax.set_xticklabels(groups, rotation=90)
+    ax.set_yticks(range(n))
+    ax.set_yticklabels(groups)
+    ax.set_xlabel("Target (receptor)")
+    ax.set_ylabel("Source (ligand)")
+    fig.colorbar(im, ax=ax, shrink=0.7, label=value)
+    ax.set_title(title + "\n* p < 0.05")
+    savefig(fig, os.path.join("C_crosstalker", name))
+
+
+def pretty(pair):
+    return pair.replace("^", ARROW)
+
+
+# ---- choose pairs: top up and top down (unique ligand-receptor) ------------
+def top_pairs(df, ascending, n):
+    d = df.sort_values("interaction_stat", ascending=ascending)
+    d = d.drop_duplicates(["ligand_complex", "receptor_complex"])
+    return d.head(n)
+
+
 # =============================================================================
 # 1. Load and subset
 # =============================================================================
@@ -255,7 +353,7 @@ adata.obs[CONDITION_KEY] = adata.obs[CONDITION_KEY].cat.reorder_categories(
 
 # Re-align level_2 colours with the remaining categories (new ones get defaults)
 # (uses scanpy's public palettes, so it works across scanpy versions)
-from scanpy.plotting import palettes as _pal
+
 
 _cats = adata.obs[GROUP_KEY].cat.categories
 _n = len(_cats)
@@ -277,10 +375,6 @@ print(adata.obs.groupby(CONDITION_KEY, observed=True)[SAMPLE_KEY].nunique())
 # =============================================================================
 # 2. Counts layer + log-normalized X
 # =============================================================================
-def looks_like_counts(X):
-    vals = X[:1000].toarray() if sparse.issparse(X) else np.asarray(X[:1000])
-    return np.all(vals >= 0) and np.allclose(vals, np.round(vals))
-
 
 if COUNTS_LAYER is not None and COUNTS_LAYER in adata.layers:
     counts = adata.layers[COUNTS_LAYER]
@@ -488,10 +582,6 @@ res["sig"] = (res["magnitude_rank"] <= SIG_RANK) & (res["specificity_rank"] <= S
 
 
 # ---- A1: number of significant interactions per source->target ------------
-def count_matrix(df, cond):
-    sub = df[(df[CONDITION_KEY] == cond) & df["sig"]]
-    m = pd.crosstab(sub["source"], sub["target"])
-    return m
 
 
 groups = sorted(adata.obs[GROUP_KEY].cat.categories)
@@ -633,7 +723,6 @@ for c in CONDITIONS:
 # ---- A6: dotplot per source cell type -> all targets, per condition ---------
 # colour = lr_means, size = -log10(cellphone_pvals); CellPhoneDB-style filter
 # One multi-page PDF per condition (one page per source) + one PNG per source.
-from plotnine import save_as_pdf_pages
 
 cell_list = adata.obs[GROUP_KEY].cat.categories.tolist()
 dot_dir = os.path.join(OUTDIR, "A6_dotplots_by_source")
@@ -696,8 +785,6 @@ for c in CONDITIONS:
 # PART B - Pseudobulk DESeq2 (TEST vs REFERENCE) mapped to L-R pairs
 # =============================================================================
 print("\n[Part B] Pseudobulk differential expression ...")
-from pydeseq2.dds import DeseqDataSet
-from pydeseq2.ds import DeseqStats
 
 # Build pseudobulk: sum raw counts per ROI x level_2
 obs = adata.obs[[SAMPLE_KEY, GROUP_KEY, CONDITION_KEY]].copy()
@@ -920,8 +1007,6 @@ circle_plots(
 # differenced between conditions to find the cell types whose communication
 # changes most. Fisher (number of interactions) and Mann-Whitney (strength)
 # tests are run per source->target pair.
-import pycrosstalker as ct
-import pycrosstalker.plots as ctpl
 
 print("\n[Part C] pyCrossTalkeR ...")
 CMP = f"{TEST}_x_{REFERENCE}"  # e.g. "IPF_x_PM08"
@@ -966,48 +1051,6 @@ ctk_res["graphs"][CMP].to_csv(
 )
 
 
-def crosstalker_cci(key, title, signed=False, **kw):
-    """Wrapper around ctpl.plot.plot_cci that saves the figure.
-
-    plot_cci sizes nodes in the order of graph.nodes(), so the PageRank values
-    are re-ordered to match the graph before plotting.
-    """
-    import networkx as nx
-
-    edges = ctk_res["graphs"][key]
-    g = nx.from_pandas_edgelist(
-        edges, source="source", target="target", create_using=nx.DiGraph()
-    )
-    pr = ctk_res["rankings"][key].set_index("nodes")["Pagerank"]
-    # node size = |PageRank|; for the comparison a node that loses importance
-    # would otherwise get a negative size and vanish
-    pg = pr.abs() if signed else pr
-    pg = pg.reindex(list(g.nodes())).fillna(0)
-    args = dict(
-        graph=edges,
-        colors=ctk_res["colors"],
-        plt_name=title,
-        coords=ctk_res["coords"],
-        emax=None,
-        leg=False,
-        low=0,
-        high=0,
-        ignore_alpha=False,
-        log=False,
-        efactor=2,
-        vfactor=12,
-        pg=pg,
-        figsize=(7, 7),
-        scale_factor=2.0,
-        node_size=3.0,
-        font_size=8,
-        return_figure=True,
-    )
-    args.update(kw)
-    fig, ax = ctpl.plot.plot_cci(**args)
-    savefig(fig, os.path.join("C_crosstalker", f"C1_cci_{key}"))
-
-
 # ---- C1: CCI graphs (each condition + comparison) --------------------------
 for c in CONDITIONS:
     crosstalker_cci(c, f"{c}")
@@ -1037,32 +1080,6 @@ savefig(fig, os.path.join("C_crosstalker", f"C2_pagerank_{CMP}"))
 
 
 # ---- C3: Fisher (number) and Mann-Whitney (strength) per cell pair ---------
-def pair_heatmap(df, value, pcol, title, name):
-    d = df.copy()
-    d[["source", "target"]] = d["cellpair"].str.split("@", expand=True)
-    vals = d.pivot(index="source", columns="target", values=value).reindex(
-        index=groups, columns=groups
-    )
-    pv = d.pivot(index="source", columns="target", values=pcol).reindex(
-        index=groups, columns=groups
-    )
-    lim = np.nanmax(np.abs(vals.values)) or 1
-    fig, ax = plt.subplots(figsize=(max(5, 0.5 * n + 2.5), max(4.5, 0.5 * n + 1.5)))
-    im = ax.imshow(vals.values, cmap="RdBu_r", vmin=-lim, vmax=lim)
-    for i in range(n):
-        for j in range(n):
-            p_ij = pv.values[i, j]
-            if np.isfinite(p_ij) and p_ij < 0.05:
-                ax.text(j, i, "*", ha="center", va="center", fontsize=10)
-    ax.set_xticks(range(n))
-    ax.set_xticklabels(groups, rotation=90)
-    ax.set_yticks(range(n))
-    ax.set_yticklabels(groups)
-    ax.set_xlabel("Target (receptor)")
-    ax.set_ylabel("Source (ligand)")
-    fig.colorbar(im, ax=ax, shrink=0.7, label=value)
-    ax.set_title(title + "\n* p < 0.05")
-    savefig(fig, os.path.join("C_crosstalker", name))
 
 
 pair_heatmap(
@@ -1098,17 +1115,6 @@ sp_dir = OUTDIR / "D_spatial"
 sp_dir.mkdir(exist_ok=True)
 COND_COLORS = {TEST: "#c0392b", REFERENCE: "#2c6fbb"}
 ARROW = " → "
-
-
-def pretty(pair):
-    return pair.replace("^", ARROW)
-
-
-# ---- choose pairs: top up and top down (unique ligand-receptor) ------------
-def top_pairs(df, ascending, n):
-    d = df.sort_values("interaction_stat", ascending=ascending)
-    d = d.drop_duplicates(["ligand_complex", "receptor_complex"])
-    return d.head(n)
 
 
 pool = changed if len(changed) else lr_dea
