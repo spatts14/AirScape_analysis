@@ -45,8 +45,6 @@ from pydeseq2.dds import DeseqDataSet
 from pydeseq2.ds import DeseqStats
 from scanpy.plotting import palettes as _pal
 from scipy import sparse
-import pycrosstalker as ct
-import pycrosstalker.plots as ctpl
 
 
 warnings.filterwarnings("ignore", category=FutureWarning)
@@ -1007,6 +1005,8 @@ circle_plots(
 # differenced between conditions to find the cell types whose communication
 # changes most. Fisher (number of interactions) and Mann-Whitney (strength)
 # tests are run per source->target pair.
+import pycrosstalker as ct
+import pycrosstalker.plots as ctpl
 
 print("\n[Part C] pyCrossTalkeR ...")
 CMP = f"{TEST}_x_{REFERENCE}"  # e.g. "IPF_x_PM08"
