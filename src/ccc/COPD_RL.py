@@ -51,7 +51,7 @@ OUTDIR = INPUT_DIR / "output" / "ccc" / "COPDvMICA"
 CONDITION_KEY = "condition"
 CONDITIONS = ["COPD", "MICA"]
 TIMEPOINT_KEY = "time_point"
-TIMEPOINT = ["V1"]
+EXCLUDE_TIMEPOINT = ["V2", "V3"]
 REFERENCE = "MICA"  # baseline: red = higher in COPD, blue = lower in COPD
 TEST = "COPD"
 CMP = f"{TEST}_x_{REFERENCE}"  # CrossTalkeR comparison name, e.g. "COPD_x_MICA"
@@ -193,7 +193,7 @@ lab = obs_all[GROUP_KEY]
 unlabelled = lab.isna() | lab.astype(str).str.lower().isin(["nan", "none", ""])
 keep = (
     obs_all[CONDITION_KEY].isin(CONDITIONS)
-    & obs_all[TIMEPOINT_KEY].isin(TIMEPOINT)
+    & ~obs_all[TIMEPOINT_KEY].isin(EXCLUDE_TIMEPOINT)  # remove V2 and V3
     & ~obs_all[SAMPLE_KEY].isin(DROP_ROIS)
     & ~lab.isin(DROP_CELL_TYPES)  # drop listed cell types
 ).values
@@ -204,6 +204,7 @@ print(f"Keeping {keep.sum()} of {len(keep)} cells")
 print(
     f"  {obs_all[CONDITION_KEY].value_counts()[CONDITIONS].to_dict()} cells per condition"
 )
+print(f"  {obs_all[TIMEPOINT_KEY].value_counts().to_dict()} cells per time point")
 print(f"  {obs_all[SAMPLE_KEY].value_counts().to_dict()} cells per ROI")
 idx = np.flatnonzero(keep)
 
