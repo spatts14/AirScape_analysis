@@ -46,7 +46,6 @@ from pydeseq2.ds import DeseqStats
 from scanpy.plotting import palettes as _pal
 from scipy import sparse
 
-
 warnings.filterwarnings("ignore", category=FutureWarning)
 
 # =============================================================================
@@ -366,6 +365,8 @@ adata.uns[f"{GROUP_KEY}_colors"] = [
 print(adata)
 print("\nCells per condition x level_2:")
 print(pd.crosstab(adata.obs[GROUP_KEY], adata.obs[CONDITION_KEY]))
+print("\nCells per ROI x level_2:")
+print(pd.crosstab(adata.obs[GROUP_KEY], adata.obs[CONDITION_KEY]))
 print("\nROIs per condition:")
 print(adata.obs.groupby(CONDITION_KEY, observed=True)[SAMPLE_KEY].nunique())
 
@@ -435,6 +436,8 @@ for c in CONDITIONS:
     )
     res_c = adata_c.uns["liana_res"].copy()
     res_c.to_csv(os.path.join(OUTDIR, f"A0_rank_aggregate_{c}.csv"), index=False)
+    # Save adata object
+    adata_c.write_zarr(OUTDIR / f"ccc_{c}.zarr", mode="w")
 
     # ---- A0: standard LIANA dotplot of the top interactions ------------------
     p = (
@@ -471,7 +474,6 @@ for c in CONDITIONS:
     # ---- A0: one dotplot per sender cell type (source -> all targets) -------
     # e.g. A0_dotplots_by_source/IPF/Interstitial_macrophages.png
     # Same colour/size as the overview: magnitude_rank / specificity_rank.
-    from plotnine import save_as_pdf_pages
 
     src_dir = os.path.join(OUTDIR, "A0_dotplots_by_source", c)
     os.makedirs(src_dir, exist_ok=True)
