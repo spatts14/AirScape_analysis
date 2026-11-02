@@ -433,7 +433,7 @@ for c in CONDITIONS:
     res_c = adata_c.uns["liana_res"].copy()
     res_c.to_csv(os.path.join(OUTDIR, f"A0_rank_aggregate_{c}.csv"), index=False)
     # Save adata object
-    adata_c.write_zarr(OUTDIR / f"ccc_{c}.zarr", mode="w")
+    adata_c.write_zarr(OUTDIR / f"ccc_{c}.zarr")
     print(f" saved file to {OUTDIR}/ccc_{c}.zarr")
 
 #     # ---- A0: standard LIANA dotplot of the top interactions ------------------
